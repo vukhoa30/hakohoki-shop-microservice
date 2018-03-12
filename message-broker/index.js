@@ -37,7 +37,7 @@ function sendMessage(topic, message) {
             if (err) {
                 console.log("Error found in message for topic " + topic)
                 console.log(err)
-                reject(false)
+                resolve(false)
             } else {
                 console.log("New message for topic " + topic + " was sent")
                 resolve(true)
