@@ -1,0 +1,5 @@
+{
+    "privateKey": "asdfasdfiasjdfh;oiahsdf;asdfh;asdfa;fd",
+    "messageBrokerAddress": "http://localhost:8000",
+    "dbAddress":"mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service"
+}
