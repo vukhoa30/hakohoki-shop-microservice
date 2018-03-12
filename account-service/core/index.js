@@ -1,7 +1,7 @@
 var db = require('../database')
 var helper = require('../helper')
 var messageInit = require('../helper/message-init')
-var messageBroker = require('../connection/message-broker')
+//var messageBroker = require('../connection/message-broker')
 
 exports.createNewAccount = function (email, password) {
 
@@ -9,6 +9,7 @@ exports.createNewAccount = function (email, password) {
 
         try {
             await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" })
+            //messageBroker.sendMessage({ topic: 'ACCOUNT', message: { tag: 'ACCOUNT_NEEDING_AUTHORIZATION', email: email } })
             resolve()
         } catch (error) {
             console.log(error)
