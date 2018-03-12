@@ -27,7 +27,8 @@ exports.authenticate = async function (email, password) {
                 return reject()
             }
             if (!res) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
-            return helper.compareHashValue(password, res.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 404, msg: "PASSWORD WRONG" })
+            if (res.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED"})
+            return helper.compareHashValue(password, res.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         })
     })
 
