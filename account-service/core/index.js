@@ -1,6 +1,5 @@
 var db = require('../database')
 var helper = require('../helper')
-var messageInit = require('../helper/message-init')
 //var messageBroker = require('../connection/message-broker')
 
 exports.createNewAccount = function (email, password) {
