@@ -162,7 +162,9 @@
                 messageListElement.empty()
                 messages.filter(curMessage => curMessage.topic === selectedTopic).forEach((curMessage, index) => {
 
-                    const rowString = `<tr><th scope="row">${index}</th><td>${curMessage.message}</td></tr>`
+                    console.log(curMessage.message)
+                    const message = typeof curMessage.message == "string" ? curMessage.message : JSON.stringify(curMessage.message)
+                    const rowString = `<tr><th scope="row">${index}</th><td>${message}</td></tr>`
                     messageListElement.append(rowString)
 
                 })

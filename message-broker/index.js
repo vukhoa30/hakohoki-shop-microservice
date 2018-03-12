@@ -84,7 +84,7 @@ app.use("/lib", express.static(path.join(__dirname, 'node_modules')))
 // API ---------------------------------------------
 app.post('/message', async (req, res) => {
 
-    const topic = req.body.topic, message = req.body.message
+    const topic = req.body.topic, message = JSON.stringify(req.body.message)
     const isSuccessful = await sendMessage(topic, message)
     if (isSuccessful)
         res.json({ msg: 'OK' })
@@ -133,7 +133,21 @@ server.listen(port, function () {
     console.log('Server listening at port %d', port);
 });
 
-var clientList = []
+//----------------------------------------------------------------------------
+
+// Helper --------------------------------------------------------------------
+
+function formatValue(obj) {
+
+    try {
+        return JSON.parse(obj);
+    } catch (e) {
+        return obj;
+    }
+
+}
+
+//----------------------------------------------------------------------------
 
 //Socket IO ------------------------------------------------------------------
 
@@ -141,12 +155,6 @@ io.on('connection', function (socket) {
 
     let consumer = null
     console.log("New connection found")
-    clientList.push({
-
-        client: socket,
-        topics: []
-
-    })
 
     socket.on("SUBSCRIBE_TOPIC", data => {
 
@@ -161,7 +169,7 @@ io.on('connection', function (socket) {
             consumer = new Consumer(client, [{ topic: topic, partition: 0 }], { autoCommit: false })
 
             consumer.on('message', function (message) {
-                socket.emit("NEW_MESSAGE", { topic: message.topic, message: message.value })
+                socket.emit("NEW_MESSAGE", { topic: message.topic, message: formatValue(message.value) })
             });
             consumer.on('error', function (err) {
                 console.log(`Error: ${err}`);
@@ -195,7 +203,7 @@ io.on('connection', function (socket) {
             consumer = new Consumer(client, data.topics.map(topic => Object.create({ topic: topic, partition: 0 })), { autoCommit: false })
 
             consumer.on('message', function (message) {
-                socket.emit("NEW_MESSAGE", { topic: message.topic, message: message.value })
+                socket.emit("NEW_MESSAGE", { topic: message.topic, message: formatValue(message.value) })
             });
             consumer.on('error', function (err) {
                 console.log(`Error: ${err}`);
@@ -212,7 +220,7 @@ io.on('connection', function (socket) {
 
     socket.on("NEW_MESSAGE", data => {
 
-        const topic = data.topic, message = data.message
+        const topic = data.topic, message = JSON.stringify(data.message)
         sendMessage(topic, message)
 
     })
