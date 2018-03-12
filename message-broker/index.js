@@ -130,7 +130,7 @@ app.delete('/topic', (req, res) => {
 //-----------------------------------------------------
 
 server.listen(port, function () {
-    console.log('Server listening at port %d', port);
+    console.log('Message broker service is listening at port %d', port);
 });
 
 //----------------------------------------------------------------------------
