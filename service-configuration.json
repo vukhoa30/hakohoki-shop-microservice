@@ -1,0 +1,8 @@
+{
+    "MESSAGE_BROKER_SERVICE": {
+        "address": "http://localhost:8000"
+    },
+    "ACCOUNT_SERVICE": {
+        "address": "http://localhost:7000"
+    }
+}
