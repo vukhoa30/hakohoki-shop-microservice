@@ -22,4 +22,75 @@ process.on("SIGTERM", function (signal) {
 
 })
 
-module.exports = () => dbclient.db("account_service")
+exports.find = (collection, query) => {
+
+    return new Promise((resolve, reject) => {
+
+        dbclient.db('account_service').collection(collection).find(query, function (err, res) {
+
+            if (err) {
+                console.log(err)
+                return reject()
+            }
+            return resolve(res)
+
+        })
+
+    })
+
+}
+
+exports.create = (collection, obj) => {
+
+    return new Promise((resolve, reject) => {
+
+        dbclient.db('account_service').collection(collection).insertOne(obj, function (err, res) {
+
+            if (err) {
+                console.log(err)
+                return reject()
+            }
+            return resolve(res)
+
+        })
+
+    })
+
+}
+
+exports.update = (collection, query, obj) => {
+
+    return new Promise((resolve, reject) => {
+
+        dbclient.db('account_service').collection(collection).updateOne(query, { $set: obj }, function (err, res) {
+
+            if (err) {
+                console.log(err)
+                return reject()
+            }
+            return resolve(res)
+
+        })
+
+    })
+
+}
+
+exports.delete = (collection, query) => {
+
+    return new Promise((resolve, reject) => {
+
+        dbclient.db('account_service').collection(collection).deleteOne(query, function (err, res) {
+
+            if (err) {
+                console.log(err)
+                return reject()
+            }
+            return resolve(res)
+
+        })
+
+
+    })
+
+}

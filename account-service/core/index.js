@@ -5,15 +5,15 @@ var messageBroker = require('../connection/message-broker')
 
 exports.createNewAccount = function (email, password) {
 
-    return new Promise((resolve, reject) => {
-        db().collection("accounts").insertOne({ email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" }, function (err, res) {
-            if (err) {
-                console.log(err)
-                return reject()
-            }
-            messageBroker.sendMessage({ topic: 'ACCOUNT', message: { tag: 'ACCOUNT_NEEDING_AUTHORIZATION', email: email } })
+    return new Promise(async (resolve, reject) => {
+
+        try {
+            await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" })
             resolve()
-        });
+        } catch (error) {
+            console.log(error)
+            reject()
+        }
 
     })
 }
@@ -21,28 +21,32 @@ exports.createNewAccount = function (email, password) {
 exports.authenticate = async function (email, password) {
 
     return new Promise((resolve, reject) => {
-        db().collection("accounts").findOne({ email: email }, function (err, res) {
-            if (err) {
-                console.log(err)
-                return reject()
-            }
-            if (!res) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
-            if (res.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED"})
-            return helper.compareHashValue(password, res.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
-        })
+
+        try {
+            const result = await db.find('accounts', { email: email })
+            if (result.length === 0) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
+            const account = result[0]
+            if (account.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED" })
+            return helper.compareHashValue(password, account.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
+        } catch (error) {
+            console.log(error)
+            reject()
+        }
+
     })
 
 }
 
-exports.validateAccount = function (email) {
+exports.validateAccount = async function (email) {
 
     const query = { email: email }
     const newValue = { $set: { status: "AUTHORIZED" } }
-    db().collection("accounts").updateOne(query, newValue, function (err, res) {
-        if (err)
-            console.log(err)
-        else
-            console.log(`Account ${email} authorized`)
-    })
+
+    try {
+        await db.update('accounts', query, newValue)
+        console.log(`Account ${email} has been authorized`)
+    } catch (error) {
+        console.log(error)
+    }
 
 }
