@@ -1,9 +1,13 @@
 {
     "MESSAGE_BROKER_SERVICE": {
-        "address": "http://localhost:8000"
+        "address": {
+            "local": "http://localhost:8000"
+        }
     },
     "ACCOUNT_SERVICE": {
-        "address": "http://localhost:7000",
+        "address": {
+            "local": "http://localhost:7000"
+        },
         "database": {
             "type": "mongodb",
             "address": "mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service"
