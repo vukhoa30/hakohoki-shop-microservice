@@ -93,7 +93,7 @@ io.on('connection', function (socket) {
 
         if (consumer != null) {
 
-            kafka.unsubscribeTopics(new Array(data.topic))
+            consumer.removeTopics(new Array(data.topic))
 
         }
 
