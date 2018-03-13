@@ -57,10 +57,10 @@ exports.sendMessage = function (topic, message) {
             if (err) {
                 console.log("Error found in message for topic " + topic)
                 console.log(err)
-                resolve(false)
+                reject()
             } else {
                 console.log("New message for topic " + topic + " was sent")
-                resolve(true)
+                resolve()
             }
 
         })
