@@ -5,17 +5,20 @@ var core = require('../core')
 
 var isConnected = false
 
-socket.on('connection', function (socket) {
+socket.on('connect', function (socket) {
 
     console.log("Message broker connected!")
     isConnected = true
 
 })
 
-socket.on('NEW_MESSAGE', function (data) {
+socket.on('error', function (error) {
 
-    const email = data.email
-    core.validateAccount(email)
+    console.log(error)
+
+})
+
+socket.on('NEW_MESSAGE', function (data) {
 
 })
 
@@ -27,10 +30,11 @@ socket.on('disconnect', function () {
 
         console.log("Attemping connecting to message broker ...")
         socket.socketClient.connect(config.messageBrokerAddress)
-        
+
     }, 10000)
 
 })
+
 
 exports.sendMessage = function (message) {
 

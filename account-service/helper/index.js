@@ -1,6 +1,7 @@
 var jwt = require('jsonwebtoken')
 var bcrypt = require('bcrypt')
 var config = require('./config.json')
+var randomstring = require('randomstring')
 
 exports.getToken = function (email, password) {
 
@@ -19,3 +20,5 @@ exports.compareHashValue = function (originVal, hashVal) {
     return bcrypt.compareSync(originVal, hashVal)
 
 }
+
+exports.getRandomCode = () => randomstring.generate()

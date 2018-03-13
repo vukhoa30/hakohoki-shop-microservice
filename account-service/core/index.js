@@ -1,6 +1,6 @@
 var db = require('../database')
 var helper = require('../helper')
-//var messageBroker = require('../connection/message-broker')
+var messageBroker = require('../connection/message-broker')
 
 exports.createNewAccount = function (email, password) {
 
@@ -8,7 +8,9 @@ exports.createNewAccount = function (email, password) {
 
         try {
             await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" })
-            //messageBroker.sendMessage({ topic: 'ACCOUNT', message: { tag: 'ACCOUNT_NEEDING_AUTHORIZATION', email: email } })
+            const authCode = helper.getRandomCode()
+            await db.create('authorization', { email: email, code: authCode })
+            messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
             resolve()
         } catch (error) {
             console.log(error)
@@ -18,16 +20,15 @@ exports.createNewAccount = function (email, password) {
     })
 }
 
-exports.authenticate = async function (email, password) {
+exports.authenticate = function (email, password) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
 
         try {
-            const result = await db.find('accounts', { email: email })
-            if (result.length === 0) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
-            const account = result[0]
-            if (account.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED" })
-            return helper.compareHashValue(password, account.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
+            const result = await db.findOne('accounts', { email: email })
+            if (!result) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
+            if (result.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED" })
+            return helper.compareHashValue(password, result.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         } catch (error) {
             console.log(error)
             reject()
@@ -37,16 +38,20 @@ exports.authenticate = async function (email, password) {
 
 }
 
-exports.validateAccount = async function (email) {
+exports.authorize = function (email, authCode) {
 
-    const query = { email: email }
-    const newValue = { $set: { status: "AUTHORIZED" } }
+    return new Promise(async (resolve, reject) => {
 
-    try {
-        await db.update('accounts', query, newValue)
-        console.log(`Account ${email} has been authorized`)
-    } catch (error) {
-        console.log(error)
-    }
+        try {
+            const result = await db.checkIfExisted('authorization', { email: email, code: authCode })
+            if (!result) return resolve(false)
+            await db.update('accounts', { email: email }, { status: 'AUTHORIZED' })
+            resolve(true)
+        } catch (error) {
+            console.log(error)
+            reject()
+        }
+
+    })
 
 }

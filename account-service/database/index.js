@@ -22,6 +22,34 @@ process.on("SIGTERM", function (signal) {
 
 })
 
+exports.checkIfExisted = (collection, query) => {
+
+    return new Promise(async (resolve, reject) => {
+
+        return resolve((await dbclient.db('account_service').collection(collection).find(query).limit(1).count()) > 0)
+
+    })
+
+}
+
+exports.findOne = (collection, query) => {
+
+    return new Promise((resolve, reject) => {
+
+        dbclient.db('account_service').collection(collection).findOne(query, function (err, res) {
+
+            if (err) {
+                console.log(err)
+                return reject()
+            }
+            return resolve(res)
+
+        })
+
+    })
+
+}
+
 exports.find = (collection, query) => {
 
     return new Promise((resolve, reject) => {

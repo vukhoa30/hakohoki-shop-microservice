@@ -44,6 +44,19 @@ app.post('/authentication', async function (req, res) { //Authenticate account
     }
 
 })
+
+app.post('/authorization', async function (req, res) {
+
+    const email = req.body.email, authCode = req.body.authCode
+    try {
+        const result = await core.authorize(email, authCode)
+        return result ? res.json({ msg: 'OK' }) : res.status(401).json({ msg: 'AUTHORIZATION CODE NOT MATCHED' })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
+    }
+
+})
 //---------------------------------------------------------------------------
 
 
