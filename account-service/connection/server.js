@@ -20,8 +20,7 @@ app.post('/', async function (req, res) { //Create account
 
     const email = req.body.email, password = req.body.password
     try {
-        await core.createNewAccount(email, password)
-        res.json({ msg: 'OK' })
+        return (await core.createNewAccount(email, password)) ? res.json({ msg: 'OK' }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ msg: "INTERNAL SERVER ERROR" })

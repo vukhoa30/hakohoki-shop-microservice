@@ -7,11 +7,12 @@ exports.createNewAccount = function (email, password) {
     return new Promise(async (resolve, reject) => {
 
         try {
+            if (await db.checkIfExisted('accounts', { email: email })) return resolve(false)
             await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" })
             const authCode = helper.getRandomCode()
             await db.create('authorization', { email: email, code: authCode })
             messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
-            resolve()
+            resolve(true)
         } catch (error) {
             console.log(error)
             reject()

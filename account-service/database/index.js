@@ -6,6 +6,7 @@ MongoClient.connect(url, function (err, client) {
     if (err) throw err
     console.log("Database connected")
     dbclient = client
+    dbclient.db("account_service").collection('accounts').createIndex({ email: 1}, { sparse: true, unique: true })
 });
 
 process.on("SIGNINT", function (signal) {
