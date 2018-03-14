@@ -4,7 +4,7 @@
 module.exports = [{
     type: 'api',
     clientUrl: '/accounts',
-    serviceUrl: 'https://localhost:7000'
+    serviceUrl: 'http://localhost:7000'
     //serviceUrl: 'http://petstore-demo-endpoint.execute-api.com/petstore/pets'
   }, {
     type: 'api',

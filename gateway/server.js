@@ -11,9 +11,16 @@ vd: post https://api.hakohoki.com/accounts/authenticate
 */
 
 var restify = require('restify');
+var bodyParser = require('body-parser');
 var db = require('./db');
 
 var server = restify.createServer();
+
+server.use(restify.plugins.acceptParser(server.acceptable));
+server.use(restify.plugins.queryParser());
+server.use(restify.plugins.bodyParser({
+  requestBodyOnGet: true
+}));
 
 require('./socket')(server, db);
 require('./api')(server, db);
