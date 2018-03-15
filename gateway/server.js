@@ -10,20 +10,13 @@ vd: post https://api.hakohoki.com/accounts/authenticate
   Nên chạy tất cả các websocket trước khi chạy server này
 */
 
-var restify = require('restify');
-var bodyParser = require('body-parser');
 var db = require('./db');
-
-var server = restify.createServer();
-
-server.use(restify.plugins.acceptParser(server.acceptable));
-server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser({
-  requestBodyOnGet: true
-}));
+var express = require('express');
+var app = express();
+var server = require('http').Server(app);
 
 require('./socket')(server, db);
-require('./api')(server, db);
+require('./api')(app, db);
 
 var port = process.env.PORT || 8080;
 
@@ -31,5 +24,5 @@ server.listen(port, function(err) {
   if (err) {
     console.error("Error starting server.")
   }  
-  console.log('Gateway %s listening at %s', server.name, server.url);
+  console.log('Gateway %s listening at %s', app.name, port);
 });
