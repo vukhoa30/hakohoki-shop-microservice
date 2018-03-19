@@ -12,5 +12,19 @@
             "type": "mongodb",
             "address": "mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service"
         }
+    },
+    "EMAIL_SERVICE": {
+      "address": {
+        "local": "http://localhost:7001"
+      }
+    },
+    "PRODUCT_SERVICE": {
+      "address": {
+        "local": "http://localhost:7002"
+      },
+      "database": {
+        "type": "mongodb",
+        "address": "mongodb://dummy:sameasusername@ds215709.mlab.com:15709/product-service"
+      }
     }
 }

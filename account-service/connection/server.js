@@ -19,6 +19,7 @@ app.use(morgan('combined'));
 app.post('/', async function (req, res) { //Create account
 
     const email = req.body.email, password = req.body.password
+    console.log(req.body.email);
     try {
         return (await core.createNewAccount(email, password)) ? res.json({ msg: 'OK' }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
     } catch (error) {

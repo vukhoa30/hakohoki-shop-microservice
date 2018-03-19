@@ -43,15 +43,13 @@ module.exports = (server, db) => {
   clientSockets = [];
 
   io.on('connection', (socket) => {
-    console.log('client connected!');
-    //console.log(socket);
+    //console.log('client connected!');
   });
 
   db.forEach(service => {
     if (service.type === 'socket') {
       io.of(service.clientUrl)
       .on('connection', socket => {
-        console.log('connection!');
         socket.on('give-username', data => {
           clientSockets.push({...socket, username: data.username})
         })
