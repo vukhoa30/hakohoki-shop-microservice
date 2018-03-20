@@ -1,9 +1,7 @@
 var socketClient = require('socket.io-client')
-
-var brokerAddress = require('./config.js').messageBrokerAddress
-var socket = socketClient.connect(brokerAddress)
-
-//var core = require('../core')
+var config = require('../config.js')
+var socket = socketClient.connect(config.messageBrokerAddress)
+var core = require('../core.js')
 
 var isConnected = false
 
@@ -22,6 +20,8 @@ socket.on('error', function (error) {
 
 socket.on('NEW_MESSAGE', function (data) {
 
+
+
 })
 
 socket.on('disconnect', function () {
@@ -31,7 +31,7 @@ socket.on('disconnect', function () {
     setTimeout(() => {
 
         console.log("Attemping connecting to message broker ...")
-        socket.socketClient.connect(brokerAddresss)
+        socket.socketClient.connect(config.messageBrokerAddress)
 
     }, 10000)
 

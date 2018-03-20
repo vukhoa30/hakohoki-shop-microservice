@@ -31,5 +31,14 @@
         "type": "mongodb",
         "address": "mongodb://dummy:sameasusername@ds215709.mlab.com:15709/product-service"
       }
+    },
+    "EMPLOYEE_ACCOUNT_SERVICE": {
+      "address": {
+        "local": "http://localhost:7003"
+      },
+      "database": {
+        "type": "postgres",
+        "address": "postgres://mxxsdeqt:RrIDhy6eZDGD2sEjQcysLp2g4LE9GGuS@stampy.db.elephantsql.com:5432/mxxsdeqt"
+      }
     }
 }

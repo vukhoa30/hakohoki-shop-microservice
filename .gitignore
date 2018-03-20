@@ -3,3 +3,4 @@ account-service/node_modules/
 gateway/node_modules/
 email-service/node_modules
 product-service/node_modules
+employee-account-service/node_modules
