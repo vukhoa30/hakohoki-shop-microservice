@@ -27,7 +27,8 @@ app.use(morgan('combined'));
 //REST API ------------------------------------------------------------------
 app.get('/latest', core.getLatestProducts)
 app.get('/info/:id', core.getProduct)
-app.get('/search/:query', core.getProducts)
+app.get('/search/:query', core.getProductsByName)
+app.post('/search/:query', core.getProductsBySpecifications)
 app.get('/info/:id/in-stock', core.getNumberOfProductsInStock)
 app.get('/categories', core.getAllCategories)
 app.get('/specifications', core.getAllSpecifications)
@@ -38,8 +39,12 @@ app.post('/categories', core.addCategory)
 app.post('/specifications', core.addSpecification)
 app.post('/specifications/value', core.addSpecificationValue)
 
-app.put('/sell', core.sell)
+//app.put('/sell', core.sell)
 app.put('/product', core.alterProduct)
+
+app.delete('/specifications/value', core.removeSpecificationValue)
+app.delete('/categories', core.removeCategory)
+app.delete('/specifications', core.removeSpecification)
 
 
 /*app.post('/', async function (req, res) { //Create account

@@ -35,7 +35,7 @@ module.exports = {
       })
     })
   },
-  GetProducts: (queryString) => {
+  GetProductsByName: (queryString) => {
     //https://stackoverflow.com/questions/28775051/best-way-to-perform-a-full-text-search-in-mongodb-and-mongoose
     return new Promise((resolve, reject) => {
       models.Product
@@ -47,6 +47,22 @@ module.exports = {
       .exec((err, rslt) => {
         if (err) reject(err);
         else resolve(rslt);
+      })
+    })
+  },
+  GetProductsBySpecifications: (queryString, specs) => {
+    return new Promise((resolve, reject) => {
+      models.Product.find({
+        $text: {
+          $search: queryString
+        }
+      }, (err, rslt) => {
+        if (err) reject(err);
+        else resolve(rslt.filter(product => {
+          return Object.keys(specs).map(key => {
+            product[key] === specs[key]
+          }).length === Object.keys(specs).length
+        }));
       })
     })
   },

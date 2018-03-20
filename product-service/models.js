@@ -6,7 +6,9 @@ module.exports = (mongoose) => {
     addedAt: { type: Date, default: Date.now() },
     name: String,
     description: String,
-    specifications: Object
+    specifications: Object,
+    price: Number,
+    guarantee: Number
   });
   productSchema.index({'name': 'text'});
   

@@ -4,6 +4,11 @@
             "local": "http://localhost:8000"
         }
     },
+    "GATEWAY": {
+      "address": {
+        "local": "http://localhost:8080"
+      }
+    },
     "ACCOUNT_SERVICE": {
         "address": {
             "local": "http://localhost:7000"

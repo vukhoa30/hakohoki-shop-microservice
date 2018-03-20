@@ -20,8 +20,11 @@ module.exports = {
   getProduct: (req, res) => {
     typicalResponse(res, db.GetProduct(req.params.id));
   },
-  getProducts: (req, res) => {
+  getProductsByName: (req, res) => {
     typicalResponse(res, db.GetProducts(req.params.query));
+  },
+  getProductsBySpecifications: (req, res) => {
+    typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));
   },
   getNumberOfProductsInStock: (req, res) => {
     typicalResponse(res, db.GetNumberOfProductsInStock(req.params.id));
