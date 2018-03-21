@@ -7,15 +7,23 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core')
 
-app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 
 app.use(morgan('combined'));
-
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 //REST API ------------------------------------------------------------------
+app.get('/', function (req, res) {
+    res.json({ msg: 'Welcome to account service' })
+})
+
 app.post('/', async function (req, res) { //Create account
 
     const email = req.body.email, password = req.body.password
