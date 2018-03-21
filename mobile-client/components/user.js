@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
-import { Container, Header, Content, Button, Thumbnail, Text, Toast } from 'native-base';
-import { StyleSheet, View } from 'react-native';
-export default class User extends Component {
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { connect } from 'react-redux'
+import { USER_LOG_OUT, getAction } from '../actions'
+import { List, ListItem, Left, Right, Body, Container, Header, Content, Button, Thumbnail, Text, Toast } from 'native-base';
+import { StyleSheet, View, ImageBackground } from 'react-native';
+class User extends Component {
 
     render() {
         const isLoggedIn = this.props.isLoggedIn
@@ -9,32 +12,54 @@ export default class User extends Component {
         return (
             <Container>
                 <Content>
-                    <Thumbnail square style={styles.titleImage} source={{ uri: 'http://thedunes.ca/wp-content/uploads/2014/03/online-shopping-2130x840.jpg' }} />
                     {isLoggedIn ?
                         (
-                            <List>
-                                <ListItem avatar>
-                                    <Left>
-                                        <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                                    </Left>
-                                    <Body>
-                                        <Text>Kumar Pratik</Text>
-                                        <Text note>Doing what you like will always keep you happy . .</Text>
-                                    </Body>
-                                    <Right>
-                                        <Text note>3:43 pm</Text>
-                                    </Right>
-                                </ListItem>
-                            </List>
+                            <View>
+                                <ImageBackground style={styles.titleImage} source={{ uri: 'http://thedunes.ca/wp-content/uploads/2014/03/online-shopping-2130x840.jpg' }}>
+                                    <List>
+                                        <ListItem avatar>
+                                            <Left>
+                                                <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
+                                            </Left>
+                                            <Body>
+                                                <Text style={{ color: 'white' }}>TONY</Text>
+                                            </Body>
+                                            <Right>
+                                                <Ionicons name='ios-log-out' style={{ fontSize: 30, color: 'white', fontWeight: 'bold' }} onPress={() => this.props.logOut}/>
+                                            </Right>
+                                        </ListItem>
+                                    </List>
+                                </ImageBackground>
+                                <Button block style={styles.button}>
+                                    <Text style={styles.buttonText}>Thông tin cá nhân</Text>
+                                </Button>
+                                <Button block style={styles.button}>
+                                    <Text style={styles.buttonText}>Đơn hàng của bạn</Text>
+                                </Button>
+                                <Button block style={styles.button}>
+                                    <Text style={styles.buttonText}>Lịch sử mua hàng</Text>
+                                </Button>
+                            </View>
                         ) :
                         (
                             <View>
-                                <Text style={styles.notification}>Bạn phải đăng nhập trước</Text>
-                                <Button bordered primary block style={styles.button} onPress={() => this.props.navigation.navigate('SignIn')}>
-                                    <Text>Đăng nhập</Text>
+                                <ImageBackground style={styles.titleImage} source={{ uri: 'http://thedunes.ca/wp-content/uploads/2014/03/online-shopping-2130x840.jpg' }}>
+                                    <List>
+                                        <ListItem avatar>
+                                            <Left>
+                                                <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
+                                            </Left>
+                                            <Body>
+                                                <Text style={{ color: 'white'}}>Đăng nhập để xem thông tin người dùng</Text>
+                                            </Body>
+                                        </ListItem>
+                                    </List>
+                                </ImageBackground>
+                                <Button style={styles.button} block onPress={() => this.props.navigation.navigate('SignIn')}>
+                                    <Text style={styles.buttonText}>Đăng nhập</Text>
                                 </Button>
-                                <Button bordered primary block style={styles.button} onPress={() => this.props.navigation.navigate('SignUp')}>
-                                    <Text>Đăng ký</Text>
+                                <Button style={styles.button} block onPress={() => this.props.navigation.navigate('SignUp')}>
+                                    <Text style={styles.buttonText}>Đăng ký</Text>
                                 </Button>
                             </View>
                         )
@@ -48,12 +73,18 @@ export default class User extends Component {
 const styles = StyleSheet.create({
 
     button: {
-        margin: 10
+        margin: 5,
+        backgroundColor: '#CFD0D0',
+    },
+
+    buttonText: {
+        color: 'black'
     },
 
     titleImage: {
         width: '100%',
-        height: 100
+        paddingTop: 100,
+        paddingBottom: 10
     },
 
     notification: {
@@ -62,3 +93,24 @@ const styles = StyleSheet.create({
     }
 
 })
+
+const mapStateToProps = state => {
+    return {
+        isLoggedIn: state.user.isLoggedIn
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        logOut: () => {
+            dispatch(getAction(USER_LOG_OUT))
+        }
+    }
+}
+
+const UserContainer = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(User)
+
+export default UserContainer

@@ -3,13 +3,14 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux'
 import Loading from './components/loading'
 import appReducer from './reducers'
-import middleware from './middlewares'
+import reactNavigationMiddleware from './middlewares/react-navigation-middleware'
 import AppNavigation from './navigation'
+import thunk from 'redux-thunk'
 
 
 const store = createStore(
   appReducer,
-  applyMiddleware(middleware)
+  applyMiddleware(reactNavigationMiddleware, thunk)
 );
 
 export default class App extends React.Component {
@@ -27,12 +28,11 @@ export default class App extends React.Component {
   }
 
   render() {
-    return this.state.appLoaded ?
-      (
-        <Provider store={store}>
-          <AppNavigation />
-        </Provider>
-      ) : (<Loading />);
+    return (
+      <Provider store={store}>
+        {this.state.appLoaded ? <AppNavigation /> : <Loading />}
+      </Provider>
+    )
 
   }
 }

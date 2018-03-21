@@ -2,7 +2,7 @@ import { TabNavigator, TabBarBottom, StackNavigator, SwitchNavigator } from "rea
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import React from 'react';
 import Home from "../components/home";
-import User from "../containers/user";
+import User from "../components/user";
 import { StyleSheet } from 'react-native'
 import SignIn from "../components/sign-in";
 import SignUp from "../components/sign-up";

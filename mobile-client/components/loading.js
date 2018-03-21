@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
+import { checkUserSession } from '../actions'
+import { connect } from 'react-redux'
 
-export default class Loading extends Component {
+class Loading extends Component {
+
+    constructor(props) {
+        super(props)
+        this.props.checkingUserState()
+    }
+
     render() {
         return (
             <View style={styles.background}>
@@ -26,3 +34,21 @@ const styles = StyleSheet.create({
         height: '100%'
     }
 });
+
+const mapStateToProps = state => {
+    return {
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        checkingUserState: () => dispatch(checkUserSession())
+    }
+}
+
+const LoadingContainer = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Loading)
+
+export default LoadingContainer

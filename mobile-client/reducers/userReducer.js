@@ -1,20 +1,24 @@
-import { actionType } from '../actions/userActions'
+import { USER_LOG_IN, USER_LOG_OUT } from '../actions'
+import { AsyncStorage } from 'react-native'
 
 const initialState = {
-    isLoggedIn: false,
-    msg: null
+    isLoggedIn: false
 }
 
 const userReducer = (state = initialState, action) => {
-    const nextState = null
-
+    let nextState = null
     switch (action.type) {
 
-        case actionType.USER_AUTHENTICATING:
+        case USER_LOG_IN:
+            nextState = { ...state, isLoggedIn: true }
+            const token = action.token
+            if (token) {
+                AsyncStorage.setItem('@User:token', token, error => console.log(error))
+            }
             break
-        case actionType.USER_FINISH_AUTHENTICATING:
-            break
-        case actionType.USER_LOG_OUT:
+        case USER_LOG_OUT:
+            nextState = { ...state, isLoggedIn: false }
+            AsyncStorage.removeItem('@User:token', error => console.log(error))
             break
 
     }

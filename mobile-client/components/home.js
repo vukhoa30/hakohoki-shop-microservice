@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux'
 import { Image } from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text, Card, CardItem, Content, Separator, List, ListItem, Body } from 'native-base';
-export default class Home extends Component {
+class Home extends Component {
+    
     render() {
         var items = ['Simon Mignolet', 'Nathaniel Clyne', 'Dejan Lovren', 'Mama Sakho', 'Emre Can'];
         return (
@@ -68,3 +70,20 @@ export default class Home extends Component {
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+    }
+}
+
+const HomeContainer = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Home)
+
+export default HomeContainer
