@@ -40,5 +40,14 @@
         "type": "postgres",
         "address": "postgres://mxxsdeqt:RrIDhy6eZDGD2sEjQcysLp2g4LE9GGuS@stampy.db.elephantsql.com:5432/mxxsdeqt"
       }
+    },
+    "PROMOTION_SERVICE": {
+      "address": {
+        "local": "http://localhost:7004"
+      },
+      "database": {
+        "type": "postgres",
+        "address": "postgres://fahhissl:huXtp67qlCepa_DeaAAwKVV4GHdH8XU2@baasu.db.elephantsql.com:5432/fahhissl"
+      }
     }
 }
