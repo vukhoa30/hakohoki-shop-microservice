@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Field, reduxForm, SubmissionError } from 'redux-form';
+import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
 import { Container, Header, Content, Form, Item, Input, Label, Button, Text, Thumbnail, Icon, Left } from 'native-base';
 import { StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
@@ -74,6 +74,9 @@ class SignUp extends Component {
                     break
                 case "INTERNAL_SERVER_ERROR":
                     msg = 'Lỗi server. Vui lòng thử lại sau!'
+                    break
+                case 'CONNECTION_ERROR':
+                    msg = 'Không thể kết nối đến server'
                     break
                 default:
                     this.props.setLoggedIn(result.data.token)

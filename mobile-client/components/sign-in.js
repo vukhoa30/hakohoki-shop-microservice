@@ -82,6 +82,9 @@ class SignIn extends Component {
                 case "INTERNAL_SERVER_ERROR":
                     msg = 'Lỗi server. Vui lòng thử lại sau!'
                     break
+                case 'CONNECTION_ERROR':
+                    msg = 'Không thể kết nối đến server'
+                    break
                 default:
                     AsyncStorage.setItem('@User:token', result.data.token)
                     this.props.setLoggedIn(result.data.token)

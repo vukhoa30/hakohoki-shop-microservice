@@ -11,7 +11,6 @@ class AuthorizationForm extends Component {
     constructor(props) {
         super(props);
         this.renderInput = this.renderInput.bind(this)
-        console.log(this.props.initialValues)
     }
 
     componentDidUpdate() {
@@ -28,7 +27,7 @@ class AuthorizationForm extends Component {
         }
         return (<Item error={hasError} floatingLabel>
             <Label>{label}</Label>
-            <Input {...input} style={styles.whiteText} disabled={disabled}/>
+            <Input {...input} style={styles.whiteText} disabled={disabled} />
         </Item>)
     }
 
@@ -70,6 +69,9 @@ class AuthorizationForm extends Component {
                     break
                 case "INTERNAL_SERVER_ERROR":
                     msg = 'Lỗi server. Vui lòng thử lại sau!'
+                    break
+                case 'CONNECTION_ERROR':
+                    msg = 'Không thể kết nối đến server'
                     break
                 default:
                     return resolve()
