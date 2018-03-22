@@ -27,7 +27,7 @@ async function authenticate(email, password) {
                 return getResult('UNDEFINED_ERROR')
         }
     } catch (error) {
-        return handleError(error)
+        return getResult(error)
     }
 
 }
@@ -47,7 +47,7 @@ async function enroll(email, password) {
                 return getResult('UNDEFINED_ERROR')
         }
     } catch (error) {
-        return handleError(error)
+        return getResult(error)
     }
 
 }
@@ -67,7 +67,7 @@ async function authorize(email, authCode) {
                 return getResult('UNDEFINED_ERROR')
         }
     } catch (error) {
-        return handleError(error)
+        return getResult(error)
     }
 
 }
@@ -75,5 +75,6 @@ async function authorize(email, authCode) {
 
 module.exports = {
     authenticate,
-    enroll
+    enroll,
+    authorize
 }

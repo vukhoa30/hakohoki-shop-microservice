@@ -15,10 +15,10 @@ function request(url, method, data) {
                 return new Promise((resolve, reject) => {
                     res.json()
                         .then(data => resolve({ status, data }))
-                        .catch(error => reject({ msg: 'UNDEFINED_ERROR' }))
+                        .catch(error => reject('UNDEFINED_ERROR'))
                 })
             })
-            .catch(error => reject({ msg: 'CONNECTION_ERROR' }))
+            .catch(error => reject('CONNECTION_ERROR' ))
             .then(data => {
 
                 resolve(data)
