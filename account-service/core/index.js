@@ -1,6 +1,6 @@
 var db = require('../database')
 var helper = require('../helper')
-var messageBroker = require('../connection/message-broker')
+//var messageBroker = require('../connection/message-broker')
 
 exports.createNewAccount = function (email, password) {
 
@@ -11,7 +11,7 @@ exports.createNewAccount = function (email, password) {
             await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_AUTHORIZED" })
             const authCode = helper.getRandomCode()
             await db.create('authorization', { email: email, code: authCode })
-            messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
+            //messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
             resolve(true)
         } catch (error) {
             console.log(error)
