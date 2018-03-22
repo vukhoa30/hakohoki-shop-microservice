@@ -29,18 +29,16 @@ module.exports = {
         aid: 'a.id',
         bpromotion_id: 'b.promotion_id',
         bproductid_id: 'b.product_id',
-        astart: 'a.start',
-        aend: 'a.end',
+        astart: 'a.start_at',
+        aend: 'a.end_at',
         aname: 'a.name',
         bnew_price: 'b.new_price'
       })
-      .whereRaw('?? = ?? and ?? >= ?? and ?? <= ??', [
-        'a.id', 'b.promotion_id',
-        new Date(), 'a.start',
-        new Date(), 'a.end'
+      .whereRaw('?? = ?? and CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??', [
+        'a.id', 'b.promotion_id', 'a.start_at', 'a.end_at'
       ])
       .then(rows => {
-        if (rows.length === 0) { reject({ msg: 'No currently promotion.' }); }
+        if (rows.length === 0) { resolve({ msg: 'No currently promotion.' }); }
         else { resolve({
           start: rows[0].astart,
           end: rows[0].aend,

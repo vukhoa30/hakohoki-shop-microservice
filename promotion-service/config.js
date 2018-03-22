@@ -21,5 +21,6 @@ module.exports = {
       }
     }
   },
-  messageBrokerAddress: "http://localhost:8000"
+  messageBrokerAddress: "http://localhost:8000",
+  redisPort: process.env.REDIS_PORT || 6379
 }

@@ -14,22 +14,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use(morgan('combined'));
 
-/*var a = new Promise((res, rej) => {
-  if (true) res(5);
-  else rej(10);
-})
-var b = new Promise((res, rej) => {
-  if (false) res(3);
-  else rej(7);
-})
-
-a
-.then(rslt => b)
-.then(rslt => console.log(rslt))
-.catch(e => console.log(e));*/
-
 //REST API ------------------------------------------------------------------
-app.get('/', core.getCurrentPromotion)
+app.get('/', core.cacheCurrentPromotion, core.getCurrentPromotion)
 
 app.post('/price', core.getNewPrices)
 app.post('/', core.createPromotion)
