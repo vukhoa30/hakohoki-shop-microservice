@@ -1,8 +1,7 @@
 import { USER_LOG_IN, USER_LOG_OUT } from '../actions'
-import { AsyncStorage } from 'react-native'
-
 const initialState = {
-    isLoggedIn: false
+    isLoggedIn: false,
+    token: null
 }
 
 const userReducer = (state = initialState, action) => {
@@ -10,15 +9,10 @@ const userReducer = (state = initialState, action) => {
     switch (action.type) {
 
         case USER_LOG_IN:
-            nextState = { ...state, isLoggedIn: true }
-            const token = action.token
-            if (token) {
-                AsyncStorage.setItem('@User:token', token, error => console.log(error))
-            }
+            nextState = { ...state, isLoggedIn: true, token: action.token }
             break
         case USER_LOG_OUT:
-            nextState = { ...state, isLoggedIn: false }
-            AsyncStorage.removeItem('@User:token', error => console.log(error))
+            nextState = { ...state, isLoggedIn: false, token: null }
             break
 
     }

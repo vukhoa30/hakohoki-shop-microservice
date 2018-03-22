@@ -3,33 +3,32 @@ import { Field, reduxForm, SubmissionError } from 'redux-form';
 import { Container, Header, Content, Form, Item, Input, Label, Button, Text, Thumbnail, Icon, Left } from 'native-base';
 import { StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
-import { USER_LOG_IN, SAVE_EMAIL_TO_CACHE, getAction } from '../actions'
-import { enroll } from '../api'
+import { authorize } from '../api'
 
 
-class SignUp extends Component {
+class AuthorizationForm extends Component {
 
     constructor(props) {
         super(props);
         this.renderInput = this.renderInput.bind(this)
+        console.log(this.props.initialValues)
     }
 
     componentDidUpdate() {
         if (this.props.submitSucceeded) {
-            this.props.saveEmail(this.props.currentEmail)
             this.props.reset()
-            this.props.navigation.navigate('AuthorizationForm')
+            this.props.navigation.navigate('SignIn')
         }
     }
 
-    renderInput({ input, label, type, meta: { touched, error, warning } }) {
+    renderInput({ input, label, disabled, type, meta: { touched, error, warning } }) {
         let hasError = false;
         if (error !== undefined) {
             hasError = true;
         }
         return (<Item error={hasError} floatingLabel>
             <Label>{label}</Label>
-            <Input secureTextEntry={type === 'password'}  {...input} style={styles.whiteText} />
+            <Input {...input} style={styles.whiteText} disabled={disabled}/>
         </Item>)
     }
 
@@ -41,33 +40,30 @@ class SignUp extends Component {
                         <Icon name='arrow-back' />
                     </Button>
                     <Thumbnail square style={styles.titleImage} source={{ uri: 'http://pettigrewspecialty.com/wp-content/uploads/2016/08/ShopOnline.png' }} />
-                    <Form style={{ width: '90%', alignSelf: 'center', marginTop: 20 }}>
+                    <Form style={{ width: '90%', alignSelf: 'center', marginTop: 50 }}>
                         <Text transparent={!this.props.error} style={{ color: 'red', alignSelf: 'center' }}>{this.props.error}</Text>
-                        <Field name="email" label="Email" component={this.renderInput} />
-                        <Field name="password" label="Mật khẩu" type="password" component={this.renderInput} />
-                        <Field name="retypePassword" label="Nhập lại mật khẩu" type="password" component={this.renderInput} />
-                        <Button block success style={{ marginTop: 30 }} onPress={this.props.handleSubmit(this.enroll.bind(this))} disabled={(!this.props.error && this.props.invalid) || this.props.submitting} >
-                            <Text>Đăng ký {this.props.submitting ? '....' : ''}</Text>
+                        <Field name="email" label="Email" disabled={true} component={this.renderInput} />
+                        <Field name="authCode" label="Mã xác thực" component={this.renderInput} />
+                        <Button block success style={{ marginTop: 30 }} onPress={this.props.handleSubmit(this.authenticate.bind(this))} disabled={(!this.props.error && this.props.invalid) || this.props.submitting} >
+                            <Text>Xác thực {this.props.submitting ? '....' : ''}</Text>
                         </Button>
                     </Form>
-                    <Text style={{ color: 'green', marginTop: 10, alignSelf: 'center' }} onPress={() => this.props.navigation.navigate('SignIn')}>Đã có tài khoản? Đăng nhập!</Text>
                 </Content>
             </Container>
         );
     }
 
-    enroll(values) {
+    authenticate(values) {
         return new Promise(async (resolve, reject) => {
 
-            const { email, password } = values
-            const result = await enroll(email, password)
-
+            const { email, authCode } = values
+            const result = await authorize(email, authCode)
             let msg = null
 
             switch (result.code) {
 
-                case "ACCOUNT_EXISTED":
-                    msg = 'Email đã được đăng ký'
+                case "AUTHORIZATION_CODE_NOT_MATCH":
+                    msg = 'Mã xác thực không hợp lệ'
                     break
                 case "UNDEFINED_ERROR":
                     msg = 'Lỗi không thể xác định'
@@ -76,11 +72,11 @@ class SignUp extends Component {
                     msg = 'Lỗi server. Vui lòng thử lại sau!'
                     break
                 default:
-                    this.props.setLoggedIn(result.data.token)
                     return resolve()
             }
 
             reject(new SubmissionError({ _error: msg }))
+
         })
 
     }
@@ -102,29 +98,24 @@ const styles = StyleSheet.create({
 
 })
 
-function validateEmail(email) {
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-}
 
 const mapStateToProps = state => {
     return {
         initialValues: {
             email: state.cache.email
         },
-        currentEmail: formValueSelector('enroll_form')(state, 'email')
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        saveEmail: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, { email }))
     }
 }
 
-const SignUpReduxForm = reduxForm({
-    form: 'enroll_form',
+const AuthorizationReduxForm = reduxForm({
+    form: 'authorization_form',
     touchOnBlur: false,
+    enableReinitialize: true,
     validate: values => {
         const errors = {}
 
@@ -132,26 +123,14 @@ const SignUpReduxForm = reduxForm({
             errors.email = 'Email is required'
         }
 
-        if (!values.password) {
-            errors.password = 'Password is required.'
-        }
-
-        if (!values.retypePassword) {
-            errors.retypePassword = 'Retype password is required.'
-        }
-
-        if (values.email && !validateEmail(values.email)) {
-            errors.email = 'Invalid email'
-        }
-
-        if (values.password && values.retypePassword && (values.password !== values.retypePassword)) {
-            errors.retypePassword = 'Retype password not match'
+        if (!values.authCode) {
+            errors.authCode = 'Authorization code is required.'
         }
 
         return errors
     },
     onSubmitFail: () => { }
 
-})(SignUp)
+})(AuthorizationForm)
 
-export default connect(mapStateToProps,mapDispatchToProps)(SignUpReduxForm)
+export default connect(mapStateToProps, mapDispatchToProps)(AuthorizationReduxForm)

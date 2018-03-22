@@ -25,11 +25,14 @@ class User extends Component {
                                                 <Text style={{ color: 'white' }}>TONY</Text>
                                             </Body>
                                             <Right>
-                                                <Ionicons name='ios-log-out' style={{ fontSize: 30, color: 'white', fontWeight: 'bold' }} onPress={() => this.props.logOut}/>
+                                                <Ionicons name='ios-log-out' style={{ fontSize: 30, color: 'red', fontWeight: 'bold' }} onPress={() => this.props.logOut()}/>
                                             </Right>
                                         </ListItem>
                                     </List>
                                 </ImageBackground>
+                                <Button block success style={{ margin: 5 }}>
+                                    <Text>Đổi mật khẩu</Text>
+                                </Button>
                                 <Button block style={styles.button}>
                                     <Text style={styles.buttonText}>Thông tin cá nhân</Text>
                                 </Button>

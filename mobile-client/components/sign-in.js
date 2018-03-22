@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Field, reduxForm, SubmissionError } from 'redux-form';
+import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
 import { Container, Header, Content, Form, Item, Input, Label, Button, Text, Thumbnail, Icon, Left } from 'native-base';
-import { StyleSheet } from 'react-native'
+import { StyleSheet, AsyncStorage } from 'react-native'
 import { connect } from 'react-redux'
-import { USER_LOG_IN, getAction } from '../actions'
+import { USER_LOG_IN, SAVE_EMAIL_TO_CACHE, getAction } from '../actions'
 import { authenticate } from '../api'
 
 
@@ -16,7 +16,12 @@ class SignIn extends Component {
 
     componentDidUpdate() {
         if (this.props.submitSucceeded) {
+            this.props.reset()
             this.props.navigation.navigate('User')
+        } else if (this.props.submitFailed && this.props.error === 'ACCOUNT_NOT_AUTHORIZED') {
+            this.props.saveEmail(this.props.currentEmail)
+            this.props.reset()
+            this.props.navigation.navigate('AuthorizationForm')
         }
     }
 
@@ -47,6 +52,7 @@ class SignIn extends Component {
                             <Text>Đăng nhập {this.props.submitting ? '....' : ''}</Text>
                         </Button>
                     </Form>
+                    <Text style={{ color: 'green', marginTop: 10, alignSelf: 'center' }} onPress={() => this.props.navigation.navigate('SignUp')}>Chưa có tài khoản? Đăng ký ngay!</Text>
                 </Content>
             </Container>
         );
@@ -57,14 +63,33 @@ class SignIn extends Component {
 
             const { email, password } = values
             const result = await authenticate(email, password)
+            let msg = null
 
-            if (result.token) {
-                this.props.setLoggedIn(result.token)
-                resolve()
+            switch (result.code) {
+
+                case "ACCOUNT_NOT_FOUND":
+                    msg = 'Email chưa được đăng ký'
+                    break
+                case "PASSWORD_WRONG":
+                    msg = 'Mật khẩu sai'
+                    break
+                case "ACCOUNT_NOT_AUTHORIZED":
+                    msg = result.code
+                    break
+                case "UNDEFINED_ERROR":
+                    msg = 'Lỗi không thể xác định'
+                    break
+                case "INTERNAL_SERVER_ERROR":
+                    msg = 'Lỗi server. Vui lòng thử lại sau!'
+                    break
+                default:
+                    AsyncStorage.setItem('@User:token', result.data.token)
+                    this.props.setLoggedIn(result.data.token)
+                    return resolve()
             }
-            else {
-                reject(new SubmissionError({ _error: result.msg }))
-            }
+
+            reject(new SubmissionError({ _error: msg }))
+
         })
 
     }
@@ -93,21 +118,24 @@ function validateEmail(email) {
 
 const mapStateToProps = state => {
     return {
-        isLoggedIn: state.user.isLoggedIn
+        initialValues: {
+            email: state.cache.email
+        },
+        currentEmail: formValueSelector('authentication_form')(state, 'email')
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        setLoggedIn: token => {
-            dispatch(getAction(USER_LOG_IN, { token }))
-        }
+        setLoggedIn: token => dispatch(getAction(USER_LOG_IN, { token })),
+        saveEmail: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, { email }))
     }
 }
 
-export default reduxForm({
+const SignInReduxForm = reduxForm({
     form: 'authentication_form',
     touchOnBlur: false,
+    enableReinitialize: true,
     validate: values => {
         const errors = {}
 
@@ -127,4 +155,6 @@ export default reduxForm({
     },
     onSubmitFail: () => { }
 
-})(connect(mapStateToProps, mapDispatchToProps)(SignIn))
+})(SignIn)
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignInReduxForm)

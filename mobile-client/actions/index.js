@@ -3,7 +3,8 @@ import asyncProcess from './async-process'
 const actionType = {
 
     USER_LOG_IN: 'USER_LOG_IN',
-    USER_LOG_OUT: 'USER_LOG_OUT'
+    USER_LOG_OUT: 'USER_LOG_OUT',
+    SAVE_EMAIL_TO_CACHE: 'SAVE_EMAIL_TO_CACHE'
 
 }
 
@@ -15,6 +16,9 @@ function getAction(type, params) {
 
         case actionType.USER_LOG_IN:
             action.token = params.token
+            break
+        case actionType.SAVE_EMAIL_TO_CACHE:
+            action.email = params.email
             break
 
     }

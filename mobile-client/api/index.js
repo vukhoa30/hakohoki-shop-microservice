@@ -1,29 +1,30 @@
-import { request, handleError, unknownError, getNotificationText } from '../utils'
-import { serverHost } from '../config'
+import { request, getResult } from '../utils'
+import { gatewayAddress } from '../config'
 
 function getFullURL(path) {
-    return serverHost + path
+    return gatewayAddress + path
 }
 
 async function authenticate(email, password) {
 
     try {
-        const response = await request(getFullURL('/authentication'), 'POST', { email, password })
-        switch (response.code) {
+        const response = await request(getFullURL('/accounts/authentication'), 'POST', { email, password })
+        switch (response.status) {
             case 200:
-                return { token: response.data.token }
+                return getResult('OK', { token: response.data.token })
             case 404:
                 if (response.data.msg === 'ACCOUNT NOT FOUND')
-                    return getNotificationText('Email chưa được đăng ký')
+                    return getResult('ACCOUNT_NOT_FOUND')
                 else
-                    return unknownError
-                break
+                    return getResult('UNDEFINED_ERROR')
             case 401:
                 if (response.data.msg === 'PASSWORD WRONG')
-                    return getNotificationText('Mật khẩu sai')
-                return getNotificationText('Tài khoản chưa được xác thực')
+                    return getResult('PASSWORD_WRONG')
+                return getResult('ACCOUNT_NOT_AUTHORIZED')
+            case 500:
+                return getResult('INTERNAL_SERVER_ERROR')
             default:
-                return unknownError
+                return getResult('UNDEFINED_ERROR')
         }
     } catch (error) {
         return handleError(error)
@@ -33,7 +34,44 @@ async function authenticate(email, password) {
 
 async function enroll(email, password) {
 
+    try {
+        const response = await request(getFullURL('/accounts'), 'POST', { email, password })
+        switch (response.status) {
+            case 200:
+                return getResult('OK')
+            case 409:
+                return getResult('ACCOUNT_EXISTED')
+            case 500:
+                return getResult('INTERNAL_SERVER_ERROR')
+            default:
+                return getResult('UNDEFINED_ERROR')
+        }
+    } catch (error) {
+        return handleError(error)
+    }
+
 }
+
+async function authorize(email, authCode) {
+
+    try {
+        const response = await request(getFullURL('/accounts/authorization'), 'POST', { email, authCode })
+        switch (response.status) {
+            case 200:
+                return getResult('OK')
+            case 401:
+                return getResult('AUTHORIZATION_CODE_NOT_MATCH')
+            case 500:
+                return getResult('INTERNAL_SERVER_ERROR')
+            default:
+                return getResult('UNDEFINED_ERROR')
+        }
+    } catch (error) {
+        return handleError(error)
+    }
+
+}
+
 
 module.exports = {
     authenticate,

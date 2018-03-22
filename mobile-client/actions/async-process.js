@@ -8,7 +8,7 @@ function checkUserSession() {
         try {
             const token = await AsyncStorage.getItem('@User:token');
             if (token !== null) {
-                dispatch(getAction(USER_LOG_IN))
+                dispatch(getAction(USER_LOG_IN), { token })
             }
         } catch (error) {
             // Error retrieving data

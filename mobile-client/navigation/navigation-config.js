@@ -6,6 +6,7 @@ import User from "../components/user";
 import { StyleSheet } from 'react-native'
 import SignIn from "../components/sign-in";
 import SignUp from "../components/sign-up";
+import AuthorizationForm from "../components/authorization-form.js";
 
 const accountNavigator = SwitchNavigator({
 
@@ -14,6 +15,9 @@ const accountNavigator = SwitchNavigator({
     },
     SignUp: {
         screen: SignUp
+    },
+    AuthorizationForm: {
+        screen: AuthorizationForm
     }
 
 })

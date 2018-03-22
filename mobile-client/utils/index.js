@@ -1,5 +1,5 @@
 function request(url, method, data) {
-    
+
     return new Promise((resolve, reject) => {
 
         fetch(url, {
@@ -11,10 +11,10 @@ function request(url, method, data) {
             body: JSON.stringify(data)
         })
             .then(res => {
-                const code = res.status
+                const status = res.status
                 return new Promise((resolve, reject) => {
                     res.json()
-                        .then(data => resolve({ code, data }))
+                        .then(data => resolve({ status, data }))
                         .catch(error => reject({ msg: 'UNDEFINED_ERROR' }))
                 })
             })
@@ -29,23 +29,13 @@ function request(url, method, data) {
 
 }
 
-function handleError(error) {
+function getResult(code, data) {
 
-    if (error.msg === 'CONNECTION_ERROR')
-        return { msg: 'Lỗi kết nối' }
-    return unknownError
+    return { code, data }
 
-}
-
-const unknownError = { msg: 'Lỗi không xác định' }
-
-function getNotificationText(msg) {
-    return { msg }
 }
 
 module.exports = {
     request,
-    handleError,
-    unknownError,
-    getNotificationText
+    getResult
 }
