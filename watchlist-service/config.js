@@ -3,9 +3,9 @@ module.exports = {
     client: 'pg', //postgres
     connection: {
       host: 'stampy.db.elephantsql.com',
-      user: 'mxxsdeqt',
-      password: 'RrIDhy6eZDGD2sEjQcysLp2g4LE9GGuS',
-      database: 'mxxsdeqt'
+      user: 'qipvtuhp',
+      password: '-_0cbDVcfQQ4nLMFVXBCymjxhEa7Mz3J',
+      database: 'qipvtuhp'
     },
     pool: {
       afterCreate: function (conn, done) {
@@ -21,7 +21,5 @@ module.exports = {
       }
     }
   },
-  secretjwt: 'sensitivecontentpleasedontreadthxbye',
-  messageBrokerAddress: "http://localhost:8000",
-  tokenDuration: 60*60000, //60 minutes
+  messageBrokerAddress: "http://localhost:8000"
 }

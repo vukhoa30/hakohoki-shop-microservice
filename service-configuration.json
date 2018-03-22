@@ -49,5 +49,41 @@
         "type": "postgres",
         "address": "postgres://fahhissl:huXtp67qlCepa_DeaAAwKVV4GHdH8XU2@baasu.db.elephantsql.com:5432/fahhissl"
       }
+    },
+    "WATCHLIST_SERVICE": {
+      "address": {
+        "local": "http://localhost:7005"
+      },
+      "database": {
+        "type": "postgres",
+        "address": "postgres://qipvtuhp:-_0cbDVcfQQ4nLMFVXBCymjxhEa7Mz3J@stampy.db.elephantsql.com:5432/qipvtuhp"
+      }
+    },
+    "NOTIFICATION_SERVICE": {
+      "address": {
+        "local": "http://localhost:7006"
+      },
+      "database": {
+        "type": "mongodb",
+        "address": "mongodb://frank:frankiestein@ds121089.mlab.com:21089/notification-service"
+      }
+    },
+    "COMMENT_SERVICE": {
+      "address": {
+        "local": "http://localhost:7007"
+      },
+      "database": {
+        "type": "mongodb",
+        "address": "mongodb://emanresu:drowssap@ds121189.mlab.com:21189/comment-service"
+      }
+    },
+    "BILL_SERVICE": {
+      "address": {
+        "local": "http://localhost:7008"
+      },
+      "database": {
+        "type": "mongodb",
+        "address": "mongodb://rebel:hidden@ds121599.mlab.com:21599/bill-service"
+      }
     }
 }

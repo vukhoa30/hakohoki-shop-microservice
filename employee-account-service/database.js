@@ -37,7 +37,11 @@ module.exports = {
       .where({ email })
       .then(rows => {
         if (rows.length > 0 && helper.comparePassword(password, rows[0].hashed_password)) {
-          resolve(rows[0]);
+          if (rows[0].active) {
+            resolve(rows[0]);
+          } else {
+            reject({ msg: 'Account deactivated.' })
+          }
         }
         else {
           reject({ msg: 'Login failed!' })

@@ -5,3 +5,7 @@ email-service/node_modules
 product-service/node_modules
 employee-account-service/node_modules
 promotion-service/node_modules
+watchlist-service/node_modules
+comment-service/node_modules
+bill-service/node_modules
+notification-service/node_modules

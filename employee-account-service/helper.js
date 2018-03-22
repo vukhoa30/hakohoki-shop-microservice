@@ -1,6 +1,7 @@
 var bcrypt = require('bcrypt')
 var jwt = require('jsonwebtoken')
 var jwtkey = require('./config').secretjwt
+var tokenDuration = require('./config').tokenDuration
 
 module.exports = {
   comparePassword: (raw, hashed) => {
@@ -19,5 +20,8 @@ module.exports = {
         else { resolve(decode) }
       })
     })
+  },
+  generateExpireTime: () => {
+    return new Date(Date.now().getTime() + tokenDuration)
   }
 }

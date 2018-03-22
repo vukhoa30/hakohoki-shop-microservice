@@ -36,7 +36,8 @@ module.exports = {
       res.json({
         token: helper.signjwt({
           email: account.email,
-          role: account.role
+          role: account.role,
+          expireTime: helper.generateExpireTime()
         }),
         account: {
           email: account.email,
@@ -60,8 +61,9 @@ module.exports = {
   authenticate: (req, res) => {
     helper.verifyjwt(req.body.token)
     .then(decode => {
-      if (decode.email && decode.email === req.body.email) {
-        res.json({ ok: true })
+      if (decode.email && decode.email === req.body.email && 
+        Date.now() < decode.expireTime) {
+        res.json({ ok: true, decodeToken })
       } else {
         res.json({ ok: false })
       }
