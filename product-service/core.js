@@ -10,7 +10,7 @@ var typicalResponse = (res, func) => {
 
 var catchError = (res, err) => {
   res.status(500);
-  res.json({ msg: 'INTERNAL SERVER ERROR', err: err });
+  res.json({ ok: false, msg: 'INTERNAL SERVER ERROR', err: err });
 }
 
 module.exports = {
@@ -21,7 +21,7 @@ module.exports = {
     typicalResponse(res, db.GetProduct(req.params.id));
   },
   getProductsByName: (req, res) => {
-    typicalResponse(res, db.GetProducts(req.params.query));
+    typicalResponse(res, db.GetProductsByName(req.params.query));
   },
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));

@@ -14,16 +14,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use(morgan('combined'));
 
-/*var handleRslt = async (req, res, func) => {
-  try {
-    var products = await core.getLatestProducts();
-    res.json(products);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
-  }
-}*/
-
 //REST API ------------------------------------------------------------------
 app.get('/latest', core.getLatestProducts)
 app.get('/info/:id', core.getProduct)
