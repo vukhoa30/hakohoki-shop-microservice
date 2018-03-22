@@ -21,4 +21,4 @@ exports.compareHashValue = function (originVal, hashVal) {
 
 }
 
-exports.getRandomCode = () => randomstring.generate()
+exports.getRandomCode = () => randomstring.generate(5)
