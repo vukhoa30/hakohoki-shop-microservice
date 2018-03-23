@@ -59,7 +59,6 @@ module.exports = (app, db) => {
         },
         onProxyReq: (proxyReq, req, res) => {
           parseToken(proxyReq, req);
-          proxyReq.headers.abc = 'def';
         }
       }))
     }
