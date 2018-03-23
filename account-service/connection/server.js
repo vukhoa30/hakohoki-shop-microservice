@@ -62,12 +62,12 @@ app.post('/authentication', async function (req, res) { //Authenticate account
 
 })
 
-app.post('/authorization', async function (req, res) {
+app.post('/activation', async function (req, res) {
 
-    const email = req.body.email, authCode = req.body.authCode
+    const email = req.body.email, activationCode = req.body.activationCode
     try {
-        const result = await core.authorize(email, authCode)
-        return result ? res.json({ msg: 'OK' }) : res.status(401).json({ msg: 'AUTHORIZATION CODE NOT MATCHED' })
+        const result = await core.activate(email, activationCode)
+        return result ? res.json({ msg: 'OK' }) : res.status(401).json({ msg: 'ACTIVATION CODE NOT MATCHED' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
