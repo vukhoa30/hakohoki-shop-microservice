@@ -22,6 +22,9 @@ module.exports = {
     })
   },
   generateExpireTime: () => {
-    return new Date(Date.now().getTime() + tokenDuration)
+    var d = new Date();
+    d.setTime(d.getTime() + tokenDuration);
+    console.log(d);
+    return new Date(Date.now() + tokenDuration)
   }
 }

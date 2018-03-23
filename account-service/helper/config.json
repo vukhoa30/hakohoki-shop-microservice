@@ -1,5 +1,6 @@
 {
-    "privateKey": "asdfasdfiasjdfh;oiahsdf;asdfh;asdfa;fd",
+    "privateKey": "sensitivecontentpleasedontreadthxbye",
     "messageBrokerAddress": "http://localhost:8000",
-    "dbAddress":"mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service"
+    "dbAddress":"mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service",
+    "tokenDuration": 86400000
 }

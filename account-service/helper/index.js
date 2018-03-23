@@ -2,10 +2,11 @@ var jwt = require('jsonwebtoken')
 var bcrypt = require('bcrypt')
 var config = require('./config.json')
 var randomstring = require('randomstring')
+var tokenDuration = require('./config.json').tokenDuration
 
-exports.getToken = function (email, password) {
+exports.getToken = function (payload) {
 
-    return jwt.sign({ email: email, password: password }, config.privateKey)
+    return jwt.sign(payload, config.privateKey)
 
 }
 
@@ -22,3 +23,10 @@ exports.compareHashValue = function (originVal, hashVal) {
 }
 
 exports.getRandomCode = () => randomstring.generate(5)
+
+exports.generateExpireTime = () => {
+  var d = new Date();
+  d.setTime(d.getTime() + tokenDuration);
+  console.log(d);
+  return new Date(Date.now() + tokenDuration)
+}

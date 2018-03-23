@@ -9,8 +9,45 @@
 */
 
 var proxy = require('http-proxy-middleware');
+var jwtkey = require('../config.js').secretjwt
+var jwt = require('jsonwebtoken')
+
+const parseToken = (proxyReq, req) => {
+  console.log(req.headers);
+  if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+    jwt.verify(req.headers.authorization.split(' ')[1], jwtkey, (err, decode) => {
+        if (err) {
+          proxyReq.account = undefined;
+        }
+        else {
+          proxyReq.account = decode;
+        }
+      }
+    )
+  } else {
+    proxyReq.account = undefined;
+  }
+  console.log(proxyReq.account)
+}
 
 module.exports = (app, db) => {
+
+  /*app.use(function (req, res, next) {
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      jwt.verify(req.headers.authorization.split(' ')[1], jwtkey, (err, decode) => {
+          if (err) 
+            req.account = undefined;
+          else {
+            req.account = decode;
+          }
+        }
+      )
+    } else {
+      req.account = undefined;
+    }
+    console.log(req.account)
+    next();
+  })*/
 
   db.forEach(service => {
     if (service.type === 'api') {
@@ -19,6 +56,10 @@ module.exports = (app, db) => {
         changeOrigin: true,
         pathRewrite: {
           [`^${service.clientUrl}`]: '/'
+        },
+        onProxyReq: (proxyReq, req, res) => {
+          parseToken(proxyReq, req);
+          proxyReq.headers.abc = 'def';
         }
       }))
     }

@@ -23,6 +23,8 @@ app.put('/password', core.changePassword)
 app.put('/reactivate', core.reactiveAccount)
 app.put('/deactivate', core.deactiveAccount)
 
+app.get('/test', (req, res) => { console.log(req.headers.abc); console.log(req.account); res.json(req.account) })
+
 //Running server-------------------------------------------------------------
 server.listen(port, function () {
     console.log('Employee-account service is listening at port %d', port);

@@ -91,7 +91,24 @@ module.exports = {
       }
     })
     .catch(e => catchError(res, e))
-  }
+  },
+  checkReceptionist: (req, res, next) => {
+    if (req.account && req.account.role == 'receptionist') {
+      next()
+    } else {
+      res.status(403);
+      res.json({ msg: 'No receptionist privilege!' });
+    }
+  },
+  checkManager: (req, res, next) => {
+    if (req.account && req.account.role == 'manager') {
+      next()
+    } else {
+      res.status(403);
+      res.json({ msg: 'No manager privilege!' });
+    }
+  },
+
 
   /*
   getProduct: (req, res) => {

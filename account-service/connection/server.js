@@ -19,6 +19,15 @@ app.use(function (req, res, next) {
     next();
 });
 
+var checkLoggedIn = (req, res, next) => {
+  if (req.account && req.account.role == 'customer') {
+    next();
+  } else {
+    res.status(401);
+    res.json({ msg: 'Unauthorized user!' });
+  }
+}
+
 //REST API ------------------------------------------------------------------
 app.get('/', function (req, res) {
     res.json({ msg: 'Welcome to account service' })

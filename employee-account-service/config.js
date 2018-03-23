@@ -23,5 +23,5 @@ module.exports = {
   },
   secretjwt: 'sensitivecontentpleasedontreadthxbye',
   messageBrokerAddress: "http://localhost:8000",
-  tokenDuration: 60*60000, //60 minutes
+  tokenDuration: 24*60*60*1000, //24 hours
 }

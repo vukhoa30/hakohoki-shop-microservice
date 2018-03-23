@@ -29,7 +29,11 @@ exports.authenticate = function (email, password) {
             const result = await db.findOne('accounts', { email: email })
             if (!result) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
             if (result.status === "NOT_AUTHORIZED") return resolve({ code: 401, msg: "ACCOUNT NOT AUTHORIZED" })
-            return helper.compareHashValue(password, result.password) ? resolve({ code: 200, token: helper.getToken(email, password) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
+            return helper.compareHashValue(password, result.password) ? resolve({ code: 200, token: helper.getToken({
+              email, 
+              role: 'customer',
+              expireTime: helper.generateExpireTime()
+            }) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         } catch (error) {
             console.log(error)
             reject()
