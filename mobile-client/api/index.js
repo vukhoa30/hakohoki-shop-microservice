@@ -20,7 +20,7 @@ async function authenticate(email, password) {
             case 401:
                 if (response.data.msg === 'PASSWORD WRONG')
                     return getResult('PASSWORD_WRONG')
-                return getResult('ACCOUNT_NOT_AUTHORIZED')
+                return getResult('ACCOUNT_NOT_ACTIVATED')
             case 500:
                 return getResult('INTERNAL_SERVER_ERROR')
             default:
@@ -52,15 +52,15 @@ async function enroll(email, password) {
 
 }
 
-async function authorize(email, authCode) {
+async function activate(email, activationCode) {
 
     try {
-        const response = await request(getFullURL('/accounts/authorization'), 'POST', { email, authCode })
+        const response = await request(getFullURL('/accounts/activation'), 'POST', { email, activationCode })
         switch (response.status) {
             case 200:
                 return getResult('OK')
             case 401:
-                return getResult('AUTHORIZATION_CODE_NOT_MATCH')
+                return getResult('ACTIVATION_CODE_NOT_MATCH')
             case 500:
                 return getResult('INTERNAL_SERVER_ERROR')
             default:
@@ -76,5 +76,5 @@ async function authorize(email, authCode) {
 module.exports = {
     authenticate,
     enroll,
-    authorize
+    activate
 }

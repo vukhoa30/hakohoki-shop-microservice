@@ -6,21 +6,53 @@ import User from "../components/user";
 import { StyleSheet } from 'react-native'
 import SignIn from "../components/sign-in";
 import SignUp from "../components/sign-up";
-import AuthorizationForm from "../components/authorization-form.js";
+import ActivationForm from "../components/activation-form";
+import { Icon } from 'native-base'
 
-const accountNavigator = SwitchNavigator({
+const accountNavigator = StackNavigator({
 
-    SignIn: {
-        screen: SignIn
+    AuthenticateAndEnroll: {
+
+        screen: TabNavigator({
+
+            SignIn: {
+                screen: SignIn
+            },
+            SignUp: {
+                screen: SignUp
+            }
+
+        }, {
+                navigationOptions: {
+                    headerStyle: {
+                        backgroundColor: 'green',
+                    },
+                }
+            })
+
     },
-    SignUp: {
-        screen: SignUp
-    },
-    AuthorizationForm: {
-        screen: AuthorizationForm
+
+    ActivationForm: {
+        screen: ActivationForm
     }
 
-})
+}, {
+
+        navigationOptions: ({ navigation }) => ({
+            title: 'Đăng nhập & đăng ký',
+            headerStyle: {
+                backgroundColor: '#0B5353',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                fontWeight: 'bold',
+            },
+            headerLeft: (
+                <Icon name="ios-close" style={{ color: 'white', marginLeft: 10 }} onPress={() => navigation.navigate('User')} />
+            ),
+        })
+
+    })
 
 const mainNavigator = TabNavigator(
     {

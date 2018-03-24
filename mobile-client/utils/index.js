@@ -18,7 +18,7 @@ function request(url, method, data) {
                         .catch(error => reject('UNDEFINED_ERROR'))
                 })
             })
-            .catch(error => reject('CONNECTION_ERROR' ))
+            .catch(error => reject('CONNECTION_ERROR'))
             .then(data => {
 
                 resolve(data)
@@ -35,7 +35,13 @@ function getResult(code, data) {
 
 }
 
+function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
 module.exports = {
     request,
-    getResult
+    getResult,
+    validateEmail
 }
