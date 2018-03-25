@@ -9,6 +9,7 @@ class User extends Component {
 
     render() {
         const { isLoggedIn, navigation } = this.props
+        const titleImage = require('../resources/images/title.png')
 
         return (
             <Container style={appStyles.background}>
@@ -18,7 +19,7 @@ class User extends Component {
                             (
                                 <View>
                                     <View style={{ backgroundColor: '#0B5353', paddingVertical: 10 }}>
-                                        <Thumbnail style={{ height: 50, width: 150, marginBottom: 10, alignSelf: 'center' }} source={{ uri: 'https://vignette.wikia.nocookie.net/logopedia/images/e/e7/Shopee-700x217.png/revision/latest?cb=20170128004048' }} />
+                                        <Thumbnail style={{ height: 50, width: 200, marginBottom: 10, alignSelf: 'center', resizeMode: 'stretch' }} source={titleImage} />
                                         <Grid>
                                             <Col size={75}>
                                                 <List>
@@ -33,7 +34,7 @@ class User extends Component {
                                                 </List>
                                             </Col>
                                             <Col size={25}>
-                                                <Icon style={{ marginTop: 10, alignSelf: 'center', color: 'red' }} name='log-out' />
+                                                <Icon style={{ marginTop: 10, alignSelf: 'center', color: 'red' }} name='log-out' onPress={() => this.props.logOut()}/>
                                             </Col>
                                         </Grid>
                                     </View>
@@ -42,17 +43,17 @@ class User extends Component {
                                             <Grid>
                                                 <Col>
                                                     <View style={{ alignSelf: 'center' }}>
-                                                        <Icon name="ios-key" style={styles.iconButton} />
+                                                        <Icon name="ios-key" style={[styles.iconButton, { color: 'green' }]} />
                                                         <Text style={{ alignSelf: 'center', fontSize: 10 }}>Đổi mật khẩu</Text>
-                                                        <Icon name="ios-notifications" style={styles.iconButton} />
+                                                        <Icon name="ios-notifications" style={[styles.iconButton, { color: 'yellow' }]} />
                                                         <Text style={{ alignSelf: 'center', fontSize: 10 }}>Thông báo</Text>
                                                     </View>
                                                 </Col>
                                                 <Col>
                                                     <View style={{ alignSelf: 'center' }}>
-                                                        <Icon name="information-circle" style={styles.iconButton} />
+                                                        <Icon name="information-circle" style={[styles.iconButton, { color: 'blue' }]} />
                                                         <Text style={{ alignSelf: 'center', fontSize: 10 }}>Thông tin cá nhân</Text>
-                                                        <Icon name="ios-cart" style={styles.iconButton} />
+                                                        <Icon name="ios-cart" style={[styles.iconButton, { color: 'orange' }]} />
                                                         <Text style={{ alignSelf: 'center', fontSize: 10 }}>Giỏ hàng</Text>
                                                     </View>
                                                 </Col>
@@ -65,7 +66,7 @@ class User extends Component {
                                                 <Icon name="md-paper" />
                                             </Left>
                                             <Body>
-                                                <Text>Đơn hàng của tôi</Text>
+                                                <Text style={appStyles.mediumText}>Đơn hàng của tôi</Text>
                                             </Body>
                                         </ListItem>
                                         <ListItem icon>
@@ -73,7 +74,7 @@ class User extends Component {
                                                 <Icon name="md-list-box" />
                                             </Left>
                                             <Body>
-                                                <Text>Lịch sử mua hàng</Text>
+                                                <Text style={appStyles.mediumText}>Lịch sử mua hàng</Text>
                                             </Body>
                                         </ListItem>
                                         <ListItem icon>
@@ -81,7 +82,7 @@ class User extends Component {
                                                 <Icon name="ios-paper" />
                                             </Left>
                                             <Body>
-                                                <Text>Danh sách theo dõi</Text>
+                                                <Text style={appStyles.mediumText}>Danh sách theo dõi</Text>
                                             </Body>
                                         </ListItem>
                                     </List>

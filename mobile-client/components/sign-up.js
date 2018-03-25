@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux'
 import { SAVE_EMAIL_TO_CACHE, getAction } from '../actions'
-import { enroll } from '../api'
 import appStyles from '../styles'
 import { Container, Header, Content, Form, Item, Input, Label, Card, Button, Text, Icon, Spinner } from 'native-base';
 import { View, Alert } from 'react-native'
-import { validateEmail } from '../utils'
+import { validateEmail, request } from '../utils'
 
 class SignUp extends Component {
 
@@ -43,7 +42,7 @@ class SignUp extends Component {
         return (
             <Item error={hasError}>
                 <Icon active name={input.name === "email" ? "person" : "unlock"} />
-                <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={appStyles.input}/>
+                <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={appStyles.input} />
             </Item>)
     }
 
@@ -82,26 +81,26 @@ class SignUp extends Component {
 
         return new Promise(async (resolve, reject) => {
 
-            const { email, password } = values
-            const response = await enroll(email, password)
-
             let errMsg = 'Lỗi không thể xác định, vui lòng thử lại sau!'
-            switch (response.code) {
 
-                case 'OK':
-                    return resolve()
-                case 'ACCOUNT_EXISTED':
-                    errMsg = 'Tài khoản đã được đăng ký'
-                    break
-                case 'INTERNAL_SERVER_ERROR':
-                    errMsg = 'Lỗi server, vui lòng thử lại sau'
-                    break
-                case 'CONNECTION_ERROR':
-                    errMsg = 'Không thể kết nối đến server'
-                    break
+            try {
+                const response = await request('/accounts/', 'POST', { email, password })
+                switch (response.status) {
 
+                    case 200:
+                        return resolve()
+                    case 500:
+                        errMsg = 'Lỗi trên server'
+                        break
+                    case 409:
+                        errMsg = 'Tài khoản đã được đăng ký'
+                        break
+
+                }
+            } catch (error) {
+                if (error === 'CONNECTION_ERROR')
+                    errMsg = 'Lỗi kết nối đến server'
             }
-
             reject(new SubmissionError({ _error: errMsg }))
 
         })
@@ -120,7 +119,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        saveEmailToCache: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, { email }))
+        saveEmailToCache: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, email))
     }
 }
 

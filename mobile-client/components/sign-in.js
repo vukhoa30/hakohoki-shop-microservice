@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux'
 import { USER_LOG_IN, SAVE_EMAIL_TO_CACHE, getAction } from '../actions'
-import { authenticate } from '../api'
 import appStyles from '../styles'
 import { Container, Header, Content, Form, Item, Input, Label, Card, Button, Text, Icon, Spinner } from 'native-base';
 import { View, Alert } from 'react-native'
-import { validateEmail } from '../utils'
+import { validateEmail, request } from '../utils'
 
 class SignIn extends Component {
 
@@ -49,9 +48,9 @@ class SignIn extends Component {
             hasError = true;
         }
         return (<
-        Item error={hasError}>
+            Item error={hasError}>
             <Icon active name={input.name === "email" ? "person" : "unlock"} />
-            <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={appStyles.input}/>
+            <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={appStyles.input} />
         </Item>)
     }
 
@@ -61,7 +60,7 @@ class SignIn extends Component {
                 <Content>
                     <Card style={{ paddingBottom: 50, paddingRight: 10 }}>
                         <Form>
-                            <Field name="email" placeholder="Email"  component={this.renderInput} />
+                            <Field name="email" placeholder="Email" component={this.renderInput} />
                             <Field name="password" placeholder="Mật khẩu" type="password" component={this.renderInput} />
                             <Text style={{ alignSelf: 'flex-end', marginTop: 20, marginRight: 10, fontSize: 15, color: 'blue' }}>Quên mật khẩu?</Text>
                         </Form>
@@ -91,32 +90,33 @@ class SignIn extends Component {
         return new Promise(async (resolve, reject) => {
 
             const { email, password } = values
-            const response = await authenticate(email, password)
-
             let errMsg = 'Lỗi không thể xác định, vui lòng thử lại sau!'
-            switch (response.code) {
 
-                case 'OK':
-                    this.props.logIn(response.data.token)
-                    return resolve()
-                case 'ACCOUNT_NOT_FOUND':
-                    errMsg = 'Tài khoản chưa được đăng ký'
-                    break
-                case 'PASSWORD_WRONG':
-                    errMsg = 'Mật khẩu sai'
-                    break
-                case 'ACCOUNT_NOT_ACTIVATED':
-                    errMsg = response.code
-                    break
-                case 'INTERNAL_SERVER_ERROR':
-                    errMsg = 'Lỗi server, vui lòng thử lại sau'
-                    break
-                case 'CONNECTION_ERROR':
-                    errMsg = 'Không thể kết nối đến server'
-                    break
+            try {
+                const response = await request('/accounts/authentication', 'POST', { email, password })
+                switch (response.status) {
 
+                    case 200:
+                        this.props.logIn(response.data.token)
+                        return resolve()
+                    case 500:
+                        errMsg = 'Lỗi trên server'
+                        break
+                    case 401:
+                        if (response.data.msg === 'PASSWORD WRONG')
+                            errMsg = 'Sai mật khẩu'
+                        else
+                            errMsg = 'ACCOUNT_NOT_ACTIVATED'
+                        break
+                    case 404:
+                        errMsg = 'Tài khoản chưa được đăng ký'
+                        break
+
+                }
+            } catch (error) {
+                if (error === 'CONNECTION_ERROR')
+                    errMsg = 'Lỗi kết nối đến server'
             }
-
             reject(new SubmissionError({ _error: errMsg }))
 
         })
@@ -135,8 +135,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        logIn: token => dispatch(getAction(USER_LOG_IN, { token })),
-        saveEmailToCache: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, { email }))
+        logIn: token => dispatch(getAction(USER_LOG_IN, token)),
+        saveEmailToCache: email => dispatch(getAction(SAVE_EMAIL_TO_CACHE, email))
     }
 }
 

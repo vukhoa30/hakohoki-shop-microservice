@@ -68,6 +68,18 @@ const appStyles = StyleSheet.create({
         color: 'white'
     },
 
+    errorText: {
+        color: 'red'
+    },
+
+    smallText: {
+        fontSize: 10
+    },
+
+    mediumText: {
+        fontSize: 13
+    },
+    
     button: {
         borderRadius: 0
     },

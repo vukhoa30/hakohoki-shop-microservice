@@ -3,7 +3,7 @@ import { Field, reduxForm, SubmissionError } from 'redux-form';
 import { Container, Header, Content, Form, Item, Input, Label, Button, Text, Thumbnail, Icon, Left, Card, CardItem, Spinner } from 'native-base';
 import { StyleSheet, Alert } from 'react-native'
 import { connect } from 'react-redux'
-import { activate } from '../api'
+import { request } from '../utils'
 import appStyles from '../styles'
 
 
@@ -42,7 +42,7 @@ class ActivationForm extends Component {
         return (
             <Item error={hasError}>
                 <Icon active name={input.name === "email" ? "person" : "code"} />
-                <Input {...input} placeholder={placeholder} disabled={disabled} style={appStyles.input}/>
+                <Input {...input} placeholder={placeholder} disabled={disabled} style={appStyles.input} />
             </Item>)
     }
 
@@ -69,28 +69,26 @@ class ActivationForm extends Component {
         return new Promise(async (resolve, reject) => {
 
             const { email, activationCode } = values
-            const result = await activate(email, activationCode)
-            let msg = null
+            let errMsg = 'Lỗi không thể xác định, vui lòng thử lại sau!'
+            try {
+                const result = await request('/accounts/activation', 'POST', { email, activationCode })
+                switch (response.status) {
 
-            switch (result.code) {
+                    case 200:
+                        return resolve()
+                    case 500:
+                        errMsg = 'Lỗi trên server'
+                        break
+                    case 401:
+                        errMsg = 'Mã kích hoạt không đúng'
+                        break
 
-                case "ACTIVATION_CODE_NOT_MATCH":
-                    msg = 'Mã kích hoạt không hợp lệ'
-                    break
-                case "UNDEFINED_ERROR":
-                    msg = 'Lỗi không thể xác định'
-                    break
-                case "INTERNAL_SERVER_ERROR":
-                    msg = 'Lỗi server. Vui lòng thử lại sau!'
-                    break
-                case 'CONNECTION_ERROR':
-                    msg = 'Không thể kết nối đến server'
-                    break
-                default:
-                    return resolve()
+                }
+            } catch (error) {
+                if (error === 'CONNECTION_ERROR')
+                    errMsg = 'Lỗi kết nối đến server'
             }
-
-            reject(new SubmissionError({ _error: msg }))
+            reject(new SubmissionError({ _error: errMsg }))
 
         })
 

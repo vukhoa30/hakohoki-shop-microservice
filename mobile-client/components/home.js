@@ -3,12 +3,12 @@ import { connect } from 'react-redux'
 import appStyles from '../styles'
 import {
     StyleSheet,
-    Text,
     View,
     Image
 } from 'react-native';
-import { Thumbnail, Container, Content, Header, DeckSwiper, Card, CardItem, Left, Body, Icon, Input, Button, Item, List, ListItem, Grid, Col } from 'native-base'
+import { Thumbnail, Container, Content, Header, DeckSwiper, Card, CardItem, Left, Body, Icon, Input, Button, Item, List, ListItem, Grid, Col, Spinner, Text } from 'native-base'
 import Swiper from 'react-native-swiper';
+import { loadNewestProducts } from '../actions/async-process'
 
 var styles = StyleSheet.create({
     wrapper: {
@@ -47,7 +47,7 @@ class Home extends Component {
         this.state = {
             width: '99%',
         };
-
+        this.props.loadNewestProducts()
     }
 
     componentWillMount() {
@@ -58,14 +58,55 @@ class Home extends Component {
         }, 500);
     }
 
+    renderNewestProductList() {
+
+        const { state, data } = this.props.newestProducts
+        const { loadNewestProducts } = this.props
+
+        switch (state) {
+
+            case 'LOADING':
+                return (<Spinner style={appStyles.center} />)
+            case 'LOADING_FAILED':
+                return (
+                    <View style={appStyles.center}>
+                        <Text style={[appStyles.center, appStyles.errorText]}>Load dữ liệu thất bại</Text>
+                        <Button style={[appStyles.center, { margin: 10 }]} onPress={() => loadNewestProducts()}>
+                            <Text>Reload</Text>
+                        </Button>
+                    </View>
+                )
+            default:
+                return (
+                    <List dataArray={data}
+                        horizontal={true}
+                        renderRow={(item) =>
+                            <ListItem>
+                                <View style={[appStyles.card, { paddingBottom: 20 }]}>
+                                    <Text style={[appStyles.price,{ alignSelf: 'flex-start' }]}>{item.price ? item.price : '???'} VND</Text>
+                                    <Image source={{ uri: item.mainPicture === '' ? 'https://www.stellarinfo.com/blog/wp-content/uploads/2017/02/error-thinkstock-100655502-primary.idge_.jpg' : item.mainPicture }} style={{ height: 150, width: 150, resizeMode: 'stretch' }} />
+                                    <Text style={appStyles.center}>
+                                        {item.name}
+                                    </Text>
+                                </View>
+                            </ListItem>
+                        }>
+                    </List>
+                )
+
+        }
+
+    }
+
     render() {
 
         const { ads, newestProducts } = this.props
+        const titleImage = require('../resources/images/title.png')
 
         return (
             <Container>
                 <View style={{ backgroundColor: '#0B5353', paddingVertical: 10 }}>
-                    <Thumbnail style={{ height: 50, width: 150, marginBottom: 10, alignSelf: 'center' }} source={{ uri: 'https://vignette.wikia.nocookie.net/logopedia/images/e/e7/Shopee-700x217.png/revision/latest?cb=20170128004048' }} />
+                    <Thumbnail style={{ height: 50, width: 200, marginBottom: 10, alignSelf: 'center', resizeMode: 'stretch' }} source={titleImage} />
                     <Item style={{ width: '90%', alignSelf: 'center', backgroundColor: 'white', paddingHorizontal: 10, height: 35 }}>
                         <Icon active name="search" />
                         <Input placeholder="Search" />
@@ -90,11 +131,11 @@ class Home extends Component {
                         <Grid>
                             <Col>
                                 <Icon name='md-bulb' style={[appStyles.center, appStyles.iconButton, appStyles.iconButtonTheme1, { paddingHorizontal: 11 }]} />
-                                <Text style={appStyles.center}>Hướng dẫn</Text>
+                                <Text style={[appStyles.center, { fontSize: 10 }]}>Hướng dẫn</Text>
                             </Col>
                             <Col>
                                 <Icon name='ios-color-wand' style={[appStyles.center, appStyles.iconButton, appStyles.iconButtonTheme2, { paddingHorizontal: 12 }]} />
-                                <Text style={appStyles.center}>Các đợt khuyến mãi</Text>
+                                <Text style={[appStyles.center, { fontSize: 10 }]}>Các đợt khuyến mãi</Text>
                             </Col>
                         </Grid>
                     </View>
@@ -109,30 +150,9 @@ class Home extends Component {
                             </CardItem>
                             <CardItem>
                                 <Body>
-                                    <List dataArray={newestProducts}
-                                        horizontal={true}
-                                        renderRow={(item) =>
-                                            <ListItem>
-                                                {/* <Card style={{ padding: 0 }}>
-                                                    <CardItem style={{ padding: 0 }}>
-                                                        <Body style={{ padding: 0 }}>
-                                                            <Image source={{ uri: item.mainPicture === '' ? 'http://www.jaaymasn.com/wp-content/uploads/2018/03/iphone-x-kf-device-tab-d-3-retina.png' : item.mainPicture }} style={{ height: 150, width: 150, resizeMode: 'stretch' }} />
-                                                            <Text style={appStyles.center}>
-                                                                {item.name}
-                                                            </Text>
-                                                        </Body>
-                                                    </CardItem>
-                                                </Card> */}
-                                                <View style={[appStyles.card,{ paddingBottom: 20 }]}>
-                                                    <Text style={appStyles.price}>{item.price ? item.price : '???' } VND</Text>
-                                                    <Image source={{ uri: item.mainPicture === '' ? 'http://www.jaaymasn.com/wp-content/uploads/2018/03/iphone-x-kf-device-tab-d-3-retina.png' : item.mainPicture }} style={{ height: 150, width: 150, resizeMode: 'stretch' }} />
-                                                    <Text style={appStyles.center}>
-                                                        {item.name}
-                                                    </Text>
-                                                </View>
-                                            </ListItem>
-                                        }>
-                                    </List>
+                                    {
+                                        this.renderNewestProductList()
+                                    }
                                 </Body>
                             </CardItem>
                         </Card>
@@ -158,34 +178,13 @@ const mapStateToProps = state => {
 
         ],
 
-        newestProducts: [
-            {
-                "additionPicture": [],
-                "addedAt": "2018-03-22T14:11:10.075Z",
-                "_id": "5ab3bc590507400a44611ae6",
-                "mainPicture": "",
-                "category": "Phone",
-                "name": "Xiaomi Redmi 5A",
-                "description": "very noice",
-                "price": 90,
-                "__v": 0
-            },
-            {
-                "additionPicture": [],
-                "addedAt": "2018-03-19T04:32:17.110Z",
-                "_id": "5aaf4f1118f25a2864033e26",
-                "mainPicture": "",
-                "category": "Phone",
-                "name": "HTC U11 Plus",
-                "description": "Good overall, trust me",
-                "__v": 0
-            }
-        ]
+        newestProducts: state.data.newestProducts
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
+        loadNewestProducts: () => dispatch(loadNewestProducts())
     }
 }
 

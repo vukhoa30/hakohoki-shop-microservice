@@ -41,7 +41,7 @@ const accountNavigator = StackNavigator({
         navigationOptions: ({ navigation }) => ({
             title: 'Đăng nhập & đăng ký',
             headerStyle: {
-                backgroundColor: '#0B5353',
+                backgroundColor: '#EA8B26',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
