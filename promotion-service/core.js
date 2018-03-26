@@ -4,7 +4,7 @@ var helper = require('./helper.js')
 var messageBroker = require('./connection/message-broker')
 
 var redisPort = require('./config.js').redisPort
-var client = redis.createClient(redisPort)
+var client = redis.createClient(redisConnection)
 
 const CACHE_CURRENT_PROMOTION = 'currentPromotion'
 

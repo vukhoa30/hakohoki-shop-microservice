@@ -1,21 +1,31 @@
 apps:
-  - script: ./gateway/server.js
+  - name  : 'gateway'
+    script: ./gateway/server.js
     watch : true
-  - script: ./employee-account-service/connection/server.js
+  - name  : 'employee'
+    script: ./employee-account-service/connection/server.js
     watch : true
-  - script: ./account-service/connection/server.js
+  - name  : 'account'
+    script: ./account-service/connection/server.js
     watch : true
-  - script: ./bill-service/connection/server.js
+  - name  : 'bill'
+    script: ./bill-service/connection/server.js
     watch : true
-  - script: ./comment-service/connection/server.js
+  - name  : 'comment'
+    script: ./comment-service/connection/server.js
     watch : true
-  - script: ./email-service/connection/server.js
+  - name  : 'email'
+    script: ./email-service/connection/server.js
     watch : true
-  - script: ./notification-service/connection/server.js
+  - name  : 'notification'
+    script: ./notification-service/connection/server.js
     watch : true
-  - script: ./product-service/connection/server.js
+  - name  : 'product'
+    script: ./product-service/connection/server.js
     watch : true
-  - script: ./promotion-service/connection/server.js
+  - name  : 'promotion'
+    script: ./promotion-service/connection/server.js
     watch : true
-  - script: ./watchlist-service/connection/server.js
+  - name  : 'watchlist'
+    script: ./watchlist-service/connection/server.js
     watch : true

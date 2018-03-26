@@ -22,6 +22,7 @@ module.exports = (mongoose) => {
 
     Specification: mongoose.model('Specification', {
       name: String,
+      key: { type: String, index: { unique: true } },
       categories: [ String ],
       values: Array
     }),
