@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Thumbnail, Container, Content, Header, DeckSwiper, Card, CardItem, Left, Body, Icon, Input, Button, Item, List, ListItem, Grid, Col, Spinner, Text } from 'native-base'
 import Swiper from 'react-native-swiper';
+import AppProductShowcase from '../components/app-product-showcase'
 import { loadNewestProducts } from '../actions/async-process'
 
 var styles = StyleSheet.create({
@@ -82,13 +83,7 @@ class Home extends Component {
                         horizontal={true}
                         renderRow={(item) =>
                             <ListItem>
-                                <View style={[appStyles.card, { paddingBottom: 20 }]}>
-                                    <Text style={[appStyles.price,{ alignSelf: 'flex-start' }]}>{item.price ? item.price : '???'} VND</Text>
-                                    <Image source={{ uri: item.mainPicture === '' ? 'https://www.stellarinfo.com/blog/wp-content/uploads/2017/02/error-thinkstock-100655502-primary.idge_.jpg' : item.mainPicture }} style={{ height: 150, width: 150, resizeMode: 'stretch' }} />
-                                    <Text style={appStyles.center}>
-                                        {item.name}
-                                    </Text>
-                                </View>
+                                <AppProductShowcase item={item} />
                             </ListItem>
                         }>
                     </List>
@@ -135,7 +130,7 @@ class Home extends Component {
                             </Col>
                             <Col>
                                 <Icon name='ios-color-wand' style={[appStyles.center, appStyles.iconButton, appStyles.iconButtonTheme2, { paddingHorizontal: 12 }]} />
-                                <Text style={[appStyles.center, { fontSize: 10 }]}>Các đợt khuyến mãi</Text>
+                                <Text style={[appStyles.center, { fontSize: 10 }]}>Khuyến mãi</Text>
                             </Col>
                         </Grid>
                     </View>

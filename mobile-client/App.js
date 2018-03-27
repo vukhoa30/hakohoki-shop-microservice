@@ -1,12 +1,13 @@
 import React from 'react';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux'
-import Loading from './components/loading'
+import Loading from './screens/loading'
 import appReducer from './reducers'
 import reactNavigationMiddleware from './middlewares/react-navigation-middleware'
 import AppNavigation from './navigation'
 import thunk from 'redux-thunk'
-
+import { Container, Content, Button, Text } from "native-base";
+import { View } from "react-native";
 
 const store = createStore(
   appReducer,
@@ -34,6 +35,5 @@ export default class App extends React.Component {
         {this.state.appLoaded ? <AppNavigation /> : <Loading />}
       </Provider>
     )
-
   }
 }
