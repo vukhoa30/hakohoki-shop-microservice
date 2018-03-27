@@ -9,6 +9,7 @@ var typicalResponse = (res, func) => {
 }
 
 var catchError = (res, err) => {
+  console.log(err)
   res.status(500);
   res.json({ ok: false, msg: 'INTERNAL SERVER ERROR', err: err });
 }
@@ -21,13 +22,13 @@ module.exports = {
     typicalResponse(res, db.GetProduct(req.params.id));
   },
   getProductsByName: (req, res) => {
-    typicalResponse(res, db.GetProductsByName(req.params.query));
+    typicalResponse(res, db.GetProductsByName(req.query));
   },
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));
   },
-  getNumberOfProductsInStock: (req, res) => {
-    typicalResponse(res, db.GetNumberOfProductsInStock(req.params.id));
+  getSpecificProductsInStock: (req, res) => {
+    typicalResponse(res, db.GetSpecificProductsInStock(req.params.id));
   },
   getAllCategories: (req, res) => {
     typicalResponse(res, db.GetAllCategories());
@@ -36,11 +37,11 @@ module.exports = {
     typicalResponse(res, db.GetAllSpecification());
   },
   addNewProduct: (req, res) => {
-    typicalResponse(res, db.AddNewProduct(req.body.product));
+    typicalResponse(res, db.AddNewProduct(req.body));
   },
   addNewSpecificProducts: (req, res) => {
     typicalResponse(res, db.AddNewSpecificProducts(
-      req.body.product,
+      req.body.productId,
       req.body.amount
     ));
   },

@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
+var config = require('./config.js')
 
-var dbAddress = require('./config.js').dbAddress;
+var defaultLimit = config.defaultLimit;
+var dbAddress = config.dbAddress;
 mongoose.connect(dbAddress);
 
 var models =  require('./models')(mongoose);
@@ -11,12 +13,15 @@ var handleCallback = (err, rslt) => {
 }
 
 module.exports = {
-  GetLatestProducts: () => {
+  GetLatestProducts: (limit, offset) => {
+    limit = limit || config.defaultLimit
+    offset = offset || 0
     return new Promise((resolve, reject) => {
       models.Product
       .find()
       .sort({ 'addedAt': -1 })
-      .limit(10)
+      .limit(limit)
+      .skip(offset)
       .exec((err, rslt) => {
         if (err) reject(err);
         else resolve(rslt);
@@ -35,15 +40,26 @@ module.exports = {
       })
     })
   },
-  GetProductsByName: (queryString) => {
+  GetProductsByName: (query) => {
+    query.limit = query.limit || defaultLimit
+    query.offset = query.offset || 0
+    var queryObject = query.q ? {
+      $text: {
+        $search: query.q
+      }
+    } : {}
+    Object.getOwnPropertyNames(query).map(name => {
+      if (name !== 'q' && name !=='limit' && name !== 'offset') {
+        queryObject[`specifications.${name}`] = query[`${name}`]
+      }
+    })
+    console.log(queryObject)
     //https://stackoverflow.com/questions/28775051/best-way-to-perform-a-full-text-search-in-mongodb-and-mongoose
     return new Promise((resolve, reject) => {
       models.Product
-      .find({
-        $text: {
-          $search: queryString
-        }
-      })
+      .find(queryObject)
+      .skip(query.offset)
+      .limit(query.limit)
       .exec((err, rslt) => {
         if (err) reject(err);
         else resolve(rslt);
@@ -66,16 +82,23 @@ module.exports = {
       })
     })
   },
-  GetNumberOfProductsInStock: (id) => {
+  GetSpecificProductsInStock: (id) => {
     return new Promise((resolve, reject) => {
-      models.Product
-      .count({
+      models.SpecificProduct
+      .find({
         productId: id,
         status: 'inStock'
       })
       .exec((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve({
+          productId: id,
+          status: 'instock',
+          specificProducts: rslt.map(item => { return {
+            addedAt: item.addedAt,
+            id: item._id
+          }})
+        });
       })
     })
   },
@@ -84,7 +107,7 @@ module.exports = {
       var newProduct = new models.Product(product);
       newProduct.save((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve({ id: rslt._id });
       })
     })
   },
@@ -93,15 +116,19 @@ module.exports = {
       var specificProducts = [];
       for (var i = 0; i < amount; i++) {
         specificProducts.push({
-          productId: id,
-          addedAt: Date.now(),
-          status: 'inStock'
+          productId: id
         })
       }
-      models.Product
+      models.SpecificProduct
       .insertMany(specificProducts, (err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt.map(item => item._id));
+        else resolve({
+          productId: id,
+          specificProducts: rslt.map(item => { return {
+            id: item._id,
+            status: item.status
+          }})
+        });
       })
     })
   },
@@ -204,7 +231,7 @@ module.exports = {
       models.Category
       .find({}, (err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve(rslt.map(item => item.name));
       })
     })
   }

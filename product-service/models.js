@@ -31,7 +31,7 @@ module.exports = (mongoose) => {
 
     SpecificProduct: mongoose.model('SpecificProduct', {
       productId: mongoose.Schema.ObjectId,
-      addedAt: { type: Date, default: Date.now() },
-      status: String
+      addedAt: { type: Date, default: new Date() },
+      status: { type: String, default: 'inStock' }
     }, 'products.specific')
 }}
