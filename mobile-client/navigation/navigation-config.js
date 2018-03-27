@@ -1,12 +1,12 @@
 import { TabNavigator, TabBarBottom, StackNavigator, SwitchNavigator } from "react-navigation";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import React from 'react';
-import Home from "../components/home";
-import User from "../components/user";
+import Home from "../screens/home";
+import User from "../screens/user";
 import { StyleSheet } from 'react-native'
-import SignIn from "../components/sign-in";
-import SignUp from "../components/sign-up";
-import ActivationForm from "../components/activation-form";
+import SignIn from "../screens/sign-in";
+import SignUp from "../screens/sign-up";
+import ActivationForm from "../screens/activation-form";
 import { Icon } from 'native-base'
 
 const accountNavigator = StackNavigator({

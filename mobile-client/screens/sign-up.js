@@ -81,6 +81,7 @@ class SignUp extends Component {
 
         return new Promise(async (resolve, reject) => {
 
+            const { email, password } = values
             let errMsg = 'Lỗi không thể xác định, vui lòng thử lại sau!'
 
             try {
