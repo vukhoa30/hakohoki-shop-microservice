@@ -48,8 +48,11 @@ module.exports = {
         $search: query.q
       }
     } : {}
+    if (query.category) {
+      queryObject.category = query.category
+    }
     Object.getOwnPropertyNames(query).map(name => {
-      if (name !== 'q' && name !=='limit' && name !== 'offset') {
+      if (name !== 'q' && name !=='limit' && name !== 'offset' && name !== 'category') {
         queryObject[`specifications.${name}`] = query[`${name}`]
       }
     })
