@@ -2,20 +2,21 @@ var db = require('../database')
 var helper = require('../helper')
 //var messageBroker = require('../connection/message-broker')
 
-exports.createNewAccount = function (email, password) {
+exports.createNewAccount = function (email, password, fullName) {
 
     return new Promise(async (resolve, reject) => {
 
         try {
             if (await db.checkIfExisted('accounts', { email: email })) return resolve(false)
-            await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_ACTIVATED" })
+            await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_ACTIVATED", fullName })
             const activationCode = helper.getRandomCode()
+            console.log(activationCode)
             await db.create('activation', { email: email, code: activationCode })
             //messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
             resolve(true)
         } catch (error) {
             console.log(error)
-            reject()
+            reject(error)
         }
 
     })
@@ -36,7 +37,7 @@ exports.authenticate = function (email, password) {
             }) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         } catch (error) {
             console.log(error)
-            reject()
+            reject(error)
         }
 
     })
@@ -54,7 +55,7 @@ exports.activate = function (email, activationCode) {
             resolve(true)
         } catch (error) {
             console.log(error)
-            reject()
+            reject(error)
         }
 
     })

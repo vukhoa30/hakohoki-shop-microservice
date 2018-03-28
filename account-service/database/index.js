@@ -41,7 +41,7 @@ exports.findOne = (collection, query) => {
 
             if (err) {
                 console.log(err)
-                return reject()
+                return reject(err)
             }
             return resolve(res)
 
@@ -59,7 +59,7 @@ exports.find = (collection, query) => {
 
             if (err) {
                 console.log(err)
-                return reject()
+                return reject(err)
             }
             return resolve(res)
 
@@ -77,7 +77,7 @@ exports.create = (collection, obj) => {
 
             if (err) {
                 console.log(err)
-                return reject()
+                return reject(err)
             }
             return resolve(res)
 

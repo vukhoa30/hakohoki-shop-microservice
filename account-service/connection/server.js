@@ -35,10 +35,11 @@ app.get('/', function (req, res) {
 
 app.post('/', async function (req, res) { //Create account
 
-    const email = req.body.email, password = req.body.password
+    const email = req.body.email, password = req.body.password,
+      fullName = req.fullName
     console.log(req.body.email);
     try {
-        return (await core.createNewAccount(email, password)) ? res.json({ msg: 'OK' }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
+        return (await core.createNewAccount(email, password, fullName)) ? res.json({ ok: true }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
@@ -57,7 +58,7 @@ app.post('/authentication', async function (req, res) { //Authenticate account
             res.status(result.code).json({ msg: result.msg })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
+        res.status(500).json({ msg: "INTERNAL SERVER ERROR", err: error })
     }
 
 })
@@ -67,10 +68,10 @@ app.post('/activation', async function (req, res) {
     const email = req.body.email, activationCode = req.body.activationCode
     try {
         const result = await core.activate(email, activationCode)
-        return result ? res.json({ msg: 'OK' }) : res.status(401).json({ msg: 'ACTIVATION CODE NOT MATCHED' })
+        return result ? res.json({ ok: true }) : res.status(401).json({ msg: 'ACTIVATION CODE NOT MATCHED' })
     } catch (error) {
         console.log(error)
-        res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
+        res.status(500).json({ msg: "INTERNAL SERVER ERROR", err: error })
     }
 
 })
