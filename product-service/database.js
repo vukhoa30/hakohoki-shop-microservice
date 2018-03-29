@@ -12,18 +12,22 @@ var handleCallback = (err, rslt) => {
   return rslt;
 }
 
-var parseRslt = (rslts) => { return rslts.map(rslt => { return {
-  "additionPicture": rslt.additionalPicture,
-  "addedAt": rslt.addedAt,
-  "_id": rslt._id,
-  "mainPicture": rslt.mainPicture,
-  "category": rslt.category,
-  "name": rslt.name,
-  "description": rslt.description,
-  "price": rslt.price,
-  "guarantee": rslt.guarantee,
-  "specifications": rslt.specifications
-}})}
+var parseRslt = (rslts) => { 
+  return rslts.map(rslt => { 
+    return {
+      "additionPicture": rslt.additionalPicture,
+      "addedAt": rslt.addedAt,
+      "_id": rslt._id,
+      "mainPicture": rslt.mainPicture,
+      "category": rslt.category,
+      "name": rslt.name,
+      "description": rslt.description,
+      "price": rslt.price,
+      "guarantee": rslt.guarantee,
+      "specifications": rslt.specifications
+    }
+  }
+)}
 
 module.exports = {
   GetLatestProducts: (limit, offset) => {
@@ -37,7 +41,7 @@ module.exports = {
       .skip(offset)
       .exec((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve(parseRslt(rslt));
       })
     })
   },
@@ -79,7 +83,7 @@ module.exports = {
       .limit(query.limit)
       .exec((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve(parseRslt(rslt));
       })
     })
   },
@@ -116,6 +120,21 @@ module.exports = {
             id: item._id
           }})
         });
+      })
+    })
+  },
+  GetMultipleSpecificProductsInStock: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct.aggregate([
+        {
+          $group: {
+            _id: '$productId',
+            count: {$sum: 1}
+          }
+        }
+      ], (err, rslt) => {
+        if (err) { reject(err) }
+        else { resolve(rslt) }
       })
     })
   },

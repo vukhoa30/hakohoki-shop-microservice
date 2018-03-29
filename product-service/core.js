@@ -16,10 +16,22 @@ var catchError = (res, err) => {
 
 module.exports = {
   getLatestProducts: (req, res) => {
-    typicalResponse(res, db.GetLatestProducts(
-      req.query.limit,
-      req.query.offset
-    ));
+    db.GetLatestProducts(req.query.limit, req.query.offset)
+    .then(rslt => {
+      ids = rslt.map(r => r._id)
+      return db.GetMultipleSpecificProductsInStock(ids)
+      .then(specifics => {
+        rslt.map(r => {
+          var item = specifics.find(e => {
+            return e._id.toString() == r._id.toString()
+          })
+          if (!item) { r.quantity = 0 }
+          else { r.quantity = item.count }
+        })
+        res.json(rslt)
+      })
+    })
+    .catch(err => catchError(res, err));
   },
   getProduct: (req, res) => {
     db.GetProduct(req.params.id)
@@ -32,7 +44,22 @@ module.exports = {
     .catch(err => catchError(res, err));
   },
   getProductsByName: (req, res) => {
-    typicalResponse(res, db.GetProductsByName(req.query));
+    db.GetProductsByName(req.query)
+    .then(rslt => {
+      ids = rslt.map(r => r._id)
+      return db.GetMultipleSpecificProductsInStock(ids)
+      .then(specifics => {
+        rslt.map(r => {
+          var item = specifics.find(e => {
+            return e._id.toString() == r._id.toString()
+          })
+          if (!item) { r.quantity = 0 }
+          else { r.quantity = item.count }
+        })
+        res.json(rslt)
+      })
+    })
+    .catch(err => catchError(res, err));
   },
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));

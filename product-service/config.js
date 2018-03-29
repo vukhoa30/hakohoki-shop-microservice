@@ -2,7 +2,7 @@ module.exports = {
   //mongo ds215709.mlab.com:15709/product-service -u dummy -p sameasusername
   dbAddress: 'mongodb://dummy:sameasusername@ds215709.mlab.com:15709/product-service',
   messageBrokerAddress: "http://localhost:8000",
-  defaultLimit: 10
+  defaultLimit: 15
 }
 
 /*var MongoClient = require('mongodb').MongoClient
