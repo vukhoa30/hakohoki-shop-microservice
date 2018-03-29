@@ -22,7 +22,14 @@ module.exports = {
     ));
   },
   getProduct: (req, res) => {
-    typicalResponse(res, db.GetProduct(req.params.id));
+    db.GetProduct(req.params.id)
+    .then(rslt => {
+      return db.GetSpecificProductsInStock(rslt._id)
+      .then(specifics => {
+        res.json({...rslt, quantity: specifics.specificProducts.length})
+      })
+    })
+    .catch(err => catchError(res, err));
   },
   getProductsByName: (req, res) => {
     typicalResponse(res, db.GetProductsByName(req.query));

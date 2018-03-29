@@ -12,6 +12,19 @@ var handleCallback = (err, rslt) => {
   return rslt;
 }
 
+var parseRslt = (rslts) => { return rslts.map(rslt => { return {
+  "additionPicture": rslt.additionalPicture,
+  "addedAt": rslt.addedAt,
+  "_id": rslt._id,
+  "mainPicture": rslt.mainPicture,
+  "category": rslt.category,
+  "name": rslt.name,
+  "description": rslt.description,
+  "price": rslt.price,
+  "guarantee": rslt.guarantee,
+  "specifications": rslt.specifications
+}})}
+
 module.exports = {
   GetLatestProducts: (limit, offset) => {
     limit = parseInt(limit) || config.defaultLimit
@@ -36,7 +49,8 @@ module.exports = {
       })
       .exec((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        if (rslt.length < 1) reject({msg: 'product not found'});
+        else resolve(parseRslt(rslt)[0]);
       })
     })
   },
