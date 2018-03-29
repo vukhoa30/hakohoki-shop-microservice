@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core.js')
 
+var broker = require('./message-broker.js')
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -19,6 +21,9 @@ app.get('/', core.cacheCurrentPromotion, core.getCurrentPromotion)
 
 app.post('/price', core.getNewPrices)
 app.post('/', core.createPromotion)
+
+//Message response listener
+broker.responsePromotionPrice()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

@@ -3,7 +3,7 @@ var db = require('./database')
 var helper = require('./helper.js')
 var messageBroker = require('./connection/message-broker')
 
-var redisPort = require('./config.js').redisPort
+var redisConnection = require('./config.js').redisConnection
 var client = redis.createClient(redisConnection)
 
 const CACHE_CURRENT_PROMOTION = 'currentPromotion'
@@ -21,7 +21,11 @@ var catchError = (res, err) => {
 
 module.exports = {
   createPromotion: (req, res) => {
-    typicalResponse(res, db.CreatePromotion(req.body.promotion));
+    db.CreatePromotion(req.body.promotion)
+    .then(rslt => {
+      res.json({ ok: true })
+    })
+    .catch(err => catchError(res, err))
   },
   cacheCurrentPromotion: (req, res, next) => {
     client.get(CACHE_CURRENT_PROMOTION, (err, data) => {
@@ -35,7 +39,7 @@ module.exports = {
   getCurrentPromotion: (req, res) => {
     db.GetCurrentPromotion()
     .then(rslt => {
-      client.setex(CACHE_CURRENT_PROMOTION, 3600, JSON.stringify(rslt));
+      client.setex(CACHE_CURRENT_PROMOTION, 10, JSON.stringify(rslt));
       res.json(rslt);
     })
     .catch(e => catchError(res, e))

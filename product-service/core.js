@@ -1,6 +1,6 @@
 var db = require('./database')
 //var helper = require('../helper')
-var messageBroker = require('./connection/message-broker')
+var msgBroker = require('./connection/message-broker')
 
 //chỉ chạy 1 promise
 var typicalResponse = (res, func) => {
@@ -20,13 +20,20 @@ module.exports = {
     .then(rslt => {
       ids = rslt.map(r => r._id)
       return db.GetMultipleSpecificProductsInStock(ids)
-      .then(specifics => {
+      .then(async (specifics) => {
+        var promotionPrices = await msgBroker.requestPromotionPrices(
+          rslt.map(r => r._id))
         rslt.map(r => {
           var item = specifics.find(e => {
             return e._id.toString() == r._id.toString()
           })
           if (!item) { r.quantity = 0 }
           else { r.quantity = item.count }
+
+          item = promotionPrices.find(e => {
+            return e.productId.toString() == r._id.toString()
+          })
+          if (item) { r.promotionPrice = item.promotionPrice }
         })
         res.json(rslt)
       })
@@ -37,7 +44,12 @@ module.exports = {
     db.GetProduct(req.params.id)
     .then(rslt => {
       return db.GetSpecificProductsInStock(rslt._id)
-      .then(specifics => {
+      .then(async specifics => {
+        var promotionPrices = await msgBroker.requestPromotionPrices(
+          [ rslt._id ])
+        if (promotionPrices[0]) {
+          rslt.promotionPrice = promotionPrices[0].promotionPrice
+        }
         res.json({...rslt, quantity: specifics.specificProducts.length})
       })
     })
@@ -48,13 +60,20 @@ module.exports = {
     .then(rslt => {
       ids = rslt.map(r => r._id)
       return db.GetMultipleSpecificProductsInStock(ids)
-      .then(specifics => {
+      .then(async specifics => {
+        var promotionPrices = await msgBroker.requestPromotionPrices(
+          rslt.map(r => r._id))
         rslt.map(r => {
           var item = specifics.find(e => {
             return e._id.toString() == r._id.toString()
           })
           if (!item) { r.quantity = 0 }
           else { r.quantity = item.count }
+
+          item = promotionPrices.find(e => {
+            return e.productId.toString() == r._id.toString()
+          })
+          if (item) { r.promotionPrice = item.promotionPrice }
         })
         res.json(rslt)
       })

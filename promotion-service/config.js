@@ -21,12 +21,11 @@ module.exports = {
       }
     }
   },
-  messageBrokerAddress: "http://localhost:8000",
+  amqpAddress: "amqp://localhost",
   //redisLocalPort: process.env.REDIS_PORT || 6379,
   redisConnection: {
     host: 'redis-12106.c10.us-east-1-4.ec2.cloud.redislabs.com',
     port: 12106,
-    password: uk5kk4dRB3cZmXJDvqc4LFwFKaLohkxH,
-    db: promotion
+    password: 'uk5kk4dRB3cZmXJDvqc4LFwFKaLohkxH'
   }
 }
