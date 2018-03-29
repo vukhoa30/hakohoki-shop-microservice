@@ -16,7 +16,10 @@ var catchError = (res, err) => {
 
 module.exports = {
   getLatestProducts: (req, res) => {
-    typicalResponse(res, db.GetLatestProducts());
+    typicalResponse(res, db.GetLatestProducts(
+      req.query.limit,
+      req.query.offset
+    ));
   },
   getProduct: (req, res) => {
     typicalResponse(res, db.GetProduct(req.params.id));

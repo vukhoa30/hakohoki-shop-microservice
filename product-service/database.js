@@ -14,8 +14,8 @@ var handleCallback = (err, rslt) => {
 
 module.exports = {
   GetLatestProducts: (limit, offset) => {
-    limit = limit || config.defaultLimit
-    offset = offset || 0
+    limit = parseInt(limit) || config.defaultLimit
+    offset = parseInt(offset) || 0
     return new Promise((resolve, reject) => {
       models.Product
       .find()
@@ -41,8 +41,8 @@ module.exports = {
     })
   },
   GetProductsByName: (query) => {
-    query.limit = query.limit || defaultLimit
-    query.offset = query.offset || 0
+    query.limit = parseInt(query.limit) || defaultLimit
+    query.offset = parseInt(query.offset) || 0
     var queryObject = query.q ? {
       $text: {
         $search: query.q
