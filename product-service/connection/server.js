@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core.js')
 
+var responseAmqp = require('./message-broker.js')
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -36,19 +38,11 @@ app.put('/product', core.alterProduct)
 //app.delete('/categories', core.removeCategory)
 //app.delete('/specifications', core.removeSpecification)
 
-
-/*app.post('/', async function (req, res) { //Create account
-
-    const email = req.body.email, password = req.body.password
-    console.log(req.body.email);
-    try {
-        return (await core.createNewAccount(email, password)) ? res.json({ msg: 'OK' }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
-    }
-    
-})*/
+//Response amqp
+/*core.getProductsByIds([ '5aba6fc6b7b05766f75da017' ])
+.then(rslt=>console.log(rslt))
+.catch(e=>console.log(e))*/
+responseAmqp.responseGetProducts()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

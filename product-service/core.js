@@ -80,6 +80,34 @@ module.exports = {
     })
     .catch(err => catchError(res, err));
   },
+  getProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      Promise.all([
+        db.GetProductsByIds(ids),
+        db.GetMultipleSpecificProductsInStock(ids)
+      ])
+      .then(async rslts => {
+        var [ products, specifics ] = rslts
+        var promotionPrices = await msgBroker.requestPromotionPrices(
+          products.map(p => p._id))
+        products.map(p => {
+          var item = specifics.find(e => {
+            return e._id.toString() == p._id.toString()
+          })
+          if (!item) { p.quantity = 0 }
+          else { p.quantity = item.count }
+  
+          item = promotionPrices.find(e => {
+            return e.productId.toString() == p._id.toString()
+          })
+          if (item) { p.promotionPrice = item.promotionPrice }
+        })
+        resolve(products)
+      })
+      .catch(e => { console.log(e); reject(e) })
+    })
+  },
+  test: 5,
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));
   },

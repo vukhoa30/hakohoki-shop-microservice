@@ -1,33 +1,35 @@
-var db = require('knex')(require('./config.js').db);
+var config = require('./config')
+var db = require('knex')(config.db)
+var defaultLimit = config.defaultLimit
 var helper = require('./helper.js')
 
 module.exports = {
-  AddToWatchlist: (email, id) => {
+  AddToWatchlist: (account_id, product_id) => {
     return new Promise((resolve, reject) => {
       db('watchlists')
-      .insert({ email, product_id: id })
+      .insert({ account_id, product_id })
       .then(rslt => { resolve(rslt) })
       .catch(e => { reject(e) })
     })
   },
-  RemoveFromWatchlist: (email, id) => {
+  RemoveFromWatchlist: (account_id, product_id) => {
     return new Promise((resolve, reject) => {
       db('watchlists')
-      .where({ email, product_id: id })
+      .where({ account_id, product_id })
       .del()
       .then(rowCount => { resolve(rowCount) })
       .catch(e => { reject(e) })
     })
   },
-  GetWatchlist: (email, offset, limit) => {
+  GetWatchlist: (account_id, limit, offset) => {
     offset = offset || 0;
-    limit = limit || 15;
+    limit = limit || defaultLimit;
     return new Promise((resolve, reject) => {
       db('watchlists')
-      .where({ email })
+      .where({ account_id })
       .offset(offset)
       .limit(limit)
-      .then(rows => { resolve(rows) })
+      .then(rows => { resolve(rows.map(r => r.product_id)) })
       .catch(e => { reject(e) })
     })
   }

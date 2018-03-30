@@ -107,7 +107,10 @@ module.exports = {
       .catch(e => reject(e))
     })
   },
-  deactiveAccount: (req, res) => {
+  deactiveAccount: async (req, res) => {
+    if (!(await checkManager(req))) {
+      return catchUnauthorized(res)
+    }
     db.DeactiveAccount(req.body.email)
     .then(rowCount => {
       if (rowCount > 0) {
@@ -118,7 +121,10 @@ module.exports = {
     })
     .catch(e => catchError(res, e))
   },
-  reactiveAccount: (req, res) => {
+  reactiveAccount: async (req, res) => {
+    if (!(await checkManager(req))) {
+      return catchUnauthorized(res)
+    }
     db.ReactiveAccount(req.body.email)
     .then(rowCount => {
       if (rowCount > 0) {

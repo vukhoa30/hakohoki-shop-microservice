@@ -1,6 +1,6 @@
 var db = require('./database')
 var helper = require('./helper.js')
-var messageBroker = require('./connection/message-broker')
+var msgBroker = require('./connection/message-broker')
 
 //chỉ chạy 1 promise
 var typicalResponse = (res, func) => {
@@ -13,9 +13,33 @@ var catchError = (res, err) => {
   res.json({ msg: 'INTERNAL SERVER ERROR', err: err });
 }
 
+var catchUnauthorized = (res) => {
+  res.status(401);
+  res.json({ msg: 'Unauthorized user.' })
+}
+
+var requestAuthentication = (req) => {
+  return new Promise(async(resolve, reject) => {
+    var token
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } 
+    try {
+      var authentication = await msgBroker.requestAuthenticateCustomer(token)
+    } catch (e) { reject(e) }
+    resolve(authentication)
+  })
+}
+
 module.exports = {
-  addToWatchlist: (req, res) => {
-    db.AddToWishlist(req.body.email, req.body.productId)
+  addToWatchlist: async (req, res) => {
+    var authentication;
+    try {
+      authentication = await requestAuthentication(req)
+      if (authentication.role !== 'customer') { return catchUnauthorized(res) }
+    } catch(e) { return catchUnauthorized(res) }
+
+    db.AddToWatchlist(authentication.accountId, req.params.productId)
     .then(rslt => {
       if (rslt.rowCount > 0) {
         res.json({ msg: 'Added.', ok: true })
@@ -25,20 +49,37 @@ module.exports = {
     })
     .catch(e => catchError(res, e))
   },
-  removeFromWatchlist: (req, res) => {
-    db.RemoveFromWishlist(req.body.email, req.body.productId)
+  removeFromWatchlist: async (req, res) => {
+    var authentication;
+    try {
+      authentication = await requestAuthentication(req)
+      if (authentication.role !== 'customer') { return catchUnauthorized(res) }
+    } catch(e) { return catchUnauthorized(res) }
+
+    db.RemoveFromWatchlist(authentication.accountId, req.params.productId)
     .then(rslt => {
       if (rslt > 0) {
-        res.json({ msg: 'Added.', ok: true })
+        res.json({ msg: 'Deleted.', ok: true })
       } else {
-        res.json({ msg: 'Failed to add.'})
+        res.json({ msg: 'Failed to delete.'})
       }
     })
     .catch(e => catchError(res, e))
   },
-  getWatchlist: (req, res) => {
-    db.GetWatchlist(req.body.email, req.body.offset, req.body.limit)
-    .then(rslt => res.json(rslt))
+  getWatchlist: async (req, res) => {
+    var authentication;
+    try {
+      authentication = await requestAuthentication(req)
+      if (authentication.role !== 'customer') { return catchUnauthorized(res) }
+    } catch(e) { return catchUnauthorized(res) }
+
+    db.GetWatchlist(authentication.accountId, 
+      req.query.limit,
+      req.query.offset)
+    .then(productIds => { return msgBroker.requestGetProducts(productIds) })
+    .then(watchlist => {
+      res.json(watchlist)
+    })
     .catch(e => catchError)
   },
 }

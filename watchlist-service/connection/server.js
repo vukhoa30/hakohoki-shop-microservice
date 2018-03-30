@@ -15,10 +15,11 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.post('/info', core.getWatchlist)
-app.post('/', core.addToWatchlist)
+app.get('/', core.getWatchlist)
 
-app.delete('/', core.removeFromWatchlist)
+app.post('/:productId', core.addToWatchlist)
+
+app.delete('/:productId', core.removeFromWatchlist)
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

@@ -134,7 +134,9 @@ module.exports = {
         }
       ], (err, rslt) => {
         if (err) { reject(err) }
-        else { resolve(rslt) }
+        else { 
+          resolve(rslt.filter(r => ids.indexOf(r._id.toString()) >= 0)) 
+        }
       })
     })
   },
@@ -268,6 +270,16 @@ module.exports = {
       .find({}, (err, rslt) => {
         if (err) reject(err);
         else resolve(rslt.map(item => item.name));
+      })
+    })
+  },
+  GetProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.Product
+      .find({_id: {$in: ids}})
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(parseRslt(rslt))
       })
     })
   }

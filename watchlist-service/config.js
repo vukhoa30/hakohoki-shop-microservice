@@ -21,5 +21,6 @@ module.exports = {
       }
     }
   },
-  messageBrokerAddress: "http://localhost:8000"
+  amqpAddress: "amqp://localhost",
+  defaultLimit: 15
 }
