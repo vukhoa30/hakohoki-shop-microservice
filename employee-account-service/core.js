@@ -13,10 +13,32 @@ var catchError = (res, err) => {
   res.json({ msg: 'INTERNAL SERVER ERROR', err: err });
 }
 
+var catchUnauthorized = (res) => {
+  res.status(401);
+  res.json({ msg: 'Unauthorized user.' })
+}
+
+var checkManager = (req) => { //resovle true or false
+  return new Promise((resolve, reject) => {
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      var token = req.headers.authorization.split(' ')[1]
+      helper.verifyjwt(token)
+      .then(decode => {
+        console.log(decode)
+        resolve(decode.role === 'manager')
+      })
+      .catch(e => resolve(false))
+    }
+  })
+}
+
 module.exports = {
-  createAccount: (req, res) => {
+  createAccount: async (req, res) => {
     if (req.body.password.length < 6) {
       return res.json({ ok: false, msg: 'Sign up failed. Password length mustn\'t < 6.' });
+    }
+    if (!(await checkManager(req))) {
+      return catchUnauthorized(res)
     }
     req.body.hashed_password = helper.hashPassword(req.body.password);
     delete req.body.password;
@@ -35,11 +57,8 @@ module.exports = {
     .then(account => {
       res.json({
         token: helper.signjwt({
-          //email: account.email,
           role: account.role,
-          //fullName: account.full_name,
           accountId: account.id,
-          //phoneNumber: account.phone_number,
           expireTime: helper.generateExpireTime()
         }),
         account: {
