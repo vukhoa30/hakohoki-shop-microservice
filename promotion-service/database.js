@@ -6,8 +6,8 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db('promotions')
       .insert({
-        start_at: promotion.start_at,
-        end_at: promotion.end_at,
+        start_at: promotion.start,
+        end_at: promotion.end,
         name: promotion.name
       })
       .returning('id')

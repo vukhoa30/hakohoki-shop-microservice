@@ -63,6 +63,6 @@ module.exports = {
   },
   responseGetProducts: () => {
     var core = require('../core.js')
-    return responseAmqp(core.getProductsByIds, 'getProducts')
+    responseAmqp(core.getProductsByIds, 'getProducts')
   }
 }
