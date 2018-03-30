@@ -1,21 +1,20 @@
 import React from 'react';
-import { createStore, applyMiddleware } from 'redux';
-import { Provider } from 'react-redux'
-import Loading from './screens/loading'
-import appReducer from './reducers'
-import reactNavigationMiddleware from './middlewares/react-navigation-middleware'
-import AppNavigation from './navigation'
+import { StyleSheet, Text, View } from 'react-native';
 import thunk from 'redux-thunk'
-import { Container, Content, Button, Text } from "native-base";
-import { View } from "react-native";
+import { reactNavigationReduxMiddleware } from './presenters/middleware'
+import AppNavigation from './views/AppNavigation'
+import Loading from './views/Loading'
+import appReducer from './models/states'
+import { Provider } from 'react-redux'
+import { createStore, applyMiddleware } from 'redux';
 
 const store = createStore(
   appReducer,
-  applyMiddleware(reactNavigationMiddleware, thunk)
+  applyMiddleware(reactNavigationReduxMiddleware, thunk)
 );
 
-export default class App extends React.Component {
 
+export default class App extends React.Component {
   state = {
     appLoaded: false
   }
@@ -23,17 +22,24 @@ export default class App extends React.Component {
   async componentWillMount() {
     await Expo.Font.loadAsync({
       'Roboto': require('native-base/Fonts/Roboto.ttf'),
-      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
-      'Arial': require('./arial.ttf')
+      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf')
     });
-    setTimeout(() => this.setState({ appLoaded: true }), 2000)
+    this.setState({ appLoaded: true })
   }
-
   render() {
     return (
       <Provider store={store}>
         {this.state.appLoaded ? <AppNavigation /> : <Loading />}
       </Provider>
-    )
+    );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
