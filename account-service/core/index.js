@@ -1,6 +1,5 @@
 var db = require('../database')
 var helper = require('../helper')
-var config = 
 
 exports.createNewAccount = function (email, password, fullName) {
 
