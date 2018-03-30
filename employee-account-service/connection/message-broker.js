@@ -1,6 +1,7 @@
 var amqp = require('amqplib');
 var amqpAddress = require('../config').amqpAddress;
 var core = require('../core');
+var db = require('../database')
 
 var responseAmqp = (promise, queue) => {
   amqp.connect(amqpAddress)
@@ -29,5 +30,8 @@ var responseAmqp = (promise, queue) => {
 module.exports = {
   responseAuthenticateEmployee: () => {
     responseAmqp(core.authenticateEmployee, 'authenticateEmployee')
+  },
+  responseGetEmployees: () => {
+    responseAmqp(db.GetEmployees, 'getEmployees')
   }
 }

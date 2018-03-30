@@ -74,5 +74,23 @@ module.exports = {
       })
       .catch(e => { reject({ msg: 'Login failed!' }); })
     })
+  },
+  GetEmployees: (ids) => {
+    return new Promise((resolve, reject) => {
+      db('accounts')
+      .whereRaw('id = any(?)', [ ids ])
+      .then(rows => {
+        resolve(rows.map(r => {
+          return { 
+            accountId: r.id, 
+            fullName: r.full_name, 
+            email: r.email,
+            role: r.role,
+            phoneNumner: r.phone_number
+          }
+        }))
+      })
+      .catch(e => { reject(e); })
+    })
   }
 }

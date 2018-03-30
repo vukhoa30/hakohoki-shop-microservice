@@ -38,5 +38,11 @@ module.exports = {
   },
   requestAuthenticateEmployee: (token) => {
     return requestAmqp(token, 'authenticateEmployee')
+  },
+  requestCustomers: (ids) => {
+    return requestAmqp(ids, 'getCustomers')
+  },
+  requestEmployees: (ids) => {
+    return requestAmqp(ids, 'getEmployees')
   }
 }

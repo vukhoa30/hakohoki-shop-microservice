@@ -2,6 +2,10 @@ var MongoClient = require('mongodb').MongoClient
 var url = require('../helper/config.json').dbAddress
 var dbclient = null
 
+var mongoose = require('mongoose');
+mongoose.connect(url);
+var models = require('./models')(mongoose)
+
 MongoClient.connect(url, function (err, client) {
     if (err) throw err
     console.log("Database connected")
@@ -122,4 +126,22 @@ exports.delete = (collection, query) => {
 
     })
 
+}
+
+exports.GetCustomers = (ids) => {
+  return new Promise((resolve, reject) => {
+    models.Account
+    .find({ _id: {$in: ids} })
+    .exec((err, rslt) => {
+      if (err) { console.log(err); return reject(err) }
+      resolve(rslt.map(r => {
+        return { 
+          accountId: r._id, 
+          fullName: r.fullName, 
+          email: r.email,
+          role: 'customer'
+        }
+      }))
+    })
+  })
 }

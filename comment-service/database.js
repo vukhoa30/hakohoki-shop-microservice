@@ -27,7 +27,17 @@ module.exports = {
       .find({ productId })
       .exec((err, rslt) => {
         if (err) reject(err);
-        else resolve(rslt);
+        else resolve(rslt.map(r => {
+          return {
+            id: r._id,
+            content: r.content,
+            accountId: r.accountId,
+            productId: r.productId,
+            parentId: r.parentId,
+            createdAt: r.createdAt,
+            reviewScore: r.reviewScore
+          }
+        }))
       })
     })
   }
