@@ -5,12 +5,18 @@ module.exports = {
   CreateAccount: (account) => {
     return new Promise((resolve, reject) => {
       db('accounts').insert({
-        ...account,
+        email: account.email,
+        hashed_password: account.hashed_password,
+        full_name: account.full_name,
+        dob: account.dob,
+        phone_number: account.phone_number,
+        identity_number: account.identity_number,
+        role: account.role,
         active: true,
         created_at: new Date()
       })
       .then(rslt => { resolve(rslt); })
-      .catch(e => { reject(e); })
+      .catch(e => { console.log(e);reject(e); })
     })
   },
   DeactiveAccount: (email) => {

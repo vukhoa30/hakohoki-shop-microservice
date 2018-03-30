@@ -1,48 +1,42 @@
-var socketClient = require('socket.io-client')
-var config = require('../config.js')
-var socket = socketClient.connect(config.messageBrokerAddress)
-var core = require('../core.js')
+var amqp = require('amqplib');
+var amqpAddress = require('../config.js').amqpAddress
 
-var isConnected = false
+var generateUuid = () => {
+  return Math.random().toString() +
+         Math.random().toString() +
+         Math.random().toString();
+}
 
-socket.on('connect', function (socket) {
+var requestAmqp = (msgObject, queue) => {
+  return new Promise((resolve, reject) => {
+    amqp.connect(amqpAddress)
+    .then(conn => {
+      return conn.createChannel()
+      .then(ch => { 
+        return ch.assertQueue('', {exclusive: true})
+        .then(q => {
+          var corr = generateUuid()
+          ch.consume(q.queue, msg => {
+            if (msg.properties.correlationId === corr) {
+              resolve(JSON.parse(msg.content.toString()))
+              conn.close();
+            }
+          }, {noAck: true})
+          ch.sendToQueue(queue,
+            new Buffer(JSON.stringify(msgObject)),
+            { correlationId: corr, replyTo: q.queue })
+        })
+      })
+    })
+    .catch(e => { reject(e); console.log(e) })
+  })
+}
 
-    console.log("Message broker connected!")
-    isConnected = true
-
-})
-
-socket.on('error', function (error) {
-
-    console.log(error)
-
-})
-
-socket.on('NEW_MESSAGE', function (data) {
-
-
-
-})
-
-socket.on('disconnect', function () {
-
-    isConnected = false
-    console.log("Message broker disconnected!")
-    setTimeout(() => {
-
-        console.log("Attemping connecting to message broker ...")
-        socket.socketClient.connect(config.messageBrokerAddress)
-
-    }, 10000)
-
-})
-
-
-exports.sendMessage = function (message) {
-
-    if (!isConnected)
-        console.log("Message broker not available now. Couldn't send message")
-    else
-        socket.compress(true).emit('NEW_MESSAGE', message)
-
+module.exports = {
+  requestAuthenticateCustomer: (token) => {
+    return requestAmqp(token, 'authenticateCustomer')
+  },
+  requestAuthenticateEmployee: (token) => {
+    return requestAmqp(token, 'authenticateEmployee')
+  }
 }

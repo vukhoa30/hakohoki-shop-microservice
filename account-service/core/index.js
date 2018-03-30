@@ -1,6 +1,6 @@
 var db = require('../database')
 var helper = require('../helper')
-//var messageBroker = require('../connection/message-broker')
+var config = 
 
 exports.createNewAccount = function (email, password, fullName) {
 
@@ -30,11 +30,23 @@ exports.authenticate = function (email, password) {
             const result = await db.findOne('accounts', { email: email })
             if (!result) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
             if (result.status === "NOT_ACTIVATED") return resolve({ code: 401, msg: "ACCOUNT NOT ACTIVATED" })
-            return helper.compareHashValue(password, result.password) ? resolve({ code: 200, token: helper.getToken({
-              email, 
-              role: 'customer',
-              expireTime: helper.generateExpireTime()
-            }) }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
+            return helper.compareHashValue(password, result.password) ? resolve({ 
+              code: 200, 
+              token: helper.getToken({
+                accountId: result._id,
+                //email, 
+                role: 'customer',
+                //fullName: result.fullName,
+                expireTime: helper.generateExpireTime()
+              }),
+              account: {
+                accountId: result._id,
+                email: result.email,
+                role: 'customer',
+                fullName: result.full_name,
+                phoneNumber: result.phone_number
+              }
+            }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         } catch (error) {
             console.log(error)
             reject(error)
@@ -60,4 +72,17 @@ exports.activate = function (email, activationCode) {
 
     })
 
+}
+
+exports.authenticateCustomer = (token) => {
+  return new Promise((resolve, reject) => {
+    helper.verifyToken(token)
+    .then(decode => {
+      resolve({
+        accountId: decode.accountId,
+        role: decode.role
+      })
+    })
+    .catch(e => {console.log(e); reject(e)})
+  })
 }

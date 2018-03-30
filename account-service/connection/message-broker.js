@@ -1,46 +1,33 @@
-var socketClient = require('socket.io-client')
-var config = require('../helper/config.json')
-var socket = socketClient.connect(config.messageBrokerAddress)
-var core = require('../core')
+var amqp = require('amqplib');
+var amqpAddress = require('../helper/config.json').amqpAddress;
+var core = require('../core');
 
-var isConnected = false
+var responseAmqp = (promise, queue) => {
+  amqp.connect(amqpAddress)
+  .then(conn => { 
+    return conn.createChannel()
+    .then(ch => {
+      ch.assertQueue(queue, {durable: false})
+      ch.prefetch(1)
+      console.log('Awating...')
+      ch.consume(queue, async (msg) => {
+        var response = []
+        try {
+          response = await promise(JSON.parse(msg.content.toString()))
+        } catch (e) { }
+        ch.sendToQueue(msg.properties.replyTo,
+          new Buffer(JSON.stringify(response)),
+          {correlationId: msg.properties.correlationId})
+        ch.ack(msg)
+        console.log('Sent: ' + response)
+      })
+    })
+  })
+  .catch(e => console.log(e))
+}
 
-socket.on('connect', function (socket) {
-
-    console.log("Message broker connected!")
-    isConnected = true
-
-})
-
-socket.on('error', function (error) {
-
-    console.log(error)
-
-})
-
-socket.on('NEW_MESSAGE', function (data) {
-
-})
-
-socket.on('disconnect', function () {
-
-    isConnected = false
-    console.log("Message broker disconnected!")
-    setTimeout(() => {
-
-        console.log("Attemping connecting to message broker ...")
-        socket.socketClient.connect(config.messageBrokerAddress)
-
-    }, 10000)
-
-})
-
-
-exports.sendMessage = function (message) {
-
-    if (!isConnected)
-        console.log("Message broker not available now. Couldn't send message")
-    else
-        socket.compress(true).emit('NEW_MESSAGE', message)
-
+module.exports = {
+  responseAuthenticateCustomer: () => {
+    responseAmqp(core.authenticateCustomer, 'authenticateCustomer')
+  }
 }

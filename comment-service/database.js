@@ -17,7 +17,7 @@ module.exports = {
       newComment
       .save((err, rslt) => {
         if (err) { reject(err) }
-        else ( resolve(rslt) )
+        else ( resolve(rslt._id) )
       })
     })
   },

@@ -17,7 +17,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       jwt.verify(token, jwtkey, (err, decode) => {
         if (err) { reject(err) }
-        else { resolve(decode) }
+        else { resolve({decode}) }
       })
     })
   },

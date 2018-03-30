@@ -2,7 +2,8 @@ var jwt = require('jsonwebtoken')
 var bcrypt = require('bcrypt')
 var config = require('./config.json')
 var randomstring = require('randomstring')
-var tokenDuration = require('./config.json').tokenDuration
+var tokenDuration = config.tokenDuration
+var secretjwt = config.privateKey
 
 exports.getToken = function (payload) {
 
@@ -29,4 +30,13 @@ exports.generateExpireTime = () => {
   d.setTime(d.getTime() + tokenDuration);
   console.log(d);
   return new Date(Date.now() + tokenDuration)
+}
+
+exports.verifyToken = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secretjwt, (err, decode) => {
+      if (err) { reject(err) }
+      else { resolve(decode) }
+    })
+  })
 }

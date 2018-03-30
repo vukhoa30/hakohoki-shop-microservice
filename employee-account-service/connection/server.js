@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core.js')
 
+var amqpResponse = require('./message-broker')
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -15,7 +17,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.post('/authenticate', core.authenticate)
+//app.post('/authenticate', core.authenticate)
 app.post('/', core.createAccount)
 app.post('/login', core.logIn)
 
@@ -23,7 +25,8 @@ app.put('/password', core.changePassword)
 app.put('/reactivate', core.reactiveAccount)
 app.put('/deactivate', core.deactiveAccount)
 
-app.get('/test', (req, res) => { console.log(req.headers.abc); console.log(req.account); res.json(req.account) })
+//Respone RPC
+amqpResponse.responseAuthenticateEmployee()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

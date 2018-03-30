@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core')
 
+var amqpResponse = require('./message-broker')
+
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
@@ -36,7 +38,7 @@ app.get('/', function (req, res) {
 app.post('/', async function (req, res) { //Create account
 
     const email = req.body.email, password = req.body.password,
-      fullName = req.fullName
+      fullName = req.body.fullName
     console.log(req.body.email);
     try {
         return (await core.createNewAccount(email, password, fullName)) ? res.json({ ok: true }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
@@ -75,8 +77,10 @@ app.post('/activation', async function (req, res) {
     }
 
 })
-//---------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------
+amqpResponse.responseAuthenticateCustomer()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

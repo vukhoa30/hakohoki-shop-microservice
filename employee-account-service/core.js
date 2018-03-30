@@ -15,12 +15,12 @@ var catchError = (res, err) => {
 
 module.exports = {
   createAccount: (req, res) => {
-    if (req.body.account.password.length < 6) {
+    if (req.body.password.length < 6) {
       return res.json({ ok: false, msg: 'Sign up failed. Password length mustn\'t < 6.' });
     }
-    req.body.account.hashed_password = helper.hashPassword(req.body.account.password);
-    delete req.body.account.password;
-    db.CreateAccount(req.body.account)
+    req.body.hashed_password = helper.hashPassword(req.body.password);
+    delete req.body.password;
+    db.CreateAccount(req.body)
     .then(rslt => {
       if (rslt.rowCount > 0) {
         res.json({ ok: true, msg: 'Sign up succeed.' });
@@ -35,13 +35,19 @@ module.exports = {
     .then(account => {
       res.json({
         token: helper.signjwt({
-          email: account.email,
+          //email: account.email,
           role: account.role,
+          //fullName: account.full_name,
+          accountId: account.id,
+          //phoneNumber: account.phone_number,
           expireTime: helper.generateExpireTime()
         }),
         account: {
+          accountId: account.id,
           email: account.email,
-          role: account.role
+          role: account.role,
+          fullName: account.full_name,
+          phoneNumber: account.phone_number
         }
       })
     })
@@ -69,6 +75,18 @@ module.exports = {
       }
     })
     .catch(e => catchError(res, e))
+  },
+  authenticateEmployee: (token) => {
+    return new Promise((resolve, reject) => {
+      helper.verifyjwt(token)
+      .then(decode => {
+        resolve({
+          accountId: decode.accountId,
+          role: decode.role
+        })
+      })
+      .catch(e => reject(e))
+    })
   },
   deactiveAccount: (req, res) => {
     db.DeactiveAccount(req.body.email)

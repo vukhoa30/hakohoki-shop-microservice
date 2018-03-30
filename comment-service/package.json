@@ -4,6 +4,7 @@
   "description": "",
   "main": "config.js",
   "dependencies": {
+    "amqplib": "^0.5.2",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "http": "0.0.0",
