@@ -55,7 +55,7 @@ app.post('/authentication', async function (req, res) { //Authenticate account
     try {
         const result = await core.authenticate(email, password)
         if (result.code === 200)
-            res.json({ token: result.token })
+            res.json({ token: result.token, account: result.account })
         else
             res.status(result.code).json({ msg: result.msg })
     } catch (error) {

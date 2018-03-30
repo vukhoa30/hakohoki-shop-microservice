@@ -43,7 +43,7 @@ exports.authenticate = function (email, password) {
                 accountId: result._id,
                 email: result.email,
                 role: 'customer',
-                fullName: result.full_name,
+                fullName: result.fullName,
                 phoneNumber: result.phone_number
               }
             }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
