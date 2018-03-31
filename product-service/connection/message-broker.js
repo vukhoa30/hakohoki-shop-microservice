@@ -64,5 +64,12 @@ module.exports = {
   responseGetProducts: () => {
     var core = require('../core.js')
     responseAmqp(core.getProductsByIds, 'getProducts')
-  }
+  },
+  responseGetSpecificProducts: () => {
+    var core = require('../core.js')
+    responseAmqp(core.getProductsBySpecificIds, 'getSpecificProducts')
+  },
+  requestAuthenticateEmployee: (token) => {
+    return requestAmqp(token, 'authenticateEmployee')
+  },
 }

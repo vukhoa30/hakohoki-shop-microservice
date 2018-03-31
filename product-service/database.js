@@ -140,6 +140,22 @@ module.exports = {
       })
     })
   },
+  GetProductBySpecificId: (id) => {
+    return new Promise(async (resolve, reject) => {
+      models.SpecificProduct
+      .find({_id: id})
+      .exec((err, rslt) => {
+        if (err || rslt.length == 0) { return reject({msg: 'not found', err}) }
+        models.Product
+        .find({_id: rslt[0].productId})
+        .exec((err2, products) => {
+          if (err2) { return reject(err2) }
+          var product = parseRslt(products)[0]
+          resolve({...product, specificId: id})
+        })
+      })
+    })
+  },
   AddNewProduct: (product) => {
     return new Promise((resolve, reject) => {
       var newProduct = new models.Product(product);

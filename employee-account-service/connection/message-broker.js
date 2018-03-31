@@ -29,7 +29,7 @@ var responseAmqp = (promise, queue) => {
 
 module.exports = {
   responseAuthenticateEmployee: () => {
-    responseAmqp(core.authenticateEmployee, 'authenticateEmployee')
+    responseAmqp(require('../core').authenticateEmployee, 'authenticateEmployee')
   },
   responseGetEmployees: () => {
     responseAmqp(db.GetEmployees, 'getEmployees')

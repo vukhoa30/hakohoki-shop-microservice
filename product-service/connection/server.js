@@ -22,6 +22,7 @@ app.get('/info/:id', core.getProduct)
 app.get('/search', core.getProductsByName) //tìm theo specifications luôn
 //app.post('/search/:query', core.getProductsBySpecifications)
 app.get('/info/:id/in-stock', core.getSpecificProductsInStock)
+app.get('/info/specific/:id', core.getProductBySpecificId)
 app.get('/categories', core.getAllCategories)
 //app.get('/specifications', core.getAllSpecifications)
 

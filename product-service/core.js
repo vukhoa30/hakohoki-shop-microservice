@@ -14,6 +14,11 @@ var catchError = (res, err) => {
   res.json({ ok: false, msg: 'INTERNAL SERVER ERROR', err: err });
 }
 
+var catchUnauthorized = (res) => {
+  res.status(401);
+  res.json({ msg: 'Unauthorized user.' })
+}
+
 module.exports = {
   getLatestProducts: (req, res) => {
     db.GetLatestProducts(req.query.limit, req.query.offset)
@@ -107,7 +112,26 @@ module.exports = {
       .catch(e => { console.log(e); reject(e) })
     })
   },
-  test: 5,
+  getProductsBySpecificIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      //tương tự getProductsByIds
+    })
+  },
+  getProductBySpecificId: async (req, res) => {
+    var token;
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } else { return catchUnauthorized(res) }
+    try {
+      var authentication = await msgBroker.requestAuthenticateEmployee(token)
+      console.log(authentication)
+      if (!authentication) { return catchUnauthorized(res) }
+    } catch(e) { catchError(res, e) }
+
+    db.GetProductBySpecificId(req.params.id)
+    .then(rslt => { res.json(rslt) })
+    .catch(e => catchError(res, e))
+  },
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));
   },
