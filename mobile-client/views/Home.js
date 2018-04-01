@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { } from 'native-base'
+import { Content } from 'native-base'
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
 
@@ -10,9 +10,9 @@ class Home extends Component {
     state = {}
     render() {
         return (
-            <AppContainer>
+            <Content>
                 <AppText center>Home screen</AppText>
-            </AppContainer>
+            </Content>
         );
     }
 }

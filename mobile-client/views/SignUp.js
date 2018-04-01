@@ -63,7 +63,7 @@ class SignUp extends Component {
         const { navigation, handleSubmit, submitting, invalid, error } = this.props
 
         return (
-            <AppContainer>
+            <Content>
                 <View style={{ marginHorizontal: 10 }}>
                     <Field name="fullName" placeholder="FULL NAME" component={this.renderInput} />
                     <Field name="email" placeholder="EMAIL" component={this.renderInput} />
@@ -78,7 +78,7 @@ class SignUp extends Component {
                     <AppButton icon="logo-facebook" style={{ margin: 5 }}>Facebook</AppButton>
                     <AppButton icon="logo-google" style={{ backgroundColor: 'red', margin: 5 }}>Google</AppButton>
                 </View>
-            </AppContainer>
+            </Content>
         );
     }
 }

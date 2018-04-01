@@ -7,7 +7,7 @@ import { Container, Form, Item, Icon, Input, Content, Grid, Row, Col, Spinner } 
 import { connect } from "react-redux";
 import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
 import { validateEmail } from '../utils'
-import { authenticate } from "../presenters";
+import { authenticate, logIn } from "../presenters";
 
 class LogIn extends Component {
 
@@ -50,7 +50,7 @@ class LogIn extends Component {
         const { navigation, logIn, handleSubmit, submitting, invalid, error } = this.props
 
         return (
-            <AppContainer>
+            <Content>
                 <View style={{ marginHorizontal: 10 }}>
                     <Field name="email" placeholder="EMAIL" component={this.renderInput} />
                     <Field name="password" placeholder="MẬT KHẨU" type="password" component={this.renderInput} />
@@ -63,7 +63,7 @@ class LogIn extends Component {
                     <AppButton icon="logo-facebook" style={{ margin: 5 }}>Facebook</AppButton>
                     <AppButton icon="logo-google" style={{ backgroundColor: 'red', margin: 5 }}>Google</AppButton>
                 </View>
-            </AppContainer>
+            </Content>
         );
     }
 }
@@ -78,7 +78,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
 
-
+    logIn: (token, email, fullName) => dispatch(logIn(token, email, fullName))
 
 })
 

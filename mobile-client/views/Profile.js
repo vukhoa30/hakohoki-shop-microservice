@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, Row, Icon, Col, Card, CardItem, Container } from 'native-base'
+import { Grid, Row, Icon, Col, Card, CardItem, Container, Content } from 'native-base'
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
 import { View, Image, StyleSheet, Dimensions, ImageBackground } from "react-native";
@@ -36,7 +36,7 @@ class Profile extends Component {
 
     renderAsLoggedInMode() {
 
-        const { navigation, logOut } = this.props
+        const { navigation, logOut, fullName, email } = this.props
         const { width } = Dimensions.get('window');
         const avatarSize = 100
 
@@ -59,15 +59,15 @@ class Profile extends Component {
         ]
 
         return (
-            <AppContainer>
+            <Content>
                 <ImageBackground source={{ uri: 'https://opticalcortex.com/app/uploads/2014/08/grad-670x376.jpg' }} style={styles.background}>
                     <Grid>
                         <Col style={{ width: 100, flexDirection: 'column', justifyContent: 'center', marginHorizontal: 20 }}>
                             <Image source={{ uri: 'http://www.winhelponline.com/blog/wp-content/uploads/2017/12/user.png', width: avatarSize, height: avatarSize }} />
                         </Col>
                         <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
-                            <AppText color='white' large>TONY</AppText>
-                            <AppText color='white' small>duykhoi.bui96@gmail.com</AppText>
+                            <AppText color='white' large>{fullName}</AppText>
+                            <AppText color='white' small>{email}</AppText>
                             <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Đăng xuất</AppButton>
                         </Col>
                     </Grid>
@@ -82,7 +82,7 @@ class Profile extends Component {
                         <FeatureList list={featureList} onFeatureSelected={(key) => alert(key)} />
                     </CardItem>
                 </Card>
-            </AppContainer>
+            </Content>
         );
 
     }
@@ -110,7 +110,9 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
 
-        isLoggedIn: state.user.isLoggedIn
+        isLoggedIn: state.user.isLoggedIn,
+        fullName: state.user.fullName ? state.user.fullName : 'UNKNOWN',
+        email: state.user.email
 
     }
 }

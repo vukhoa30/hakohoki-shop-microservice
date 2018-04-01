@@ -4,7 +4,8 @@ import {
     PRODUCT_LIST_STATE_CHANGE,
     PRODUCT_DETAIL_SET_ID,
     PRODUCT_INFORMATION_STATE_CHANGE,
-    PRODUCT_REVIEWS_AND_COMMENTS_STATE_CHANGE,
+    PRODUCT_FEEDBACK_STATE_CHANGE,
+    PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE
 }
     from "../../presenters/state-modifiers/keys";
 
@@ -13,18 +14,28 @@ const initialState = {
     newestList: getListState('LOADING'),
     categories: getListState('LOADING'),
     productList: getListState('LOADING'),
-    productDetail: {
-        productID: null,
-        information: {
-            status: 'LOADING',
-            data: null
-        },
-        reviewsAndComments: {
-            status: 'LOADING',
-            reviews: [],
-            comments: []
-        }
+    selectedProductID: null,
+    productInformation: {
+        status: 'LOADING',
+        data: null
     },
+    productFeedback: {
+        status: 'LOADING',
+        reviews: [],
+        comments: []
+    },
+    productFeedbackStatistic: {
+        status: 'PROCESSING',
+        score: 0,
+        totalReviews: 0,
+        statistic: {
+            5: 0,
+            4: 0,
+            3: 0,
+            2: 0,
+            1: 0
+        }
+    }
 }
 
 function getListState(status, data) {
@@ -36,10 +47,11 @@ function getListState(status, data) {
 
 }
 
+
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, status, data, reviews, comments } = action
+    const { type, status, data, reviews, comments, score, statistic, productID, totalReviews } = action
 
     switch (type) {
 
@@ -53,13 +65,29 @@ function reducer(state = initialState, action) {
             nextState = { ...state, productList: getListState(status, data) }
             break
         case PRODUCT_DETAIL_SET_ID:
-            nextState = { ...state, productDetail: { ...state.productDetail, productID: action.productID } }
+            nextState = { ...state, selectedProductID: productID , productInformation: initialState.productInformation, productFeedback: initialState.productFeedback, productFeedbackStatistic: initialState.productFeedbackStatistic }
             break
         case PRODUCT_INFORMATION_STATE_CHANGE:
-            nextState = { ...state, productDetail: { ...state.productDetail, information: { status, data } } }
+            nextState = { ...state, productInformation: { status, data } }
             break
-        case PRODUCT_REVIEWS_AND_COMMENTS_STATE_CHANGE:
-            nextState = { ...state, productDetail: { ...state.productDetail, reviewsAndComments: { status, reviews: reviews ? reviews : [], comments: comments ? comments : [] } } }
+        case PRODUCT_FEEDBACK_STATE_CHANGE:
+            nextState = { ...state, productFeedback: { status, reviews, comments } }
+            break
+        case PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE:
+            nextState = {
+                ...state, productFeedbackStatistic: {
+                    status: 'PROCESSING',
+                    score: score ? score : 0,
+                    totalReviews: totalReviews ? totalReviews: 0,
+                    statistic: statistic ? statistic : {
+                        5: 0,
+                        4: 0,
+                        3: 0,
+                        2: 0,
+                        1: 0
+                    }
+                }
+            }
             break
 
     }

@@ -45,7 +45,7 @@ class ProductInformation extends Component {
         }
 
         return (
-            <AppContainer style={{ paddingBottom: 50 }} contentStyle={{ paddingHorizontal: 10 }} >
+            <Content style={{ paddingBottom: 50 }} contentStyle={{ paddingHorizontal: 10 }} >
                 <Card style={{ flex: 1 }}>
                     <CardItem>
                         <Left>
@@ -119,7 +119,7 @@ class ProductInformation extends Component {
                         </Card> : null
 
                 }
-            </AppContainer>
+            </Content>
         );
     }
 }
@@ -138,12 +138,11 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-    const { productDetail } = state.product
-    const { information, productID } = productDetail
-    const { status, data } = information
+    const { productInformation, selectedProductID } = state.product
+    const { status, data } = productInformation
 
     return {
-        productID,
+        productID: selectedProductID,
         status,
         data
     }

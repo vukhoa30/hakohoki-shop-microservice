@@ -7,6 +7,8 @@ import Loading from './views/Loading'
 import appReducer from './models/states'
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux';
+import { Container } from "native-base";
+import { createLogger } from 'redux-logger'
 
 const store = createStore(
   appReducer,
@@ -28,9 +30,11 @@ export default class App extends React.Component {
   }
   render() {
     return (
-      <Provider store={store}>
-        {this.state.appLoaded ? <AppNavigation /> : <Loading />}
-      </Provider>
+      <Container>
+        <Provider store={store}>
+          {this.state.appLoaded ? <AppNavigation /> : <Loading />}
+        </Provider>
+      </Container>
     );
   }
 }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { View, Image, StyleSheet } from 'react-native'
-import { Spinner } from "native-base";
+import { Spinner, Content } from "native-base";
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
@@ -44,11 +44,11 @@ class Categories extends Component {
         }
 
         return (
-            <AppContainer>
+            <Content>
                 <FeatureList list={list} onFeatureSelected={key => navigation.navigate('ProductList', {
                     selectedCategory: key
                 })} />
-            </AppContainer>
+            </Content>
         );
     }
 }

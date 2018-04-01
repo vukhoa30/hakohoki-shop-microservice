@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { View, Image, StyleSheet } from 'react-native'
-import { Spinner } from "native-base";
+import { Spinner, Content } from "native-base";
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
@@ -52,13 +52,13 @@ class ProductList extends Component {
         }
 
         return (
-            <AppContainer>
+            <Content>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 50 }}>
                     {
                         list.map(item => <ProductShowcase key={item._id} item={item} onSelected={productID => loadProductDetail(productID)}/>)
                     }
                 </View>
-            </AppContainer>
+            </Content>
         );
     }
 }

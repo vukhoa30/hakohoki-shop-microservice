@@ -6,7 +6,7 @@ import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
 import AppButton from './components/AppButton'
-import { loadProductReviewsAndComments } from "../presenters";
+import { loadProductFeedback } from "../presenters";
 
 class ProductQA extends Component {
 
@@ -17,8 +17,9 @@ class ProductQA extends Component {
     constructor(props) {
 
         super(props)
-        const { productID, loadProductReviewsAndComments } = this.props
-        loadProductReviewsAndComments(productID)
+        const { productID, loadProductFeedback, status } = this.props
+        if (status !== 'LOADED')
+            loadProductFeedback(productID)
 
     }
 
@@ -37,16 +38,16 @@ class ProductQA extends Component {
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductReviewsAndComments(productID)} >Reload</AppButton>
+                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductFeedback(productID)} >Reload</AppButton>
                     </View>
                 )
 
         }
 
         return (
-            <AppContainer style={{ paddingBottom: 50 }}>
+            <Content style={{ paddingBottom: 50 }}>
                 <AppText>Comments here</AppText>
-            </AppContainer>
+            </Content>
         );
     }
 }
@@ -65,12 +66,11 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-    const { productDetail } = state.product
-    const { reviewsAndComments, productID } = productDetail
-    const { status, comments } = reviewsAndComments
+    const { productFeedback, selectedProductID } = state.product
+    const { status, comments } = productFeedback
 
     return {
-        productID,
+        productID: selectedProductID,
         status,
         comments
     }
@@ -78,7 +78,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductReviewsAndComments: productID => dispatch(loadProductReviewsAndComments(productID))
+        loadProductFeedback: productID => dispatch(loadProductFeedback(productID, 'comments'))
     }
 }
 

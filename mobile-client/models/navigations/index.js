@@ -93,7 +93,7 @@ const accountNavigator = TabNavigator(
         tabBarPosition: 'top',
         tabBarOptions: {
             upperCaseLabel: false
-        }
+        },
     }
 )
 

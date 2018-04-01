@@ -5,12 +5,12 @@ class AppButton extends Component {
     state = {
     }
     render() {
-        const { icon, style, textColor, small, large, onProcess } = this.props
+        const { icon, style, textColor, small, large, onProcess, textStyle } = this.props
         return (
             <Button {...this.props} iconLeft={icon} style={style}>
                 {onProcess ? <Spinner /> : null}
                 {icon ? <Icon name={icon} /> : null}
-                <AppText small={small} large={large} color={textColor}>{this.props.children}</AppText>
+                <AppText small={small} large={large} color={textColor} style={textStyle}>{this.props.children}</AppText>
             </Button>
         );
     }

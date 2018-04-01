@@ -30,6 +30,7 @@ function request(url, method, data) {
             })
             .then(data => {
 
+                console.log(data)
                 resolve(data)
 
             })
@@ -49,8 +50,15 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
+function formatTime(time) {
+
+    const dateObj = new Date(time)
+    return dateObj.toLocaleTimeString() + ' - ' + dateObj.toLocaleDateString()
+}
+
 module.exports = {
     request,
     currencyFormat,
-    validateEmail
+    validateEmail,
+    formatTime
 }
