@@ -21,7 +21,7 @@ module.exports = {
       }
     }
   },
-  secretjwt: 'sensitivecontentpleasedontreadthxbye',
+  secretjwt: 'sensitivecontentpleasedontreadthxbyeforemployee',
   messageBrokerAddress: "http://localhost:8000",
   tokenDuration: 24*60*60*1000, //24 hours
 }

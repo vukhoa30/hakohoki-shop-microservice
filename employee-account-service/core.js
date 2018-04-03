@@ -104,7 +104,7 @@ module.exports = {
           role: decode.role
         })
       })
-      .catch(e => reject(e))
+      .catch(e => resolve(false))
     })
   },
   deactiveAccount: async (req, res) => {

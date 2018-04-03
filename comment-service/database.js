@@ -40,5 +40,34 @@ module.exports = {
         }))
       })
     })
+  },
+  GetProductsScores: (productIds) => {
+    return new Promise(async (resolve, reject) => {
+      //console.log(productIds)
+      productIds = productIds.map(i => mongoose.Types.ObjectId(i))
+      models.Comment
+      .aggregate([
+        { 
+          $match: {
+            productId: {$in: productIds},
+            reviewScore: {$exists: true}
+          }
+        },
+        { 
+          $group: {
+            _id: '$productId',
+            avgScore: {$avg: '$reviewScore'},
+            reviewCount: {$sum: 1}
+          }
+        }
+      ], (err, rslt) => {
+        console.log(rslt)
+        console.log(err)
+        if (err) { return reject(err) }
+        else {
+          resolve(rslt)
+        }
+      })
+    })
   }
 }

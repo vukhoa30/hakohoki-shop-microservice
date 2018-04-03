@@ -23,6 +23,7 @@ app.get('/search', core.getProductsByName) //tìm theo specifications luôn
 //app.post('/search/:query', core.getProductsBySpecifications)
 app.get('/info/:id/in-stock', core.getSpecificProductsInStock)
 app.get('/info/specific/:id', core.getProductBySpecificId)
+//app.get('/info/specific/:id/guarantee', core.getGuarantee)
 app.get('/categories', core.getAllCategories)
 //app.get('/specifications', core.getAllSpecifications)
 
@@ -40,10 +41,8 @@ app.put('/product', core.alterProduct)
 //app.delete('/specifications', core.removeSpecification)
 
 //Response amqp
-/*core.getProductsByIds([ '5aba6fc6b7b05766f75da017' ])
-.then(rslt=>console.log(rslt))
-.catch(e=>console.log(e))*/
 responseAmqp.responseGetProducts()
+responseAmqp.responseUpdateSpecificsStatus()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

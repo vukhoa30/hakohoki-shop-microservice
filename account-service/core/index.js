@@ -82,6 +82,6 @@ exports.authenticateCustomer = (token) => {
         role: decode.role
       })
     })
-    .catch(e => {console.log(e); reject(e)})
+    .catch(e => {resolve(false)})
   })
 }

@@ -72,4 +72,11 @@ module.exports = {
   requestAuthenticateEmployee: (token) => {
     return requestAmqp(token, 'authenticateEmployee')
   },
+  responseUpdateSpecificsStatus: () => {
+    var db = require('../database.js')
+    responseAmqp(db.UpdateSpecificsStatus, 'updateSpecificsStatus')
+  },
+  requestReviewScores: (productIds) => {
+    return requestAmqp(productIds, 'getProductsScore')
+  }
 }

@@ -3,10 +3,9 @@ module.exports = (mongoose) => {
     Bill: mongoose.model('Bill', {
       createdAt: { type: Date, default: new Date() },
       paymentMethod: { type: String, default: 'cash' },
-      seller: String,
+      seller: Number,
       buyer: Object,
-      specificProducts: Array, //price, id
-      vouchers: Array
+      specificProducts: Array //price, id
     })
   }
 }

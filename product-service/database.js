@@ -176,13 +176,15 @@ module.exports = {
       models.SpecificProduct
       .insertMany(specificProducts, (err, rslt) => {
         if (err) reject(err);
-        else resolve({
-          productId: id,
-          specificProducts: rslt.map(item => { return {
-            id: item._id,
-            status: item.status
-          }})
-        });
+        else {
+          resolve({
+            productId: id,
+            specificProducts: rslt.map(item => { return {
+              id: item._id,
+              status: item.status
+            }})
+          });
+        }
       })
     })
   },
@@ -297,6 +299,29 @@ module.exports = {
         if (err) { return reject(err) }
         resolve(parseRslt(rslt))
       })
+    })
+  },
+  UpdateSpecificsStatus: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct
+      .updateMany({_id: {$in: ids}}, {
+        $set: { status: 'sold' }
+      }, (err, rslt) => {
+        console.log(rslt) 
+        if (err) { return reject(err) }
+        resolve(rslt)
+      })
+    })
+  },
+  GetGuaranteePeriod: (specificId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var productID = await 
+          models.SpecificProduct.find({_id: specificId}).productId
+        var months = await
+          models.Product.find({_id: productID})._id
+        resolve(months)
+      } catch(e) {reject(e)}
     })
   }
 }

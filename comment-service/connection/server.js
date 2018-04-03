@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core.js')
 
+var responseAmqp = require('./message-broker')
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -18,6 +20,9 @@ app.use(morgan('combined'));
 app.get('/:productId', core.getComments)
 
 app.post('/', core.comment)
+
+//response amqp
+responseAmqp.responseReviewScores()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

@@ -26,21 +26,32 @@ module.exports = {
       ids = rslt.map(r => r._id)
       return db.GetMultipleSpecificProductsInStock(ids)
       .then(async (specifics) => {
-        var promotionPrices = await msgBroker.requestPromotionPrices(
-          rslt.map(r => r._id))
-        rslt.map(r => {
-          var item = specifics.find(e => {
-            return e._id.toString() == r._id.toString()
-          })
-          if (!item) { r.quantity = 0 }
-          else { r.quantity = item.count }
+        try {
+          var productIds = rslt.map(r => r._id)
+          var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
+          var reviewScores = await msgBroker.requestReviewScores(productIds)
+          rslt.map(r => {
+            var item = specifics.find(e => {
+              return e._id.toString() == r._id.toString()
+            })
+            if (!item) { r.quantity = 0 }
+            else { r.quantity = item.count }
 
-          item = promotionPrices.find(e => {
-            return e.productId.toString() == r._id.toString()
+            item = promotionPrices.find(e => {
+              return e.productId.toString() == r._id.toString()
+            })
+            if (item) { r.promotionPrice = item.promotionPrice }
+
+            item = reviewScores.find(e => 
+              e._id.toString() == r._id.toString())
+            if (item) {
+              r.reviewScore = item.avgScore
+              r.reviewCount = item.reviewCount
+            }
           })
-          if (item) { r.promotionPrice = item.promotionPrice }
-        })
-        res.json(rslt)
+          res.json(rslt)
+        }
+        catch(e) { catchError(res, e) }
       })
     })
     .catch(err => catchError(res, err));
@@ -52,8 +63,14 @@ module.exports = {
       .then(async specifics => {
         var promotionPrices = await msgBroker.requestPromotionPrices(
           [ rslt._id ])
+        var reviewScores = await msgBroker.requestReviewScores(
+          [ rslt._id ])
         if (promotionPrices[0]) {
           rslt.promotionPrice = promotionPrices[0].promotionPrice
+        }
+        if (reviewScores[0]) {
+          rslt.reviewScore = reviewScores[0].avgScore
+          rslt.reviewCount = reviewScores[0].reviewCount
         }
         res.json({...rslt, quantity: specifics.specificProducts.length})
       })
@@ -66,8 +83,9 @@ module.exports = {
       ids = rslt.map(r => r._id)
       return db.GetMultipleSpecificProductsInStock(ids)
       .then(async specifics => {
-        var promotionPrices = await msgBroker.requestPromotionPrices(
-          rslt.map(r => r._id))
+        var productIds = rslt.map(r => r._id)
+        var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
+        var reviewScores = await msgBroker.requestReviewScores(productIds)
         rslt.map(r => {
           var item = specifics.find(e => {
             return e._id.toString() == r._id.toString()
@@ -79,6 +97,13 @@ module.exports = {
             return e.productId.toString() == r._id.toString()
           })
           if (item) { r.promotionPrice = item.promotionPrice }
+          
+          item = reviewScores.find(e => 
+            e._id.toString() == r._id.toString())
+          if (item) {
+            r.reviewScore = item.avgScore
+            r.reviewCount = item.reviewCount
+          }
         })
         res.json(rslt)
       })
@@ -93,8 +118,9 @@ module.exports = {
       ])
       .then(async rslts => {
         var [ products, specifics ] = rslts
-        var promotionPrices = await msgBroker.requestPromotionPrices(
-          products.map(p => p._id))
+        var productIds = products.map(r => r._id)
+        var promotionPrices = await msgBroker.requestPromotionPrices(productId)
+        var reviewScores = await msgBroker.requestReviewScores(productIds)
         products.map(p => {
           var item = specifics.find(e => {
             return e._id.toString() == p._id.toString()
@@ -106,6 +132,13 @@ module.exports = {
             return e.productId.toString() == p._id.toString()
           })
           if (item) { p.promotionPrice = item.promotionPrice }
+
+          item = reviewScores.find(e => 
+            e._id.toString() == r._id.toString())
+          if (item) {
+            r.reviewScore = item.avgScore
+            r.reviewCount = item.reviewCount
+          }
         })
         resolve(products)
       })
@@ -124,13 +157,43 @@ module.exports = {
     } else { return catchUnauthorized(res) }
     try {
       var authentication = await msgBroker.requestAuthenticateEmployee(token)
-      console.log(authentication)
       if (!authentication) { return catchUnauthorized(res) }
     } catch(e) { catchError(res, e) }
 
     db.GetProductBySpecificId(req.params.id)
-    .then(rslt => { res.json(rslt) })
-    .catch(e => catchError(res, e))
+    .then(rslt => {
+      return db.GetSpecificProductsInStock(rslt._id)
+      .then(async specifics => {
+        var promotionPrices = await msgBroker.requestPromotionPrices(
+          [ rslt._id ])
+        var reviewScores = await msgBroker.requestReviewScores(
+          [ rslt._id ])
+        if (promotionPrices[0]) {
+          rslt.promotionPrice = promotionPrices[0].promotionPrice
+        }
+        if (reviewScores[0]) {
+          rslt.reviewScore = reviewScores[0].avgScore
+          rslt.reviewCount = reviewScores[0].reviewCount
+        }
+        res.json({...rslt, quantity: specifics.specificProducts.length})
+      })
+    })
+    .catch(err => catchError(res, err));
+  },
+  getGuarantee: async (req, res) => {
+    var token;
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } else { return catchUnauthorized(res) }
+    try {
+      var authentication = await msgBroker.requestAuthenticateEmployee(token)
+      if (!authentication) { return catchUnauthorized(res) }
+
+      var rslt = await db.GetGuaranteePeriod(req.params.id)
+      //stopped
+      //var 
+      //res.json(rslt)
+    } catch(e) { catchError(res, e) }
   },
   getProductsBySpecifications: (req, res) => {
     typicalResponse(res, db.GetProductsBySpecifications(req.params.query, req.body));
@@ -144,14 +207,31 @@ module.exports = {
   getAllSpecifications: (req, res) => {
     typicalResponse(res, db.GetAllSpecification());
   },
-  addNewProduct: (req, res) => {
-    typicalResponse(res, db.AddNewProduct(req.body));
+  addNewProduct: async (req, res) => {
+    var token;
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } else { return catchUnauthorized(res) }
+    try {
+      var authentication = await msgBroker.requestAuthenticateEmployee(token)
+      if (!authentication || authentication.role !== 'manager') { return catchUnauthorized(res) }
+    
+      var rslt = await db.AddNewProduct(req.body)
+      res.json(rslt)
+    } catch(e) { catchError(res, e) }
   },
-  addNewSpecificProducts: (req, res) => {
-    typicalResponse(res, db.AddNewSpecificProducts(
-      req.body.productId,
-      req.body.amount
-    ));
+  addNewSpecificProducts: async (req, res) => {
+    var token;
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } else { return catchUnauthorized(res) }
+    try {
+      var authentication = await msgBroker.requestAuthenticateEmployee(token)
+      if (!authentication || authentication.role !== 'manager') { return catchUnauthorized(res) }
+
+      var rslt = await db.AddNewSpecificProducts(req.body.productId, req.body.amount)
+      res.json(rslt)
+    } catch(e) { catchError(res, e) }
   },
   sell: (req, res) => {
     typicalResponse(res, db.Sell(req.body.id));

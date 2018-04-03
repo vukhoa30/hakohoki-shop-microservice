@@ -15,8 +15,9 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/')
-
+app.get('/buyer', core.getBillsByBuyer)
+app.get('/time', core.getBillsByTime)
+app.post('/', core.createBill)
 //Running server-------------------------------------------------------------
 server.listen(port, function () {
     console.log('Bill service is listening at port %d', port);

@@ -32,6 +32,30 @@ var requestAmqp = (msgObject, queue) => {
   })
 }
 
+var responseAmqp = (promise, queue) => {
+  amqp.connect(amqpAddress)
+  .then(conn => { 
+    return conn.createChannel()
+    .then(ch => {
+      ch.assertQueue(queue, {durable: false})
+      ch.prefetch(1)
+      console.log('Awating...')
+      ch.consume(queue, async (msg) => {
+        var response = []
+        try {
+          response = await promise(JSON.parse(msg.content.toString()))
+        } catch (e) { console.log(e) }
+        ch.sendToQueue(msg.properties.replyTo,
+          new Buffer(JSON.stringify(response)),
+          {correlationId: msg.properties.correlationId})
+        ch.ack(msg)
+        console.log('Sent: ' + response)
+      })
+    })
+  })
+  .catch(e => console.log(e))
+}
+
 module.exports = {
   requestAuthenticateCustomer: (token) => {
     return requestAmqp(token, 'authenticateCustomer')
@@ -44,5 +68,9 @@ module.exports = {
   },
   requestEmployees: (ids) => {
     return requestAmqp(ids, 'getEmployees')
+  },
+  responseReviewScores: () => {
+    var db = require('../database')
+    responseAmqp(db.GetProductsScores, 'getProductsScore')
   }
 }
