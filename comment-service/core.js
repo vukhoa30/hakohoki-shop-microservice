@@ -9,6 +9,7 @@ var typicalResponse = (res, func) => {
 }
 
 var catchError = (res, err) => {
+  console.log(err)
   res.status(500);
   res.json({ msg: 'INTERNAL SERVER ERROR', err: err });
 }
@@ -37,7 +38,20 @@ module.exports = {
         parentId: req.body.parentId,
         reviewScore: req.body.reviewScore
       })
-      res.json({id: commentId})
+
+      if (req.body.parentId) {
+        var comments = await db.GetCommentById(req.body.parentId)
+        var accountId = comments[0].accountId
+        var products = await msgBroker.requestGetProducts([req.body.productId])
+        var productName = products[0].name
+        await msgBroker.requestNotificationRequest({
+          type: 'commentReplied',
+          accountId,
+          productId: req.body.productId,
+          productName
+        })
+        res.json({id: commentId})
+      }
     } catch (e) { catchError(res, e) }
   },
   getComments: (req, res) => {

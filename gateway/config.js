@@ -1,3 +1,3 @@
 module.exports = {
-  secretjwt: 'sensitivecontentpleasedontreadthxbye'
+  "amqpAddress": "amqp://localhost"
 }

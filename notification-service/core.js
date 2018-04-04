@@ -1,6 +1,6 @@
 var db = require('./database')
 //var helper = require('../helper')
-var messageBroker = require('./connection/message-broker')
+var msgBroker = require('./connection/message-broker')
 
 //chỉ chạy 1 promise
 var typicalResponse = (res, func) => {
@@ -14,7 +14,35 @@ var catchError = (res, err) => {
 }
 
 module.exports = {
-  getNotification: (req, res) => {
-    typicalResponse(res, db.GetNotifications(req.account.email));
+  getNotification: async (req, res) => {
+    var token;
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+      token = req.headers.authorization.split(' ')[1]
+    } else { return catchUnauthorized(res) }
+    try {
+      var authentication = await msgBroker.requestAuthenticateCustomer(token)
+      if (!authentication) {
+        authentication = await msgBroker.requestAuthenticateEmployee(token)
+      }
+      if (!authentication) { return catchUnauthorized(res) }
+
+      res.json(await db.GetNotifications(authentication.accountId))
+    } catch (e) { catchError(res, e) }
   },
+  addNotification:  (notification) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        db.AddNotification({
+          ...notification,
+          productName: undefined,
+          promotionName: undefined,
+        })
+        msgBroker.requestNotification({
+          ...notification,
+          time: new Date()
+        })
+        resolve(true)
+      } catch (e) { reject(e) }
+    })
+  }
 }

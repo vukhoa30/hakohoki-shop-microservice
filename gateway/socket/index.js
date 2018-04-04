@@ -3,11 +3,45 @@
   'ws://localhost:3003'
 */
 
-var ioClient = require('socket.io-client');
+//var ioClient = require('socket.io-client');
+var amqp = require('amqplib')
+var amqpAddress = require('../config').amqpAddress
 //var proxy = require('http-proxy-middleware')
 //var proxy = require('socket.io-proxy');
 
 var getIDOnly = socketID => socketID.substring(socketID.indexOf('#') + 1);
+
+var responseAmqpNotification = (io, queue) => {
+  amqp.connect(amqpAddress)
+  .then(conn => { 
+    return conn.createChannel()
+    .then(ch => {
+      ch.assertQueue(queue, {durable: false})
+      ch.prefetch(1)
+      console.log('Awating...')
+      ch.consume(queue, async (msg) => {
+        content = JSON.parse(msg.content.toString())
+        try {
+          console.log(content)
+          var socketDes = clientSockets.find(clientSocket =>
+            clientSocket.accountId.toString() == content.accountId.toString()
+          );
+          if (socketDes) {
+            console.log(socketDes.id)
+            io.of('/notifications').to(socketDes.id).emit('message', content)
+          }
+        } catch (e) { console.log(e) }
+        var response = {ok:true}
+        ch.sendToQueue(msg.properties.replyTo,
+          new Buffer(JSON.stringify(response)),
+          {correlationId: msg.properties.correlationId})
+        ch.ack(msg)
+        console.log('Sent: ' + response)
+      })
+    })
+  })
+  .catch(e => console.log(e))
+}
 
 module.exports = (server, db) => {
 
@@ -46,29 +80,29 @@ module.exports = (server, db) => {
     //console.log('client connected!');
   });
 
-  db.forEach(service => {
-    if (service.type === 'socket') {
-      io.of(service.clientUrl)
-      .on('connection', socket => {
-        socket.on('give-username', data => {
-          clientSockets.push({...socket, username: data.username})
-        })
-        socket.on('disconnect', () => {
-          clientSockets.splice(
-            clientSockets.indexOf(socket), 1
-          )
-        })
-      });
-
-      var serviceSocket = ioClient(service.serviceUrl);
-      serviceSocket.on('message', data => {
-        var socketDes = clientSockets.find(clientSocket =>
-          clientSocket.username === data.username
-        );
-        if (socketDes) {
-          io.of(service.clientUrl).to(socketDes.id).emit('message', data)
-        }
-      })
-    }
+  //io.of(service.clientUrl)
+  io.of('/notifications')
+  .on('connection', socket => {
+    socket.on('give-accountid', data => {
+      clientSockets.push({...socket, accountId: data})
+      console.log(clientSockets.map(m=>{return{id: m.id, accountId: m.accountId}}))
+    })
+    socket.on('disconnect', () => {
+      clientSockets.splice(
+        clientSockets.indexOf(socket), 1
+      )
+    })
   });
+
+  responseAmqpNotification(io, 'notificate')
+
+  /*var serviceSocket = ioClient(service.serviceUrl);
+  serviceSocket.on('message', data => {
+    var socketDes = clientSockets.find(clientSocket =>
+      clientSocket.username === data.username
+    );
+    if (socketDes) {
+      io.of(service.clientUrl).to(socketDes.id).emit('message', data)
+    }
+  })*/
 }

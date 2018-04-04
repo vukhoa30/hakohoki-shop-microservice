@@ -41,9 +41,18 @@ module.exports = {
       })
     })
   },
+  GetCommentById: (_id) => {
+    return new Promise((resolve, reject) => {
+      models.Comment
+      .find({ _id })
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt)
+      })
+    })
+  },
   GetProductsScores: (productIds) => {
     return new Promise(async (resolve, reject) => {
-      //console.log(productIds)
       productIds = productIds.map(i => mongoose.Types.ObjectId(i))
       models.Comment
       .aggregate([
@@ -61,8 +70,6 @@ module.exports = {
           }
         }
       ], (err, rslt) => {
-        console.log(rslt)
-        console.log(err)
         if (err) { return reject(err) }
         else {
           resolve(rslt)

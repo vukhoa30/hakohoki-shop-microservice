@@ -22,6 +22,6 @@ module.exports = {
     }
   },
   secretjwt: 'sensitivecontentpleasedontreadthxbyeforemployee',
-  messageBrokerAddress: "http://localhost:8000",
+  "amqpAddress": "amqp://localhost",
   tokenDuration: 24*60*60*1000, //24 hours
 }

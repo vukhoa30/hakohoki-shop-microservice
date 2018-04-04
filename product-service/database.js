@@ -125,7 +125,13 @@ module.exports = {
   },
   GetMultipleSpecificProductsInStock: (ids) => {
     return new Promise((resolve, reject) => {
+      ids = ids.map(i => mongoose.Types.ObjectId(i))
       models.SpecificProduct.aggregate([
+        {
+          $match: {
+            productId: {$in: ids}
+          }
+        },
         {
           $group: {
             _id: '$productId',
@@ -135,7 +141,8 @@ module.exports = {
       ], (err, rslt) => {
         if (err) { reject(err) }
         else { 
-          resolve(rslt.filter(r => ids.indexOf(r._id.toString()) >= 0)) 
+          //resolve(rslt.filter(r => ids.indexOf(r._id.toString()) >= 0)) 
+          resolve(rslt)
         }
       })
     })

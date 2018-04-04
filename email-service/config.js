@@ -11,7 +11,7 @@ module.exports = {
     tls: { rejectUnauthorized: false }
   }),
   transporterName: '"2K Shop" <2kshopservice@gmail.com>',
-
-  messageBrokerAddress: "http://localhost:8000"
+  
+  "amqpAddress": "amqp://localhost"
   
 }

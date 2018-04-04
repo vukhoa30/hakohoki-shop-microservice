@@ -11,45 +11,24 @@ var handleCallback = (err, rslt) => {
 }
 
 module.exports = {
-  AddNotification: (email, content, navigateLink) => {
-    navigateLink = navigateLink || '';
+  AddNotification: (notification) => {
     return new Promise((resolve, reject) => {
-      models.Notification
-      .find({ email })
-      .exec((err, rslt) => {
-        var newItem = { 
-          createdAt: new Date(),
-          content,
-          navigateLink
-        }
-        if (rslt.length === 0) {
-          var newNotification = models.Notification({
-            email,
-            list: [ newItem ]
-          })
-          models.Notification
-          .save(newNotification, (err, rslt) => {
-            if (err) { reject(err) }
-            else { resolve(rslt) }
-          })
-        } else {
-          models.Notification.update({ email }, {
-            $push: { list: newItem }
-          }, (err, rslt) => {
-            if (err) reject(err);
-            else resolve(rslt);
-          })
-        }
+      var newNotification = new models.Notification(notification)
+      newNotification
+      .save((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt)
       })
     })
   },
-  GetNotifications: (email) => {
+  GetNotifications: (accountId) => {
     return new Promise((resolve, reject) => {
       models.Notification
-      .find({ email })
+      .find({ accountId })
+      .sort({ 'createdAt': -1 })
       .exec((err, rslt) => {
         if (err) { reject(err) }
-        else { resolve(rslt[0].list) }
+        else { resolve(rslt) }
       })
     })
   }

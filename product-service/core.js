@@ -30,6 +30,7 @@ module.exports = {
           var productIds = rslt.map(r => r._id)
           var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
           var reviewScores = await msgBroker.requestReviewScores(productIds)
+          console.log(specifics)
           rslt.map(r => {
             var item = specifics.find(e => {
               return e._id.toString() == r._id.toString()
@@ -119,7 +120,7 @@ module.exports = {
       .then(async rslts => {
         var [ products, specifics ] = rslts
         var productIds = products.map(r => r._id)
-        var promotionPrices = await msgBroker.requestPromotionPrices(productId)
+        var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
         var reviewScores = await msgBroker.requestReviewScores(productIds)
         products.map(p => {
           var item = specifics.find(e => {
@@ -134,10 +135,10 @@ module.exports = {
           if (item) { p.promotionPrice = item.promotionPrice }
 
           item = reviewScores.find(e => 
-            e._id.toString() == r._id.toString())
+            e._id.toString() == p._id.toString())
           if (item) {
-            r.reviewScore = item.avgScore
-            r.reviewCount = item.reviewCount
+            p.reviewScore = item.avgScore
+            p.reviewCount = item.reviewCount
           }
         })
         resolve(products)

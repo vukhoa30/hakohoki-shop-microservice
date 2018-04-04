@@ -13,7 +13,6 @@ var jwtkey = require('../config.js').secretjwt
 var jwt = require('jsonwebtoken')
 
 const parseToken = (proxyReq, req) => {
-  console.log(req.headers);
   if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
     jwt.verify(req.headers.authorization.split(' ')[1], jwtkey, (err, decode) => {
         if (err) {
@@ -27,7 +26,6 @@ const parseToken = (proxyReq, req) => {
   } else {
     proxyReq.account = undefined;
   }
-  console.log(proxyReq.account)
 }
 
 module.exports = (app, db) => {

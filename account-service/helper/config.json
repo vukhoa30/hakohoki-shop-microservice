@@ -1,6 +1,6 @@
 {
     "privateKey": "sensitivecontentpleasedontreadthxbye",
-    "messageBrokerAddress": "http://localhost:8000",
     "dbAddress":"mongodb://buiduykhoi:buiduykhoi@ds211309.mlab.com:11309/account_service",
-    "tokenDuration": 86400000
+    "tokenDuration": 86400000,
+    "amqpAddress": "amqp://localhost"
 }

@@ -72,5 +72,11 @@ module.exports = {
   responseReviewScores: () => {
     var db = require('../database')
     responseAmqp(db.GetProductsScores, 'getProductsScore')
+  },
+  requestGetProducts: (productIds) => {
+    return requestAmqp(productIds, 'getProducts')
+  },
+  requestNotificationRequest: (notification) => {
+    return requestAmqp(notification, 'notificationRequest')
   }
 }
