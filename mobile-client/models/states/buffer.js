@@ -1,4 +1,4 @@
-import { SAVE_TO_BUFFER } from "../../presenters/state-modifiers/keys";
+import { SAVE_TO_BUFFER } from "../../presenters/keys";
 
 const initialState = {
 

@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { View, Image, StyleSheet } from 'react-native'
-import { Spinner, Content } from "native-base";
+import { Spinner, Content, H1, Button } from "native-base";
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
 import AppButton from './components/AppButton'
 import ProductShowcase from './components/ProductShowcase'
-import { loadProductList, loadProductDetail } from "../presenters";
+import { loadProductList, selectProduct } from "../presenters";
 
 class ProductList extends Component {
 
@@ -15,8 +15,11 @@ class ProductList extends Component {
     static navigationOptions = ({ navigation }) => {
 
         const { params } = navigation.state
+
         return {
-            title: params ? params.selectedCategory : 'Unknown category',
+
+            title: params && params.category ? params.category : 'Product list'
+
         }
 
     }
@@ -24,41 +27,52 @@ class ProductList extends Component {
     constructor(props) {
 
         super(props)
-        const { params } = this.props.navigation.state
-        this.props.loadProductList(params.selectedCategory)
+        const { loadProductList, navigation, list, status } = props
+        const { params } = navigation.state
+        loadProductList(params, 0, 10)
 
     }
 
     render() {
-        const { list, status, loadProductList, loadProductDetail, navigation } = this.props
-        const { selectedCategory } = navigation.state.params
-
-        switch (status) {
-
-            case 'LOADING':
-                return (
-                    <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                        <Spinner />
-                    </View>
-                )
-            case 'LOADING_FAILED':
-                return (
-                    <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                        <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductList(selectedCategory)} >Reload</AppButton>
-                    </View>
-                )
-
-        }
-
+        const { selectProduct, navigation, status, list, loadProductList, offset, limit, setCart } = this.props
+        const { params } = navigation.state
+        const paramKeys = Object.keys(params)
+        const isSearchMode = (params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0)
         return (
             <Content>
+                {
+                    isSearchMode &&
+                    <View style={{ marginVertical: 10, marginHorizontal: 10 }}>
+                        <AppText note>Tìm kiếm theo</AppText>
+                        <View style={{ flexDirection: 'row' }}>
+                            {
+                                Object.keys(params).map(key => {
+
+                                    return key === 'category' ? null :
+                                        <Button key={'key-' + key} light small style={{ margin: 5 }}>
+                                            <AppText>{key}={params[key]}</AppText>
+                                        </Button>
+
+                                })
+                            }
+                        </View>
+                    </View>
+                }
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 50 }}>
                     {
-                        list.map(item => <ProductShowcase key={item._id} item={item} onSelected={productID => loadProductDetail(productID)}/>)
+                        list.map(item => <ProductShowcase key={item._id + new Date().toString()} item={item} onSelected={productID => selectProduct(productID)} />)
                     }
                 </View>
-            </Content>
+                {
+                    status === 'LOADING' ?
+                        <Spinner /> :
+                        status === 'LOADING_FAILED' &&
+                        <View style={{ alignItems: 'center' }}>
+                            <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
+                            <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => this.loadProductList(params, list.length, 10)}>Reload</AppButton>
+                        </View>
+                }
+            </Content >
         );
     }
 }
@@ -77,18 +91,22 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
-    const { status, data } = state.product.productList
+
+    const { status, data } = state.product.list
 
     return {
-        status: status,
-        list: data
+
+        status,
+        list: data,
+
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductList: category => dispatch(loadProductList(category)),
-        loadProductDetail: productID => dispatch(loadProductDetail(productID))
+        loadProductList: (firstLoad, conditions, offset, limit) => dispatch(loadProductList(firstLoad, conditions, offset, limit)),
+        selectProduct: productID => dispatch(selectProduct(productID)),
+        setCart: (product, type) => dispatch(setCart(product, type))
     }
 }
 

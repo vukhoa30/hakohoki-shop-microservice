@@ -70,7 +70,7 @@ class SignUp extends Component {
                     <Field name="password" placeholder="PASSWORD" type="password" component={this.renderInput} />
                     <Field name="retypePassword" placeholder="RETYPE PASSWORD" type="password" component={this.renderInput} />
                 </View>
-                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered warning onPress={handleSubmit(enroll.bind(this))} disabled={(!error && invalid) || submitting} onProcess={submitting}>
+                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered warning onPress={handleSubmit(enroll.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
                     ENROLL
                             </AppButton>
                 <AppText center>--------- or enroll through ----------</AppText>

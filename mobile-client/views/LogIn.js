@@ -55,7 +55,7 @@ class LogIn extends Component {
                     <Field name="email" placeholder="EMAIL" component={this.renderInput} />
                     <Field name="password" placeholder="MẬT KHẨU" type="password" component={this.renderInput} />
                 </View>
-                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} onProcess={submitting}>
+                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
                     LOG IN
                             </AppButton>
                 <AppText center>--------- or log in through ----------</AppText>

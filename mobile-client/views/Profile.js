@@ -25,8 +25,8 @@ class Profile extends Component {
                 </Row>
                 <Row size={40} style={{ paddingTop: 50 }}>
                     <Container>
-                        <AppButton block primary onPress={() => navigation.navigate('LogIn')} style={{ margin: 5 }}>Đăng nhập</AppButton>
-                        <AppButton block primary bordered onPress={() => navigation.navigate('SignUp')} style={{ margin: 5 }}>Đăng ký</AppButton>
+                        <AppButton block primary onPress={() => navigation.navigate('LogIn')} style={{ margin: 5 }}>Log in</AppButton>
+                        <AppButton block primary bordered onPress={() => navigation.navigate('SignUp')} style={{ margin: 5 }}>Sign up</AppButton>
                     </Container>
                 </Row>
             </Grid>
@@ -43,17 +43,17 @@ class Profile extends Component {
         const featureList = [
             {
                 icon: 'ios-notifications-outline',
-                name: 'Thông báo',
+                name: 'Notification',
                 key: 'NOTIFICATION'
             },
             {
                 icon: 'ios-paper-outline',
-                name: 'Đơn hàng',
+                name: 'Orders',
                 key: 'ORDER'
             },
             {
                 icon: 'md-paper',
-                name: 'Danh sách theo dõi',
+                name: 'Watch list',
                 key: 'WATCH_LIST'
             }
         ]
@@ -68,14 +68,14 @@ class Profile extends Component {
                         <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
                             <AppText color='white' large>{fullName}</AppText>
                             <AppText color='white' small>{email}</AppText>
-                            <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Đăng xuất</AppButton>
+                            <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Log out</AppButton>
                         </Col>
                     </Grid>
                 </ImageBackground>
                 <View style={{ marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
-                    <AppIconButton name="ios-information-circle-outline" buttonName="Thông tin" />
-                    <AppIconButton name="md-key" buttonName="Đổi mật khẩu" />
-                    <AppIconButton name="ios-cart-outline" buttonName="Giỏ hàng" />
+                    <AppIconButton name="ios-information-circle-outline" buttonName="Information" />
+                    <AppIconButton name="md-key" buttonName="Password" />
+                    <AppIconButton name="ios-cart-outline" buttonName="My cart" onPress={() => navigation.navigate('Cart')} />
                 </View>
                 <Card style={{ marginVertical: 5 }}>
                     <CardItem>

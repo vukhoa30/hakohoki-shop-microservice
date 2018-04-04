@@ -1,6 +1,6 @@
 import { TabNavigator, TabBarBottom, StackNavigator, TabBarTop } from "react-navigation";
 import React, { Component } from 'react';
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Home from '../../views/Home'
 import Profile from '../../views/Profile'
 import LogIn from '../../views/LogIn'
@@ -9,8 +9,10 @@ import Activation from '../../views/Activation'
 import Categories from '../../views/Categories'
 import ProductList from '../../views/ProductList'
 import ProductInformation from '../../views/ProductInformation'
-import ProductReviews from '../../views/ProductReview'
-import ProductQA from '../../views/ProductQA'
+import ProductFeedback from '../../views/ProductFeedback'
+import QuestionForm from '../../views/QuestionForm'
+import ReviewForm from '../../views/ReviewForm'
+import Cart from '../../views/Cart'
 import { Icon } from "native-base";
 
 const mainNavigator = TabNavigator(
@@ -63,11 +65,8 @@ const productDetailNavigator = TabNavigator(
         ProductInformation: {
             screen: ProductInformation,
         },
-        ProductReviews: {
-            screen: ProductReviews,
-        },
-        ProductQA: {
-            screen: ProductQA,
+        ProductFeedback: {
+            screen: ProductFeedback
         }
     },
     {
@@ -97,7 +96,7 @@ const accountNavigator = TabNavigator(
     }
 )
 
-const appNavigator = StackNavigator({
+const rootNavigator = StackNavigator({
 
     Main: {
         screen: mainNavigator
@@ -105,7 +104,9 @@ const appNavigator = StackNavigator({
 
     Account: {
         screen: accountNavigator,
-        navigationOptions: { title: 'Account' }
+        navigationOptions: {
+            title: 'Account'
+        }
     },
 
     Activation: {
@@ -116,14 +117,43 @@ const appNavigator = StackNavigator({
         screen: ProductList
     },
 
+    Cart: {
+        screen: Cart
+    },
+
     ProductDetail: {
         screen: productDetailNavigator,
-        navigationOptions: { title: 'Product detail' }
+        navigationOptions: ({ navigationOptions }) => ({ ...navigationOptions, title: 'Product detail' })
+    },
+
+    QuestionForm: {
+        screen: QuestionForm,
+        navigationOptions: {
+            header: null
+        }
+    },
+
+    ReviewForm: {
+        screen: ReviewForm,
+        navigationOptions: {
+            header: null
+        }
     }
 
-
 }, {
+
+        navigationOptions: ({ navigation }) =>
+            ({
+                headerRight:
+                    <View style={{ flexDirection: 'row' }}>
+                        <Icon name='home' style={{ marginRight: 20 }} onPress={() => navigation.navigate('Home')} />
+                        <Icon name='cart' style={{ marginRight: 20 }} onPress={() => navigation.navigate('Cart')}/>
+                    </View>
+
+            })
+
     })
+
 
 const styles = StyleSheet.create({
 
@@ -134,4 +164,4 @@ const styles = StyleSheet.create({
 
 })
 
-export default appNavigator
+export default rootNavigator

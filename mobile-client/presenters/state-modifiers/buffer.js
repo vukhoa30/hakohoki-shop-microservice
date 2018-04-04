@@ -1,4 +1,4 @@
-import { SAVE_TO_BUFFER } from './keys'
+import { SAVE_TO_BUFFER } from '../keys'
 
 function getAction(type, data) {
 

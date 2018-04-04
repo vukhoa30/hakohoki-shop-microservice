@@ -1,25 +1,22 @@
-import { request } from '../utils'
+import { request, parseToQueryString, getAction } from '../utils'
 import navigator from '../models/navigations'
 import {
     USER_LOG_IN,
     USER_LOG_OUT,
-    CATEGORIES_STATE_CHANGE,
-    PRODUCT_LIST_STATE_CHANGE,
-    PRODUCT_DETAIL_SET_ID,
-    PRODUCT_INFORMATION_STATE_CHANGE,
-    PRODUCT_FEEDBACK_STATE_CHANGE,
-    PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE,
+    SELECT_PRODUCT,
+    PRODUCT_LIST_LOADING,
+    PRODUCT_DETAIL_LOADING,
+    ADD_TO_CART,
+    REMOVE_FROM_CART,
+    REMOVE_ALL,
     SAVE_TO_BUFFER
 
-} from './state-modifiers/keys'
-import userAction from './state-modifiers/user'
-import productAction from './state-modifiers/product'
+} from './keys'
 import bufferAction from './state-modifiers/buffer'
 import { SubmissionError } from "redux-form";
-import { reduce, assign } from "lodash";
+import { reduce, assign, transform } from "lodash";
 import { NavigationActions } from "react-navigation";
 import { AsyncStorage } from "react-native";
-import { transform } from "lodash";
 
 function loadUserInfo() {
 
@@ -28,6 +25,34 @@ function loadUserInfo() {
         AsyncStorage.multiGet(['@User:token', '@User:email', '@User:fullName'], (err, values) => {
 
             console.log(values)
+            if (values[0][1] === null) return
+
+            const obj = reduce(values, (result, item) => {
+
+                switch (item[0]) {
+                    case '@User:token':
+                        result['token'] = item[1]
+                        break
+                    case '@User:email':
+                        result['email'] = item[1]
+                        break
+                    case '@User:fullName':
+                        result['fullName'] = item[1]
+                        break
+                }
+
+                return result
+
+
+            }, {
+
+                    token: null,
+                    email: null,
+                    fullName: null
+
+                })
+
+            dispatch(getAction(USER_LOG_IN, { ...obj }))
 
         })
 
@@ -40,7 +65,7 @@ function logIn(token, email, fullName) {
 
     return dispatch => {
 
-        dispatch(userAction(USER_LOG_IN, { token, email, fullName }))
+        dispatch(getAction(USER_LOG_IN, { token, email, fullName }))
     }
 
 }
@@ -50,7 +75,7 @@ function logOut() {
     return dispatch => {
 
         AsyncStorage.multiRemove(['@User:token', '@User:email', '@User:fullName'])
-        dispatch(userAction(USER_LOG_OUT))
+        dispatch(getAction(USER_LOG_OUT))
         dispatch(navigator.router.getActionForPathAndParams('Account/LogIn'))
 
     }
@@ -64,19 +89,16 @@ function authenticate(values) {
         let err = `Undefined error, try again later!`
         const { email, password } = values
         try {
-            const response = await request('/accounts/authentication', 'POST', { email, password })
+            const response = await request('/accounts/authentication', 'POST', {}, { email, password })
             const { status, data } = response
             const { logIn, navigation } = this.props
             const lastScreen = navigation.state.params ? navigation.state.params.lastScreen : null
-
+            console.log(data)
             switch (status) {
                 case 200:
                     logIn(data.token, email, data.account.fullName)
-                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:email', email], ['@User:fullName', data.account.fullName]])
-                    if (lastScreen === null)
-                        navigation.navigate('Profile')
-                    else
-                        navigation.dispatch(NavigationActions.back())
+                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:email', email], ['@User:fullName', data.account.fullName]], errors => console.log('Error' + errors))
+                    navigation.dispatch(NavigationActions.back())
                     return resolve()
                 case 401:
                     if (data.msg === 'ACCOUNT NOT ACTIVATED') {
@@ -116,7 +138,7 @@ function enroll(values) {
         let err = `Undefined error, try again later!`
         const { email, password, fullName } = values
         try {
-            const response = await request('/accounts/', 'POST', { email, password, fullName })
+            const response = await request('/accounts/', 'POST', {}, { email, password, fullName })
             const { status, data } = response
             const { navigation } = this.props
 
@@ -154,7 +176,7 @@ function activate(values) {
         const { navigation } = this.props
 
         try {
-            const response = await request('/accounts/activation', 'POST', { email: navigation.state.params.email, activationCode })
+            const response = await request('/accounts/activation', 'POST', {}, { email: navigation.state.params.email, activationCode })
             const { status, data } = response
 
             switch (status) {
@@ -183,11 +205,6 @@ function activate(values) {
 
 }
 
-function loadNewestProductList() {
-
-
-}
-
 function saveToBuffer(data) {
 
     return dispatch => dispatch(bufferAction(SAVE_TO_BUFFER, data))
@@ -196,60 +213,66 @@ function saveToBuffer(data) {
 
 function loadCategories() {
 
-    return async dispatch => {
+    return new Promise(async (resolve, reject) => {
 
-        dispatch(productAction(CATEGORIES_STATE_CHANGE, { status: 'LOADING' }))
         try {
 
-            const response = await request('/products/categories', 'GET')
+            const response = await request('/products/categories', 'GET', {})
             const { status, data } = response
 
             if (status === 200)
-                return dispatch(productAction(CATEGORIES_STATE_CHANGE, { status: 'LOADED', data: data.map(item => ({ key: item, name: item })) }))
+                resolve({ ok: true, list: data.map(item => ({ key: item, name: item })) })
 
         } catch (error) {
 
 
         }
 
-        dispatch(productAction(CATEGORIES_STATE_CHANGE, { status: 'LOADING_FAILED' }))
+        resolve({ ok: false })
 
 
-    }
+    })
 
 }
 
-function loadProductList(category, offset = 0) {
+function selectCategory(category) {
+
+    return dispatch => dispatch(navigator.router.getActionForPathAndParams('ProductList', { category }))
+
+}
+
+function loadProductList(conditions, offset, limit) {
 
     return async dispatch => {
 
-        dispatch(productAction(PRODUCT_LIST_STATE_CHANGE, { status: 'LOADING' }))
+        dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADING', firstLoad: offset === 0 }))
+
+        const queryString = parseToQueryString(conditions)
+
         try {
 
-            console.log('category = ' + category)
-            const response = await request(`/products/search?category=${category}&offset=${offset}&limit=10`, 'GET')
+            const response = await request(`/products/search?${queryString}&offset=${offset}&limit=${limit}`, 'GET', {})
             const { status, data } = response
 
+            console.log(status)
             if (status === 200)
-                return dispatch(productAction(PRODUCT_LIST_STATE_CHANGE, { status: 'LOADED', data }))
+                return dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADED', data, conditions }))
 
         } catch (error) {
 
-
         }
 
-        dispatch(productAction(PRODUCT_LIST_STATE_CHANGE, { status: 'LOADING_FAILED' }))
-
+        dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADING_FAILED' }))
 
     }
 
 }
 
-function loadProductDetail(productID) {
+function selectProduct(productID) {
 
     return dispatch => {
 
-        dispatch(productAction(PRODUCT_DETAIL_SET_ID, { productID }))
+        dispatch(getAction(SELECT_PRODUCT, { productID }))
         dispatch(navigator.router.getActionForPathAndParams('ProductDetail/ProductInformation'))
 
     }
@@ -258,115 +281,198 @@ function loadProductDetail(productID) {
 
 function loadProductInformation(productID) {
 
-
     return async dispatch => {
-
-        dispatch(productAction(PRODUCT_INFORMATION_STATE_CHANGE, { status: 'LOADING' }))
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADING' }))
         try {
 
-            const response = await request(`/products/info/${productID}`, 'GET')
+            const response = await request(`/products/info/${productID}`, 'GET', {})
             const { status, data } = response
+
             if (status === 200)
-                return dispatch(productAction(PRODUCT_INFORMATION_STATE_CHANGE, { status: 'LOADED', data }))
+                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADED', data }))
 
         } catch (error) {
 
 
         }
 
-        dispatch(productAction(PRODUCT_INFORMATION_STATE_CHANGE, { status: 'LOADING_FAILED' }))
-
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADING_FAILED' }))
 
     }
 
-
 }
 
-function loadProductFeedback(productID, type) {
+function loadProductFeedback(productID) {
 
     return async dispatch => {
-
-        dispatch(productAction(PRODUCT_FEEDBACK_STATE_CHANGE, { status: 'LOADING' }))
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADING' }))
         try {
 
-            const response = await request(`/comments/${productID}`, 'GET')
+            const response = await request(`/comments/${productID}`, 'GET', {})
             const { status, data } = response
-            const result = reduce(data, (result, item) => {
 
-                const title = item.reviewScore ? 'reviews' : 'comments'
-                result[title].push(item)
-                return result
+            if (status === 200) {
 
-            }, { 'reviews': [], 'comments': [] })
+                const { reviews, comments } = reduce(data, (result, item) => {
 
-            if (type === 'reviews')
-                handleReviewsData(dispatch, result['reviews'])
+                    if (item.reviewScore)
+                        result['reviews'].push(item)
+                    else
+                        result['comments'].push(item)
 
-            if (status === 200)
-                return dispatch(productAction(PRODUCT_FEEDBACK_STATE_CHANGE, { status: 'LOADED', reviews: result['reviews'], comments: result['comments'] }))
+                    return result
+
+                }, { reviews: [], comments: [] })
+
+                const statistic = reduce(reviews, (result, review) => {
+
+                    result[review.reviewScore]++
+                    return result
+
+                }, {
+                        '5': 0,
+                        '4': 0,
+                        '3': 0,
+                        '2': 0,
+                        '1': 0
+                    })
+
+                const questions = comments.filter(item => !item.parentID)
+
+                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADED', reviews, comments, statistic, questions }))
+
+            }
+
 
         } catch (error) {
 
+            console.log(error)
 
         }
 
-        dispatch(productAction(PRODUCT_FEEDBACK_STATE_CHANGE, { status: 'LOADING_FAILED' }))
-
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADING_FAILED' }))
 
     }
 
 }
 
-function handleReviewsData(dispatch, reviews) {
+function sendReview(values) {
 
-    if (reviews.length === 0)
-        return dispatch(productAction(PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE, { status: 'PROCESSED' }))
+    return new Promise(async (resolve, reject) => {
 
-    dispatch(productAction(PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE, { status: 'PROCESSING' }))
+        let err = `Undefined error, try again later!`
+        const content = values.review
+        const reviewScore = this.state.starCount
+        const { productID, logOut, navigation, token } = this.props
+        try {
 
-    const statistic = reduce(reviews, (result, item) => {
+            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId: productID, content, reviewScore })
+            const { status, data } = response
 
-        result[item.reviewScore]++
-        return result
+            switch (status) {
+                case 200:
+                    return resolve()
+                case 401:
+                    err = 'Authenticate user failed! Please log in again'
+                    logOut()
+                    navigation.navigate('LogIn', { lastScreen: 'ReviewForm' })
+                    break
+                case 500:
+                    err = 'Internal server error! Try again later'
+                    break
+            }
 
-    }, {
-            '5': 0,
-            '4': 0,
-            '3': 0,
-            '2': 0,
-            '1': 0
-        })
 
-    const totalReviews = reduce(statistic, (result, item, key) => result + item, 0)
-    score = Math.round(reduce(statistic, (result, item, key) => result + item * key, 0) / totalReviews)
+        } catch (error) {
 
-    dispatch(productAction(PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE, { status: 'PROCESSED', statistic, score, totalReviews }))
+            console.log(error)
+            if (error === 'CONNECTION_ERROR')
+                err = 'Could not connect to server'
+        }
 
+        reject(new SubmissionError({ _error: err }))
+
+    })
 
 }
 
-function makingStatistic(reviews) {
+function sendQuestionOrAnswer(values) {
 
-    return dispatch => handleReviewsData(dispatch, reviews)
+    return new Promise(async (resolve, reject) => {
+
+        let err = `Undefined error, try again later!`
+        try {
+
+            const content = values.question
+            const { productID, logOut, navigation, token } = this.props
+            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId: productID, content })
+            const { status, data } = response
+
+            switch (status) {
+                case 200:
+                    return resolve()
+                case 401:
+                    err = 'Authenticate user failed! Please log in again'
+                    logOut()
+                    navigation.navigate('LogIn', { lastScreen: 'QuestionForm' })
+                    break
+                case 500:
+                    err = 'Internal server error! Try again later'
+                    break
+            }
+
+
+
+        } catch (error) {
+
+            console.log(error)
+            if (error === 'CONNECTION_ERROR')
+                err = 'Could not connect to server'
+        }
+
+        reject(new SubmissionError({ _error: err }))
+
+    })
 
 }
 
+function setCart(product, type) {
+
+    return dispatch => {
+
+        switch (type) {
+            case 'ADD':
+                dispatch(getAction(ADD_TO_CART, { data: product }))
+                break
+            case 'REMOVE':
+                dispatch(getAction(REMOVE_FROM_CART, { productID: product._id }))
+                break
+            case 'REMOVE_ALL':
+                dispatch(getAction(REMOVE_ALL))
+                break
+        }
+
+    }
+
+}
 
 module.exports = {
 
     authenticate,
     enroll,
     activate,
-    loadNewestProductList,
+    loadUserInfo,
     saveToBuffer,
     logIn,
     logOut,
     loadCategories,
     loadProductList,
-    loadProductDetail,
+    selectProduct,
+    selectCategory,
     loadProductInformation,
     loadProductFeedback,
-    makingStatistic,
-    loadUserInfo
+    sendReview,
+    sendQuestionOrAnswer,
+    setCart
 
 }

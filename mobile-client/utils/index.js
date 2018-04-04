@@ -1,6 +1,7 @@
 import { gatewayAddress } from '../config'
+import { stringify } from 'query-string'
 
-function request(url, method, data) {
+function request(url, method, header, data) {
 
     const fullUrl = gatewayAddress + url
     return new Promise((resolve, reject) => {
@@ -9,9 +10,10 @@ function request(url, method, data) {
             method,
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...header
             },
-            body: JSON.stringify(data)
+            body: data ? JSON.stringify(data) : null
         })
             .then(res => {
                 const status = res.status
@@ -30,7 +32,7 @@ function request(url, method, data) {
             })
             .then(data => {
 
-                console.log(data)
+                console.log(`${method} ${url} - ${data ? data.status : 'failed'}`)
                 resolve(data)
 
             })
@@ -38,6 +40,7 @@ function request(url, method, data) {
     })
 
 }
+
 
 function currencyFormat(currency) {
 
@@ -56,9 +59,26 @@ function formatTime(time) {
     return dateObj.toLocaleTimeString() + ' - ' + dateObj.toLocaleDateString()
 }
 
+function parseToQueryString(obj) {
+
+    return stringify(obj)
+
+}
+
+function getAction(type, obj) {
+
+    return {
+        type,
+        ...obj
+    }
+
+}
+
 module.exports = {
     request,
     currencyFormat,
     validateEmail,
-    formatTime
+    formatTime,
+    parseToQueryString,
+    getAction
 }

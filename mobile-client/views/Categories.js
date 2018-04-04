@@ -6,24 +6,50 @@ import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
 import AppButton from './components/AppButton'
-import { loadCategories } from "../presenters";
+import { loadCategories, selectCategory } from "../presenters";
 
 class Categories extends Component {
 
     static navigationOptions = {
         title: 'Categories',
-        showIcon: false
     }
 
     constructor(props) {
 
         super(props)
-        this.props.loadCategories()
+        this.state = {
+            firstLoad: true,
+            status: 'LOADING',
+            list: []
+        }
+    }
+
+    componentDidMount() {
+
+        if (this.state.firstLoad) {
+            this.setState({ firstLoad: false })
+            this.loadData()
+        }
+
+    }
+
+    async loadData() {
+
+        this.setState({ status: 'LOADING' })
+        const result = await loadCategories()
+
+        if (result.ok) {
+            this.setState({ status: 'LOADED', list: result.list })
+        } else {
+            this.setState({ status: 'LOADING_FAILED' })
+        }
 
     }
 
     render() {
-        const { list, status, loadCategories, navigation } = this.props
+        const { list, status } = this.state
+        const { selectCategory } = this.props
+
 
         switch (status) {
 
@@ -37,7 +63,7 @@ class Categories extends Component {
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadCategories()} >Reload</AppButton>
+                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => this.loadData()} >Reload</AppButton>
                     </View>
                 )
 
@@ -45,9 +71,7 @@ class Categories extends Component {
 
         return (
             <Content>
-                <FeatureList list={list} onFeatureSelected={key => navigation.navigate('ProductList', {
-                    selectedCategory: key
-                })} />
+                <FeatureList list={list} onFeatureSelected={category => selectCategory(category)} />
             </Content>
         );
     }
@@ -66,18 +90,15 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
-    const { status, data } = state.product.categories
-    return {
-        status: status,
-        list: data
-    }
-}
+const mapStateToProps = state => ({
 
-const mapDispatchToProps = dispatch => {
-    return {
-        loadCategories: () => dispatch(loadCategories())
-    }
-}
+
+})
+
+const mapDispatchToProps = dispatch => ({
+
+    selectCategory: category => dispatch(selectCategory(category))
+
+})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Categories)

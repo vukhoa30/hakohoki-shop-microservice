@@ -3,6 +3,7 @@ import buffer from './buffer'
 import user from './user'
 import product from './product'
 import navigation from './navigation'
+import cart from './cart'
 import { reducer as form } from 'redux-form';
 
 const appReducer = combineReducers({
@@ -10,6 +11,7 @@ const appReducer = combineReducers({
     buffer,
     product,
     navigation,
+    cart,
     form
 });
 

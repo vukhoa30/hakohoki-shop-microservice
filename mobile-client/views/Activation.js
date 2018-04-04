@@ -51,7 +51,7 @@ class Activation extends Component {
                     <AppText color="gray" >{navigation.state.params.email}</AppText>
                     <Field name="activationCode" placeholder="ACTIVATION CODE" component={this.renderInput} />
                 </View>
-                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered onPress={handleSubmit(activate.bind(this))} disabled={(!error && invalid) || submitting} onProcess={submitting}>
+                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered onPress={handleSubmit(activate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
                     ACTIVATE
                 </AppButton>
             </Content>

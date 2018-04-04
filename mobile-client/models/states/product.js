@@ -1,49 +1,92 @@
 import {
-    NEWEST_PRODUCT_STATE_CHANGE,
-    CATEGORIES_STATE_CHANGE,
-    PRODUCT_LIST_STATE_CHANGE,
-    PRODUCT_DETAIL_SET_ID,
-    PRODUCT_INFORMATION_STATE_CHANGE,
-    PRODUCT_FEEDBACK_STATE_CHANGE,
-    PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE
+    SELECT_PRODUCT,
+    PRODUCT_LIST_LOADING,
+    PRODUCT_DETAIL_LOADING,
 }
-    from "../../presenters/state-modifiers/keys";
+    from "../../presenters/keys";
+
 
 const initialState = {
 
-    newestList: getListState('LOADING'),
-    categories: getListState('LOADING'),
-    productList: getListState('LOADING'),
-    selectedProductID: null,
-    productInformation: {
+    list: {
         status: 'LOADING',
-        data: null
+        data: [],
+        conditions: null
     },
-    productFeedback: {
-        status: 'LOADING',
-        reviews: [],
-        comments: []
-    },
-    productFeedbackStatistic: {
-        status: 'PROCESSING',
-        score: 0,
-        totalReviews: 0,
-        statistic: {
-            5: 0,
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0
+    current: {
+        id: null,
+        info: {
+            status: 'LOADING',
+            data: null
+        },
+        feedback: {
+            status: 'LOADING',
+            reviews: [],
+            comments: [],
+            statistic: {
+                '5': 0,
+                '4': 0,
+                '3': 0,
+                '2': 0,
+                '1': 0
+            },
+            questions: []
         }
     }
 }
 
-function getListState(status, data) {
+function getProductList(action, oldData) {
 
-    const obj = { status, data: [] }
-    if (data)
-        obj.data = data
-    return obj
+    const { status, data, conditions, firstLoad } = action
+
+    switch (status) {
+        case 'LOADING':
+            return firstLoad ? { ...oldData, status, data: [] } : { ...oldData, status }
+        case 'LOADING_FAILED':
+            return { ...oldData, status }
+        default:
+            return { status, conditions, data: oldData.data.concat(data) }
+    }
+
+}
+
+function getProductDetail(action, oldData) {
+
+    const { dataType, status } = action
+
+    if (dataType === 'info') {
+
+        const { data } = action
+        return {
+            ...oldData,
+            info: {
+                status,
+                data: data ? data : null
+            }
+        }
+
+    } else {
+
+        const { reviews, comments, statistic, questions } = action
+
+        return {
+            ...oldData,
+            feedback: {
+                status,
+                reviews: reviews ? reviews : [],
+                comments: comments ? comments : [],
+                statistic: statistic ? statistic : {
+                    '5': 0,
+                    '4': 0,
+                    '3': 0,
+                    '2': 0,
+                    '1': 0
+                },
+                questions: questions ? questions : []
+            }
+        }
+
+    }
 
 }
 
@@ -51,46 +94,20 @@ function getListState(status, data) {
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, status, data, reviews, comments, score, statistic, productID, totalReviews } = action
 
-    switch (type) {
+    switch (action.type) {
 
-        case NEWEST_PRODUCT_STATE_CHANGE:
-            nextState = { ...state, newestList: getListState(status, data) }
+        case PRODUCT_LIST_LOADING:
+            nextState = { ...state, list: getProductList(action, state.list) }
             break
-        case CATEGORIES_STATE_CHANGE:
-            nextState = { ...state, categories: getListState(status, data) }
+        case SELECT_PRODUCT:
+            nextState = { ...state, current: { ...initialState.current, id: action.productID } }
             break
-        case PRODUCT_LIST_STATE_CHANGE:
-            nextState = { ...state, productList: getListState(status, data) }
+        case PRODUCT_DETAIL_LOADING:
+            nextState = { ...state, current: getProductDetail(action, state.current) }
             break
-        case PRODUCT_DETAIL_SET_ID:
-            nextState = { ...state, selectedProductID: productID , productInformation: initialState.productInformation, productFeedback: initialState.productFeedback, productFeedbackStatistic: initialState.productFeedbackStatistic }
-            break
-        case PRODUCT_INFORMATION_STATE_CHANGE:
-            nextState = { ...state, productInformation: { status, data } }
-            break
-        case PRODUCT_FEEDBACK_STATE_CHANGE:
-            nextState = { ...state, productFeedback: { status, reviews, comments } }
-            break
-        case PRODUCT_REVIEWS_PROCESSING_STATE_CHANGE:
-            nextState = {
-                ...state, productFeedbackStatistic: {
-                    status: 'PROCESSING',
-                    score: score ? score : 0,
-                    totalReviews: totalReviews ? totalReviews: 0,
-                    statistic: statistic ? statistic : {
-                        5: 0,
-                        4: 0,
-                        3: 0,
-                        2: 0,
-                        1: 0
-                    }
-                }
-            }
-            break
-
     }
+
 
     return nextState
 

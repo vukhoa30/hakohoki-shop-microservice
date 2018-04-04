@@ -1,4 +1,4 @@
-import { USER_LOG_IN, USER_LOG_OUT } from "../../presenters/state-modifiers/keys";
+import { USER_LOG_IN, USER_LOG_OUT } from "../../presenters/keys";
 
 const initialState = {
     isLoggedIn: false,
