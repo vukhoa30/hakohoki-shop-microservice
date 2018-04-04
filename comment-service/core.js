@@ -31,6 +31,7 @@ module.exports = {
         authentication = await msgBroker.requestAuthenticateEmployee(token)
       }
       if (!authentication) { return catchUnauthorized(res) }
+
       var commentId = await db.Comment({
         content: req.body.content,
         accountId: authentication.accountId,
@@ -39,19 +40,33 @@ module.exports = {
         reviewScore: req.body.reviewScore
       })
 
+      var products = await msgBroker.requestGetProducts([req.body.productId])
+      var productName = products[0].name
       if (req.body.parentId) {
         var comments = await db.GetCommentById(req.body.parentId)
         var accountId = comments[0].accountId
-        var products = await msgBroker.requestGetProducts([req.body.productId])
-        var productName = products[0].name
-        await msgBroker.requestNotificationRequest({
+        await msgBroker.requestNotificationRequest([{
           type: 'commentReplied',
           accountId,
           productId: req.body.productId,
           productName
-        })
-        res.json({id: commentId})
+        }])
       }
+      else {
+        var receiptionistIds = await msgBroker.requestGetAllReceptionists({nothing:true})
+        console.log(receiptionistIds)
+        await msgBroker.requestNotificationRequest(
+          receiptionistIds.map(id => {
+            return {
+              type: 'commentPosted',
+              accountId: id,
+              productId: req.body.productId,
+              productName
+            }
+          })
+        )
+      }
+      res.json({id: commentId})
     } catch (e) { catchError(res, e) }
   },
   getComments: (req, res) => {

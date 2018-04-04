@@ -4,7 +4,9 @@ module.exports = (mongoose) => {
       accountId: String,
       createdAt: { type: Date, default: new Date() },
       type: String,
-      props: Object
+      productId: mongoose.Schema.ObjectId,
+      promotionId: Number,
+      amount: Number
     })
   }
 }

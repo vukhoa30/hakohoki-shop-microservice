@@ -29,18 +29,22 @@ module.exports = {
       res.json(await db.GetNotifications(authentication.accountId))
     } catch (e) { catchError(res, e) }
   },
-  addNotification:  (notification) => {
+  addNotification:  (notifications) => {
     return new Promise(async (resolve, reject) => {
       try {
-        db.AddNotification({
-          ...notification,
-          productName: undefined,
-          promotionName: undefined,
-        })
-        msgBroker.requestNotification({
-          ...notification,
-          time: new Date()
-        })
+        db.AddNotification(notifications.map(n => {
+          return {
+            ...n,
+            productName: undefined,
+            promotionName: undefined,
+          }
+        }))
+        msgBroker.requestNotification(notifications.map(n => {
+          return {
+            ...n,
+            time: new Date()
+          }
+        }))
         resolve(true)
       } catch (e) { reject(e) }
     })

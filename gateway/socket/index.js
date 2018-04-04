@@ -22,14 +22,17 @@ var responseAmqpNotification = (io, queue) => {
       ch.consume(queue, async (msg) => {
         content = JSON.parse(msg.content.toString())
         try {
-          console.log(content)
-          var socketDes = clientSockets.find(clientSocket =>
-            clientSocket.accountId.toString() == content.accountId.toString()
-          );
-          if (socketDes) {
-            console.log(socketDes.id)
-            io.of('/notifications').to(socketDes.id).emit('message', content)
-          }
+          //console.log(content)
+          content.map(notification => {
+            var socketDes = clientSockets.find(clientSocket =>
+              clientSocket.accountId.toString() == notification.accountId.toString()
+            );
+            if (socketDes) {
+              //console.log(socketDes.id)
+              notification.accountId = undefined
+              io.of('/notifications').to(socketDes.id).emit('message', notification)
+            }
+          })
         } catch (e) { console.log(e) }
         var response = {ok:true}
         ch.sendToQueue(msg.properties.replyTo,

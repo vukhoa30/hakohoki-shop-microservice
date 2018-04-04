@@ -92,5 +92,15 @@ module.exports = {
       })
       .catch(e => { reject(e); })
     })
+  },
+  GetAllReceptionists: () => {
+    return new Promise((resolve, reject) => {
+      db('accounts')
+      .where({ role: 'receptionist' })
+      .then(rows => {
+        resolve(rows.map(r => r.id))
+      })
+      .catch(e => { reject(e); })
+    })
   }
 }

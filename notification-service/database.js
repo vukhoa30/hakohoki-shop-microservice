@@ -11,11 +11,10 @@ var handleCallback = (err, rslt) => {
 }
 
 module.exports = {
-  AddNotification: (notification) => {
+  AddNotification: (notifications) => {
     return new Promise((resolve, reject) => {
-      var newNotification = new models.Notification(notification)
-      newNotification
-      .save((err, rslt) => {
+      models.Notification
+      .insertMany(notifications, (err, rslt) => {
         if (err) { return reject(err) }
         resolve(rslt)
       })

@@ -78,5 +78,8 @@ module.exports = {
   },
   requestNotificationRequest: (notification) => {
     return requestAmqp(notification, 'notificationRequest')
+  },
+  requestGetAllReceptionists: () => {
+    return requestAmqp({}, 'getAllReceptionists')
   }
 }
