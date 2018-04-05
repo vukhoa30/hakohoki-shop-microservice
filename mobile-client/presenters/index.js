@@ -1,4 +1,4 @@
-import { request, parseToQueryString, getAction, delay } from '../utils'
+import { request, parseToQueryString, getAction, delay, alert } from '../utils'
 import navigator from '../models/navigations'
 import {
     USER_LOG_IN,
@@ -6,13 +6,15 @@ import {
     SELECT_PRODUCT,
     PRODUCT_LIST_LOADING,
     PRODUCT_DETAIL_LOADING,
+    WATCH_LIST_STATUS_FETCHING,
     FEEDBACK_LOADING,
     GET_ANSWERS,
     ADD_INVALIDATED_COMMENT,
     ADD_TO_CART,
     REMOVE_FROM_CART,
     REMOVE_ALL,
-    SAVE_TO_BUFFER
+    SAVE_TO_BUFFER,
+    WATCH_LIST_LOADING
 
 } from './keys'
 import bufferAction from './state-modifiers/buffer'
@@ -314,13 +316,14 @@ function selectProduct(productID) {
 
 }
 
-function loadProductInformation(productID) {
+function loadProductInformation(productID, token) {
 
     return async dispatch => {
         dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADING' }))
+
         try {
 
-            const response = await request(`/products/info/${productID}`, 'GET', {})
+            const response = await request(`/products/info/${productID}`, 'GET', { Authorization: 'JWT ' + token })
             const { status, data } = response
 
             if (status === 200) {
@@ -332,6 +335,7 @@ function loadProductInformation(productID) {
 
         } catch (error) {
 
+            console.log(error)
 
         }
 
@@ -422,7 +426,6 @@ function sendReview(values) {
                 case 401:
                     err = 'Authenticate user failed! Please log in again'
                     logOut()
-                    navigation.navigate('LogIn', { lastScreen: 'ReviewForm' })
                     break
                 case 500:
                     err = 'Internal server error! Try again later'
@@ -462,7 +465,6 @@ function sendComment(values) {
                 case 401:
                     err = 'Authenticate user failed! Please log in again'
                     logOut()
-                    navigation.navigate('LogIn', { lastScreen: 'QuestionForm' })
                     break
                 case 500:
                     err = 'Internal server error! Try again later'
@@ -515,6 +517,158 @@ function setCart(product, type) {
 
 }
 
+function setWatchList(productId, type, token, needToUpdateWatchList) {
+
+    return async dispatch => {
+
+        console.log(token)
+        if (token === null) {
+            alert('Authentication failed', 'You need to log in first')
+            dispatch(logOut())
+            return
+        }
+
+        dispatch(getAction(WATCH_LIST_STATUS_FETCHING, { isFetching: true }))
+
+        try {
+
+            let response = await request(`/watchlists/${productId}`, type === 'ADD' ? 'POST' : 'DELETE', { Authorization: 'JWT ' + token })
+            let { status, data } = response
+
+            if (status === 200) {
+
+                if (needToUpdateWatchList){
+                }
+                response = await request(`/products/info/${productId}`, 'GET', { Authorization: 'JWT ' + token })
+                status = response.status
+                data = response.data
+                if (status === 200) {
+
+                    if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
+                    if (type === 'ADD')
+                        alert('Success', 'The product has been watched')
+                    else
+                        alert('Success', 'The product has been removed from your watch list')
+                    return dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADED', data }))
+
+                } else {
+
+                    alert('Errors', 'Some errors occur. Please try again later!')
+                }
+
+            } else {
+
+                if (status === 401) {
+
+                    alert('Authentication failed', 'You need to log in first')
+                    dispatch(logOut())
+
+                } else {
+
+                    if (type === 'ADD')
+                        alert('Add to watch list failed', 'The product may exist in your watch list')
+                    else
+                        alert('Remove from watch list failed', 'The product may not exist in your watch list')
+
+                }
+
+            }
+
+
+        } catch (error) {
+
+        }
+
+        dispatch(getAction(WATCH_LIST_STATUS_FETCHING, { isFetching: false }))
+
+    }
+
+}
+
+function removeFromWatchlist(productId, token, offset, limit) {
+
+    return async dispatch => {
+
+        console.log(token)
+        if (token === null) {
+            alert('Authentication failed', 'You need to log in first')
+            dispatch(logOut())
+            return
+        }
+
+        dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADING' }))
+
+        try {
+
+            let response = await request(`/watchlists/${productId}`, 'DELETE', { Authorization: 'JWT ' + token })
+            let { status, data } = response
+
+            if (status === 200) {
+
+                response = await request(`/watchlists?offset=${offset}&limit=${limit}`, 'GET', { Authorization: 'JWT ' + token })
+                status = response.status
+                data = response.data
+                if (status === 200) {
+
+                    alert('Success', 'The product has been removed from your watch list')
+                    return dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADED', data }))
+
+                } else {
+
+                    alert('Errors', 'Some errors occur. Please try again later!')
+                }
+
+            } else {
+
+                if (status === 401) {
+
+                    alert('Authentication failed', 'You need to log in first')
+                    dispatch(logOut())
+
+                } else {
+
+                    alert('Remove from watch list failed', 'The product may not exist in your watch list')
+
+                }
+
+            }
+
+
+        } catch (error) {
+
+        }
+
+        dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADING_FAILED' }))
+
+    }
+
+}
+
+function loadWatchList(token, offset, limit) {
+
+    return async dispatch => {
+
+        dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADING' }))
+        try {
+
+            const response = await request(`/watchlists?offset=${offset}&limit=${limit}`, 'GET', { Authorization: 'JWT ' + token })
+            const { status, data } = response
+
+            if (status === 200) {
+                return dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADED', data }))
+            }
+
+        } catch (error) {
+
+            console.log(error)
+
+        }
+
+        dispatch(getAction(WATCH_LIST_LOADING, { status: 'LOADING_FAILED' }))
+    }
+
+}
+
 module.exports = {
 
     authenticate,
@@ -535,6 +689,9 @@ module.exports = {
     getAnswer,
     setCart,
     search,
-    loadNewestProducts
+    loadNewestProducts,
+    loadWatchList,
+    setWatchList,
+    removeFromWatchlist
 
 }

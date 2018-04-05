@@ -16,6 +16,7 @@ import Cart from '../../views/Cart'
 import Search from '../../views/Search'
 import AllQuestionsOrReviews from '../../views/AllQuestionsOrReviews'
 import Answers from '../../views/Answers'
+import WatchList from '../../views/WatchList'
 import { Icon } from "native-base";
 
 const mainNavigator = TabNavigator(
@@ -224,6 +225,13 @@ const rootNavigator = StackNavigator({
         screen: Answers,
         navigationOptions: {
             title: 'Answers'
+        }
+    },
+
+    WatchList: {
+        screen: WatchList,
+        navigationOptions: {
+            title: 'Watch list'
         }
     }
 

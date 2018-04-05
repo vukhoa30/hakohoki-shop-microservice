@@ -2,7 +2,7 @@ import { FEEDBACK_LOADING, GET_ANSWERS } from "../../presenters/keys";
 
 const initialState = {
 
-    status: 'LOADING',
+    status: 'INIT',
     reviews: [],
     comments: [],
     currentCommentId: null,

@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { loadProductFeedback, setCart, getAnswer } from '../presenters'
+import { loadProductFeedback, getAnswer } from '../presenters'
 import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail, Footer, FooterTab } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
+import AppProductFooter from './components/AppProductFooter'
 import { alert, confirm } from "../utils";
 import AppComment from './components/AppComment'
 
@@ -53,11 +54,11 @@ class ProductFeedback extends Component {
     }
 
     render() {
-        const { getAnswer, data, isAddedToCart, status, reviews, comments, statistic, reviewScore, reviewCount, commentCount, navigation, productID, loadProductFeedback } = this.props
+        const { getAnswer, data, status, reviews, comments, statistic, reviewScore, reviewCount, commentCount, navigation, productID, loadProductFeedback } = this.props
 
         switch (status) {
 
-            case 'LOADING':
+            case 'LOADING': case 'INIT':
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <Spinner />
@@ -171,31 +172,7 @@ class ProductFeedback extends Component {
                         </Card>
                     </View>
                 </Content>
-                {
-                    data.quantity > 0 &&
-                    <Footer>
-                        <FooterTab >
-                            <View style={{ width: '100%' }}>
-                                {
-                                    isAddedToCart ?
-                                        <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                            confirm('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, () => setCart(data, 'REMOVE'))
-                                        }}>
-                                            <Icon name='close' />
-                                            <AppText>REMOVE FROM CART</AppText>
-                                        </Button> :
-                                        <Button success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                            setCart(data, 'ADD')
-                                            alert('Success', 'Product has been added to cart')
-                                        }}>
-                                            <Icon name='add' />
-                                            <AppText>ADD TO CART</AppText>
-                                        </Button>
-                                }
-                            </View>
-                        </FooterTab>
-                    </Footer>
-                }
+                <AppProductFooter />
             </Container>
         )
     }
@@ -207,7 +184,6 @@ const mapStateToProps = (state) => {
     const { current } = state.product
     const { id, data } = current
     const { status, reviews, statistic, comments } = state.feedback
-    const { list } = state.cart
 
     return {
 
@@ -219,8 +195,7 @@ const mapStateToProps = (state) => {
         comments: comments.slice(0, 5),
         commentCount: comments.length,
         reviewScore: data !== null && data.reviewScore ? data.reviewScore : 0,
-        isAddedToCart: list.find(product => product._id === id),
-        data
+        data: data !== null ? data : {}
 
     }
 
@@ -229,7 +204,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
 
     loadProductFeedback: (productID) => dispatch(loadProductFeedback(productID)),
-    setCart: (product, type) => dispatch(setCart(product, type)),
     getAnswer: commentID => dispatch(getAnswer(commentID))
 
 })

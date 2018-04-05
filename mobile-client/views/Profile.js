@@ -49,7 +49,7 @@ class Profile extends Component {
             {
                 icon: 'ios-paper-outline',
                 name: 'Orders',
-                key: 'ORDER'
+                key: 'ORDERS'
             },
             {
                 icon: 'md-paper',
@@ -80,7 +80,7 @@ class Profile extends Component {
                     </View>
                     <Card style={{ marginVertical: 5 }}>
                         <CardItem>
-                            <FeatureList list={featureList} onFeatureSelected={(key) => alert(key)} />
+                            <FeatureList list={featureList} onFeatureSelected={(key) => this.select(key)} />
                         </CardItem>
                     </Card>
                 </Content>
@@ -88,6 +88,25 @@ class Profile extends Component {
         );
 
     }
+
+    select(key) {
+
+        const { navigation } = this.props
+
+        switch (key) {
+
+            case 'NOTIFICATION':
+                break
+            case 'ORDERS':
+                break
+            case 'WATCH_LIST':
+                navigation.navigate('WatchList')
+                break
+
+        }
+
+    }
+
 
     render() {
 

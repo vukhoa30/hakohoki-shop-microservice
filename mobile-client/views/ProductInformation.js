@@ -6,7 +6,8 @@ import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
 import AppButton from './components/AppButton'
-import { loadProductInformation, setCart } from "../presenters";
+import AppProductFooter from './components/AppProductFooter'
+import { loadProductInformation } from "../presenters";
 import { currencyFormat, alert, confirm } from "../utils";
 
 class ProductInformation extends Component {
@@ -18,18 +19,18 @@ class ProductInformation extends Component {
     constructor(props) {
 
         super(props)
-        const { loadProductInformation, productID } = props
-        loadProductInformation(productID)
+        const { loadProductInformation, productID, token } = props
+        loadProductInformation(productID, token)
 
     }
 
     render() {
-        const { status, data, setCart, isAddedToCart } = this.props
+        const { token, status, data, productID } = this.props
         const outOfOrder = require('../resources/images/sold-out.png')
 
         switch (status) {
 
-            case 'LOADING':
+            case 'LOADING': case 'INIT':
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <Spinner />
@@ -39,7 +40,7 @@ class ProductInformation extends Component {
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => this.loadData()} >Reload</AppButton>
+                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductInformation(productID,token)} >Reload</AppButton>
                     </View>
                 )
 
@@ -134,34 +135,7 @@ class ProductInformation extends Component {
 
                     }
                 </Content>
-                {
-                    data.quantity > 0 &&
-                    <Footer>
-                        <FooterTab >
-                            <View style={{ width: '100%' }}>
-                                {
-                                    data.quantity > 0 &&
-                                    (
-                                        isAddedToCart ?
-                                            <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                confirm('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, () => setCart(data, 'REMOVE'))
-                                            }}>
-                                                <Icon name='close' />
-                                                <AppText>REMOVE FROM CART</AppText>
-                                            </Button> :
-                                            <Button success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                setCart(data, 'ADD')
-                                                alert('Success', 'Product has been added to cart')
-                                            }}>
-                                                <Icon name='add' />
-                                                <AppText>ADD TO CART</AppText>
-                                            </Button>
-                                    )
-                                }
-                            </View>
-                        </FooterTab>
-                    </Footer>
-                }
+                <AppProductFooter/>
             </Container>
         );
     }
@@ -183,21 +157,22 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
 
     const { current } = state.product
-    const { list } = state.cart
+    const { list: cartList } = state.cart
+    const { list: watchList } = state.watchList
     const { id, status, data } = current
+    const { token } = state.user
 
     return {
+        token,
         productID: id,
         status,
-        data,
-        isAddedToCart: list.find(product => product._id === id)
+        data
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductInformation: productID => dispatch(loadProductInformation(productID)),
-        setCart: (product, type) => dispatch(setCart(product, type))
+        loadProductInformation: (productID,token) => dispatch(loadProductInformation(productID,token))
     }
 }
 

@@ -2,6 +2,7 @@ import {
     SELECT_PRODUCT,
     PRODUCT_LIST_LOADING,
     PRODUCT_DETAIL_LOADING,
+    WATCH_LIST_STATUS_FETCHING
 }
     from "../../presenters/keys";
 
@@ -9,13 +10,13 @@ import {
 const initialState = {
 
     list: {
-        status: 'LOADING',
+        status: 'INIT',
         data: [],
         conditions: null
     },
     current: {
         id: null,
-        status: 'LOADING',
+        status: 'INIT',
         data: null
     }
 }
@@ -39,7 +40,7 @@ function reducer(state = initialState, action) {
 
     let nextState = state
 
-    const { type, status, data } = action
+    const { type, status, data, isAddedToWatchList, isFetching } = action
 
     switch (type) {
 
@@ -47,11 +48,14 @@ function reducer(state = initialState, action) {
             nextState = { ...state, list: getProductList(action, state.list) }
             break
         case SELECT_PRODUCT:
-            nextState = { ...state, current: { ...initialState.current, id: action.productID } }
+            nextState = { ...state, current: { ...initialState.current, id: action.productID, status: 'INIT' } }
             break
         case PRODUCT_DETAIL_LOADING:
             nextState = { ...state, current: { ...state.current, status, data } }
             break
+        case WATCH_LIST_STATUS_FETCHING:
+            nextState = { ...state, current: { ...state.current, status:  isFetching ? 'WATCH_LIST_STATUS_FETCHING' : 'LOADED' } }
+     
     }
 
 
