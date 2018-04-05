@@ -69,14 +69,15 @@ class QuestionForm extends Component {
 
 const mapStateToProps = (state) => ({
 
-    productID: state.product.current.id
+    productID: state.product.current.id,
+    token: state.user.token
 
 })
 
 const mapDispatchToProps = (dispatch) => ({
 
     logOut: () => dispatch(logOut()),
-    loadProductFeedback: productID => dispatch(loadProductFeedback(productID))
+    loadProductFeedback: productID => dispatch(loadProductFeedback(productID, true))
 
 })
 

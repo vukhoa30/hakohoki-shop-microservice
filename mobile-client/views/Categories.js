@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { View, Image, StyleSheet } from 'react-native'
-import { Spinner, Content } from "native-base";
+import { Spinner, Content, Container } from "native-base";
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
@@ -11,7 +11,7 @@ import { loadCategories, selectCategory } from "../presenters";
 class Categories extends Component {
 
     static navigationOptions = {
-        title: 'Categories',
+        title: 'Categories'
     }
 
     constructor(props) {
@@ -70,9 +70,11 @@ class Categories extends Component {
         }
 
         return (
-            <Content>
-                <FeatureList list={list} onFeatureSelected={category => selectCategory(category)} />
-            </Content>
+            <Container>
+                <Content>
+                    <FeatureList list={list} onFeatureSelected={category => selectCategory(category)} />
+                </Content>
+            </Container>
         );
     }
 }

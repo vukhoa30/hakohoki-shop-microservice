@@ -7,6 +7,7 @@ import { Container, Content, Button, Form, Spinner, Item, Input } from 'native-b
 import AppText from './components/AppText'
 import StarRating from 'react-native-star-rating'
 import { NavigationActions } from "react-navigation"
+import { alert } from "../utils";
 
 class ReviewForm extends Component {
 
@@ -26,6 +27,7 @@ class ReviewForm extends Component {
 
         if (submitSucceeded) {
 
+            alert('Review successfully', 'Thanks a lot for spending time reviewing on our product!')
             navigation.goBack()
             loadProductFeedback(productID)
 
@@ -93,7 +95,7 @@ class ReviewForm extends Component {
                         <AppText center style={{ marginTop: 20 }}>{this.state.status}</AppText>
                         <Field name='review' placeholder='TYPE YOUR REVIEW HERE' component={this.renderInput} />
                     </Form>
-                    <Button block success disabled={this.state.starCount === 0} style={{ marginVertical: 10, marginTop: 50 }}
+                    <Button block success disabled={this.state.starCount === 0 || submitting } style={{ marginVertical: 10, marginTop: 50 }}
                         onPress={handleSubmit(sendReview.bind(this))}
                     >
                         {submitting ? <Spinner /> : null}
@@ -119,7 +121,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
 
     logOut: () => dispatch(logOut()),
-    loadProductFeedback: productID => dispatch(loadProductFeedback(productID))
+    loadProductFeedback: productID => dispatch(loadProductFeedback(productID, true))
 
 })
 

@@ -21,7 +21,7 @@ class Profile extends Component {
         return (
             <Grid>
                 <Row size={60}>
-                    <Image source={{ uri: 'https://png.pngtree.com/thumb_back/fw800/back_pic/04/31/19/06584239fd5bff7.jpg', width: '100%', height: '100%' }} style={{ resizeMode: 'stretch' }} />
+                    <Image source={require('../resources/images/profileBackground.jpg')} style={{ resizeMode: 'stretch', width: '100%', height: '100%' }} />
                 </Row>
                 <Row size={40} style={{ paddingTop: 50 }}>
                     <Container>
@@ -59,30 +59,32 @@ class Profile extends Component {
         ]
 
         return (
-            <Content>
-                <ImageBackground source={{ uri: 'https://opticalcortex.com/app/uploads/2014/08/grad-670x376.jpg' }} style={styles.background}>
-                    <Grid>
-                        <Col style={{ width: 100, flexDirection: 'column', justifyContent: 'center', marginHorizontal: 20 }}>
-                            <Image source={{ uri: 'http://www.winhelponline.com/blog/wp-content/uploads/2017/12/user.png', width: avatarSize, height: avatarSize }} />
-                        </Col>
-                        <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
-                            <AppText color='white' large>{fullName}</AppText>
-                            <AppText color='white' small>{email}</AppText>
-                            <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Log out</AppButton>
-                        </Col>
-                    </Grid>
-                </ImageBackground>
-                <View style={{ marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
-                    <AppIconButton name="ios-information-circle-outline" buttonName="Information" />
-                    <AppIconButton name="md-key" buttonName="Password" />
-                    <AppIconButton name="ios-cart-outline" buttonName="My cart" onPress={() => navigation.navigate('Cart')} />
-                </View>
-                <Card style={{ marginVertical: 5 }}>
-                    <CardItem>
-                        <FeatureList list={featureList} onFeatureSelected={(key) => alert(key)} />
-                    </CardItem>
-                </Card>
-            </Content>
+            <Container>
+                <Content>
+                    <ImageBackground source={{ uri: 'https://opticalcortex.com/app/uploads/2014/08/grad-670x376.jpg' }} style={styles.background}>
+                        <Grid>
+                            <Col style={{ width: 100, flexDirection: 'column', justifyContent: 'center', marginHorizontal: 20 }}>
+                                <Image source={{ uri: 'http://www.winhelponline.com/blog/wp-content/uploads/2017/12/user.png', width: avatarSize, height: avatarSize }} />
+                            </Col>
+                            <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
+                                <AppText color='white' large>{fullName}</AppText>
+                                <AppText color='white' small>{email}</AppText>
+                                <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Log out</AppButton>
+                            </Col>
+                        </Grid>
+                    </ImageBackground>
+                    <View style={{ marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
+                        <AppIconButton name="ios-information-circle-outline" buttonName="Information" />
+                        <AppIconButton name="md-key" buttonName="Password" />
+                        <AppIconButton name="ios-cart-outline" buttonName="My cart" onPress={() => navigation.navigate('Cart')} />
+                    </View>
+                    <Card style={{ marginVertical: 5 }}>
+                        <CardItem>
+                            <FeatureList list={featureList} onFeatureSelected={(key) => alert(key)} />
+                        </CardItem>
+                    </Card>
+                </Content>
+            </Container>
         );
 
     }

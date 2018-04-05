@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import { View, Image, StyleSheet, Alert } from 'react-native'
-import { Container, Header, Content, Card, CardItem, Thumbnail, Icon, Left, Body, Spinner, Text, Button, List, ListItem, Footer, FooterTab } from 'native-base';
+import { View, Image, StyleSheet } from 'react-native'
+import { Container, Header, Content, Card, CardItem, Thumbnail, Icon, Left, Body, Spinner, Text, Button, List, ListItem, Footer, FooterTab, Grid, Col } from 'native-base';
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
 import AppButton from './components/AppButton'
 import { loadProductInformation, setCart } from "../presenters";
-import { currencyFormat } from "../utils";
+import { currencyFormat, alert, confirm } from "../utils";
 
 class ProductInformation extends Component {
 
@@ -25,6 +25,7 @@ class ProductInformation extends Component {
 
     render() {
         const { status, data, setCart, isAddedToCart } = this.props
+        const outOfOrder = require('../resources/images/sold-out.png')
 
         switch (status) {
 
@@ -48,12 +49,16 @@ class ProductInformation extends Component {
             <Container>
                 <Content>
                     <Card style={{ flex: 1 }}>
+                        {
+                            data.quantity === 0 &&
+                            <Image source={outOfOrder} style={{ width: '80%', height: 200, position: 'absolute', zIndex: 100, resizeMode: 'stretch', top: 140, left: 20 }} />
+                        }
                         <CardItem>
                             <Left>
                                 <Body>
                                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{data.name}</Text>
-                                    <Text note small>Số lượng: {data.quantity}</Text>
-                                    <Text note>Bảo hàng {data.guarantee} năm</Text>
+                                    <Text note>Guarantee {data.guarantee} months</Text>
+                                    <AppText note small style={{ opacity: data.quantity > 0 ? 1 : 0 }}>Quantity: {data.quantity}</AppText>
                                 </Body>
                             </Left>
                         </CardItem>
@@ -99,53 +104,64 @@ class ProductInformation extends Component {
                         data.specifications && data.specifications.length > 0 ?
                             <Card>
                                 <CardItem header>
-                                    <Text>Chi tiết sản phẩm</Text>
+                                    <Text>Specifications</Text>
                                 </CardItem>
                                 <CardItem>
                                     <Body>
-                                        <List dataArray={data.specifications} horizontal={true}
-                                            renderRow={(item, index) =>
-                                                <ListItem key={'specification-' + index}>
-                                                    <Left>
-                                                        <Text style={{ fontWeight: 'bold' }}>{item.name}</Text>
-                                                    </Left>
-                                                    <Body>
-                                                        <Text>{item.value}</Text>
-                                                    </Body>
-                                                </ListItem>
-                                            }>
-                                        </List>
+                                        {
+                                            data.specifications.map((specification, index) => (
+
+                                                <View key={'specification-' + index} style={{ width: '100%' }}>
+                                                    {
+                                                        Object.keys(specification).map(key => (
+                                                            <Grid key={'specification-item-' + key} style={{ marginVertical: 5 }} >
+                                                                <Col>
+                                                                    <AppText small style={{ fontWeight: 'bold' }}>{key}</AppText>
+                                                                </Col>
+                                                                <Col>
+                                                                    <AppText small>{specification[key]}</AppText>
+                                                                </Col>
+                                                            </Grid>
+                                                        ))
+                                                    }
+                                                </View>
+
+                                            ))
+                                        }
                                     </Body>
                                 </CardItem>
                             </Card> : null
 
                     }
                 </Content>
-                <Footer>
-                    <FooterTab >
-                        <View style={{ width: '100%' }}>
-                            {
-                                isAddedToCart ?
-                                    <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                        Alert.alert('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, [
-                                            { text: 'Cancel', style: 'cancel' },
-                                            { text: 'OK', onPress: () => setCart(data, 'REMOVE') },
-                                        ], )
-                                    }}>
-                                        <Icon name='close' />
-                                        <AppText>REMOVE FROM CART</AppText>
-                                    </Button> :
-                                    <Button success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                        setCart(data, 'ADD')
-                                        Alert.alert('Success', 'Product has been added to cart')
-                                    }}>
-                                        <Icon name='add' />
-                                        <AppText>ADD TO CART</AppText>
-                                    </Button>
-                            }
-                        </View>
-                    </FooterTab>
-                </Footer>
+                {
+                    data.quantity > 0 &&
+                    <Footer>
+                        <FooterTab >
+                            <View style={{ width: '100%' }}>
+                                {
+                                    data.quantity > 0 &&
+                                    (
+                                        isAddedToCart ?
+                                            <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
+                                                confirm('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, () => setCart(data, 'REMOVE'))
+                                            }}>
+                                                <Icon name='close' />
+                                                <AppText>REMOVE FROM CART</AppText>
+                                            </Button> :
+                                            <Button success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
+                                                setCart(data, 'ADD')
+                                                alert('Success', 'Product has been added to cart')
+                                            }}>
+                                                <Icon name='add' />
+                                                <AppText>ADD TO CART</AppText>
+                                            </Button>
+                                    )
+                                }
+                            </View>
+                        </FooterTab>
+                    </Footer>
+                }
             </Container>
         );
     }

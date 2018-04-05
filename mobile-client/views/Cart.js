@@ -1,21 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { View, ScrollView, Alert } from 'react-native'
+import { View, ScrollView } from 'react-native'
 import { setCart } from '../presenters'
 import { Container, Content, Button, SwipeRow, List, ListItem, Right, Body, Icon, Thumbnail, FooterTab, Footer } from 'native-base'
 import AppText from './components/AppText'
-import { currencyFormat } from "../utils";
+import { currencyFormat, confirm } from "../utils";
 import { reduce } from "lodash";
 
 class Cart extends Component {
-
-    static navigationOptions = {
-        title: 'Cart',
-        headerRight:
-            <View style={{ flexDirection: 'row' }}>
-                <Icon name='home' style={{ marginRight: 20 }} onPress={() => navigation.navigate('Home')} />
-            </View>
-    }
 
     constructor(props) {
         super(props)
@@ -37,17 +29,14 @@ class Cart extends Component {
                                     </Body>
                                     <Right>
                                         <Icon name='md-remove-circle' style={{ color: 'red' }} onPress={() => {
-                                            Alert.alert('Confirm', `Are you sure to remove product "${product.name}" from your cart?`, [
-                                                { text: 'Cancel', style: 'cancel' },
-                                                { text: 'OK', onPress: () => setCart(product, 'REMOVE') },
-                                            ], )
+                                            confirm('Confirm', `Are you sure to remove product "${product.name}" from your cart?`,() => setCart(product, 'REMOVE'))
                                         }} />
                                     </Right>
                                 </ListItem>
                             )} />
                             :
                             <View style={{ width: '100%', height: 250, alignItems: 'center', justifyContent: 'center' }}>
-                                <AppText note>No products</AppText>
+                                <AppText note large>NO PRODUCTS</AppText>
                             </View>
                     }
                 </Content>

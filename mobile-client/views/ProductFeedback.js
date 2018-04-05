@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { loadProductFeedback } from '../presenters'
-import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Thumbnail, Footer, FooterTab } from 'native-base'
+import { loadProductFeedback, setCart } from '../presenters'
+import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail, Footer, FooterTab } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
-import { formatTime } from "../utils";
+import { formatTime, alert, confirm } from "../utils";
 
 class ProductFeedback extends Component {
 
@@ -52,7 +52,7 @@ class ProductFeedback extends Component {
     }
 
     render() {
-        const { status, reviews, questions, statistic, reviewScore, reviewCount, questionCount, navigation, productID, loadProductFeedback } = this.props
+        const { data, isAddedToCart, status, reviews, questions, statistic, reviewScore, reviewCount, questionCount, navigation, productID, loadProductFeedback } = this.props
 
         switch (status) {
 
@@ -80,9 +80,9 @@ class ProductFeedback extends Component {
             <Container>
                 <Content>
                     <Card>
-                        <CardItem>
+                        <CardItem header>
                             <Body>
-                                <AppText center>USER RATING</AppText>
+                                <AppText style={{ fontWeight: 'bold' }}>USER RATING</AppText>
                             </Body>
                         </CardItem>
                         <CardItem>
@@ -105,102 +105,128 @@ class ProductFeedback extends Component {
                             </Body>
                         </CardItem>
                     </Card>
-                    <View>
-                        <AppText center style={{ marginTop: 20, marginBottom: 10 }}>REVIEWS ({reviewCount})</AppText>
-                        {
-                            reviewCount > 0 ?
-                                <List dataArray={reviews} renderRow={review => (
+                    <View style={{ marginTop: 50 }}>
+                        <Card>
+                            <List>
+                                <ListItem itemHeader first icon>
+                                    <Body>
+                                        <AppText style={{ fontWeight: 'bold' }}>REVIEWS ({reviewCount})</AppText>
+                                    </Body>
+                                    {
+                                        reviewCount > 5 && <Right>
+                                            <AppText small onPress={() => navigation.navigate('AllQuestionsOrReviews', { type: 'reviews' })} >See all reviews >></AppText>
+                                        </Right>
+                                    }
+                                </ListItem>
+                            </List>
+                            {
+                                reviewCount > 0 ?
+                                    <View>
+                                        <List dataArray={reviews} renderRow={review => (
 
-                                    <ListItem avatar key={'review-' + review.id}>
-                                        <Left>
-                                            <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                                        </Left>
-                                        <Body>
-                                            <Grid>
-                                                <Col>
-                                                    <AppText>{review.userName}</AppText>
-                                                </Col>
-                                                <Col style={{ alignItems: 'flex-end' }}>
-                                                    <AppText note small>{formatTime(review.createdAt)}</AppText>
-                                                </Col>
-                                            </Grid>
-                                            <View style={{ flexDirection: 'row' }}>
-                                                {
-                                                    this.renderStars(review.reviewScore)
-                                                }
-                                            </View>
-                                            <AppText note>{review.content}</AppText>
-                                        </Body>
-                                    </ListItem>
+                                            <ListItem avatar key={'review-' + review.id}>
+                                                <Left>
+                                                    <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
+                                                </Left>
+                                                <Body>
+                                                    <Grid>
+                                                        <Col>
+                                                            <AppText>{review.userName}</AppText>
+                                                        </Col>
+                                                        <Col style={{ alignItems: 'flex-end' }}>
+                                                            <AppText note small>{formatTime(review.createdAt)}</AppText>
+                                                        </Col>
+                                                    </Grid>
+                                                    <View style={{ flexDirection: 'row' }}>
+                                                        {
+                                                            this.renderStars(review.reviewScore)
+                                                        }
+                                                    </View>
+                                                    <AppText note>{review.content}</AppText>
+                                                </Body>
+                                            </ListItem>
 
 
-                                )} /> :
-                                <AppText style={{ marginVertical: 10 }} note center>This product has no reviews</AppText>
-                        }
-                        {
-                            reviewCount > 5 && <Button block style={{ marginBottom: 20 }} light>
-                                <AppText>SEE ALL REVIEWS</AppText>
+                                        )} />
+
+                                    </View> :
+                                    <AppText style={{ marginVertical: 10 }} note center>This product has no reviews</AppText>
+                            }
+                            <Button block light onPress={() => navigation.navigate('ReviewForm', { productID })}>
+                                <AppText>MAKE A REVIEW</AppText>
                             </Button>
-                        }
+                        </Card>
+                        <Card style={{ marginTop: 50 }}>
+                            <List>
+                                <ListItem itemHeader first icon>
+                                    <Body>
+                                        <AppText style={{ fontWeight: 'bold' }}>QUESTIONS ({questionCount})</AppText>
+                                    </Body>
+                                    {
+                                        questionCount > 5 && <Right>
+                                            <AppText small onPress={() => navigation.navigate('AllQuestionsOrReviews', { type: 'questions' })}>See all questions >></AppText>
+                                        </Right>
+                                    }
+                                </ListItem>
+                            </List>
+                            {
+                                questionCount > 0 ?
+                                    <View>
+                                        <List dataArray={questions} renderRow={question => (
 
-                        <AppText center style={{ marginVertical: 20 }}>QUESTIONS ({questionCount})</AppText>
-                        {
-                            questionCount > 0 ?
-                                <List dataArray={questions} renderRow={question => (
-
-                                    <ListItem avatar style={{ paddingVertical: 20 }} key={'question-' + question.id}>
-                                        <Left>
-                                            <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                                        </Left>
-                                        <Body>
-                                            <Grid>
-                                                <Col>
-                                                    <AppText>{question.userName}</AppText>
-                                                </Col>
-                                                <Col style={{ alignItems: 'flex-end' }}>
-                                                    <AppText note small>{formatTime(question.createdAt)}</AppText>
-                                                </Col>
-                                            </Grid>
-                                            <View style={{ flexDirection: 'row' }}>
-                                                {
-                                                    this.renderStars(question.reviewScore)
-                                                }
-                                            </View>
-                                            <AppText note>{question.content}</AppText>
-                                        </Body>
-                                    </ListItem>
+                                            <ListItem avatar key={'question-' + question.id}>
+                                                <Left>
+                                                    <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
+                                                </Left>
+                                                <Body>
+                                                    <Grid>
+                                                        <Col>
+                                                            <AppText>{question.userName}</AppText>
+                                                        </Col>
+                                                        <Col style={{ alignItems: 'flex-end' }}>
+                                                            <AppText note small>{formatTime(question.createdAt)}</AppText>
+                                                        </Col>
+                                                    </Grid>
+                                                    <AppText note>{question.content}</AppText>
+                                                </Body>
+                                            </ListItem>
 
 
-                                )} /> :
-                                <AppText style={{ marginVertical: 10 }} note center>No questions for this product</AppText>
-                        }
-                        {
-                            questionCount > 5 && <Button block style={{ marginBottom: 50 }} light>
-                                <AppText>SEE ALL QUESTIONS</AppText>
+                                        )} />
+                                    </View> :
+                                    <AppText style={{ marginVertical: 10 }} note center>No questions for this product</AppText>
+                            }
+                            <Button block light onPress={() => navigation.navigate('QuestionForm', { productID })}>
+                                <AppText>GIVE A QUESTION</AppText>
                             </Button>
-                        }
+                        </Card>
                     </View>
                 </Content>
-                <Footer>
-                    <FooterTab>
-                        <Grid>
-                            <Col>
-                                <Button full primary small onPress={() => navigation.navigate('ReviewForm')}>
-                                    <AppText>
-                                        MAKE A REVIEW
-                                    </AppText>
-                                </Button>
-                            </Col>
-                            <Col>
-                                <Button full success small onPress={() => navigation.navigate('QuestionForm')}>
-                                    <AppText>
-                                        GIVE A QUESTION
-                                    </AppText>
-                                </Button>
-                            </Col>
-                        </Grid>
-                    </FooterTab>
-                </Footer>
+                {
+                    data.quantity > 0 &&
+                    <Footer>
+                        <FooterTab >
+                            <View style={{ width: '100%' }}>
+                                {
+                                    isAddedToCart ?
+                                        <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
+                                            confirm('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, () => setCart(data, 'REMOVE'))
+                                        }}>
+                                            <Icon name='close' />
+                                            <AppText>REMOVE FROM CART</AppText>
+                                        </Button> :
+                                        <Button success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
+                                            setCart(data, 'ADD')
+                                            alert('Success', 'Product has been added to cart')
+                                        }}>
+                                            <Icon name='add' />
+                                            <AppText>ADD TO CART</AppText>
+                                        </Button>
+                                }
+                            </View>
+                        </FooterTab>
+                    </Footer>
+                }
             </Container>
         )
     }
@@ -213,6 +239,7 @@ const mapStateToProps = (state) => {
     const { id, feedback, info } = current
     const { data } = info
     const { status, reviews, statistic, questions } = feedback
+    const { list } = state.cart
 
     return {
 
@@ -224,6 +251,8 @@ const mapStateToProps = (state) => {
         questions: questions.slice(0, 5),
         questionCount: questions.length,
         reviewScore: data !== null && data.reviewScore ? data.reviewScore : 0,
+        isAddedToCart: list.find(product => product._id === id),
+        data
 
     }
 
@@ -231,7 +260,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
 
-    loadProductFeedback: (productID) => dispatch(loadProductFeedback(productID))
+    loadProductFeedback: (productID) => dispatch(loadProductFeedback(productID)),
+    setCart: (product, type) => dispatch(setCart(product, type))
 
 })
 

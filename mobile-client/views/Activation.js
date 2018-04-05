@@ -2,17 +2,15 @@ import React, { Component } from 'react';
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
 import AppButton from './components/AppButton'
-import { View, Image, ImageBackground, Alert } from 'react-native'
-import { Content, Form, Item, Icon, Input, Grid, Row } from 'native-base'
+import { View, Image, ImageBackground } from 'react-native'
+import { Content, Form, Item, Icon, Input, Grid, Row, Container } from 'native-base'
 import { connect } from "react-redux";
 import { Field, reduxForm, handleSubmit } from 'redux-form';
 import { activate, saveToBuffer } from "../presenters";
+import { alert } from "../utils";
 
 class Activation extends Component {
 
-    static navigationOptions = {
-        title: 'Activation'
-    }
     state = {}
     componentDidUpdate() {
 
@@ -20,12 +18,12 @@ class Activation extends Component {
 
         if (submitSucceeded) {
 
-            Alert.alert('Success', 'Account activated! You can log in right now!')
+            alert('Success', 'Account activated! You can log in right now!')
             saveToBuffer({ email: navigation.state.params.email })
 
         } else if (submitFailed && error) {
 
-            Alert.alert('Error', error)
+            alert('Error', error)
             clearSubmitErrors()
         }
 
@@ -45,16 +43,18 @@ class Activation extends Component {
         const { navigation, handleSubmit, submitting, invalid, error } = this.props
 
         return (
-            <Content>
-                <View style={{ marginHorizontal: 10, marginVertical: 20 }}>
-                    <Image style={{ alignSelf: 'center', marginVertical: 50 }} source={{ uri: 'https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/unlock.png', width: 100, height: 100 }} />
-                    <AppText color="gray" >{navigation.state.params.email}</AppText>
-                    <Field name="activationCode" placeholder="ACTIVATION CODE" component={this.renderInput} />
-                </View>
-                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered onPress={handleSubmit(activate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
-                    ACTIVATE
+            <Container>
+                <Content>
+                    <View style={{ marginHorizontal: 10, marginVertical: 20 }}>
+                        <Image style={{ alignSelf: 'center', marginVertical: 50 }} source={{ uri: 'https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/unlock.png', width: 100, height: 100 }} />
+                        <AppText color="gray" >{navigation.state.params.email}</AppText>
+                        <Field name="activationCode" placeholder="ACTIVATION CODE" component={this.renderInput} />
+                    </View>
+                    <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered onPress={handleSubmit(activate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
+                        ACTIVATE
                 </AppButton>
-            </Content>
+                </Content>
+            </Container>
         );
     }
 }

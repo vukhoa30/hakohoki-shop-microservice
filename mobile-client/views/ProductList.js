@@ -11,19 +11,6 @@ import { loadProductList, selectProduct } from "../presenters";
 
 class ProductList extends Component {
 
-
-    static navigationOptions = ({ navigation }) => {
-
-        const { params } = navigation.state
-
-        return {
-
-            title: params && params.category ? params.category : 'Product list'
-
-        }
-
-    }
-
     constructor(props) {
 
         super(props)
@@ -37,13 +24,13 @@ class ProductList extends Component {
         const { selectProduct, navigation, status, list, loadProductList, offset, limit, setCart } = this.props
         const { params } = navigation.state
         const paramKeys = Object.keys(params)
-        const isSearchMode = (params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0)
+        const isSearchMode = !params.newest && ((params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0))
         return (
             <Content>
                 {
                     isSearchMode &&
                     <View style={{ marginVertical: 10, marginHorizontal: 10 }}>
-                        <AppText note>Tìm kiếm theo</AppText>
+                        <AppText note>Search by:</AppText>
                         <View style={{ flexDirection: 'row' }}>
                             {
                                 Object.keys(params).map(key => {
@@ -58,9 +45,12 @@ class ProductList extends Component {
                         </View>
                     </View>
                 }
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 50 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 50, justifyContent: 'center' }}>
                     {
-                        list.map(item => <ProductShowcase key={item._id + new Date().toString()} item={item} onSelected={productID => selectProduct(productID)} />)
+                        status === 'LOADED' &&
+                        (list.length > 0 ?
+                            list.map(item =><View key={item._id} style={{ width: '50%' }}><ProductShowcase  onSelected={productID => selectProduct(productID)} item={item} /></View>)
+                            : <AppText note style={{ marginTop: 100 }}>NO PRODUCTS FOUND</AppText>)
                     }
                 </View>
                 {
@@ -69,7 +59,7 @@ class ProductList extends Component {
                         status === 'LOADING_FAILED' &&
                         <View style={{ alignItems: 'center' }}>
                             <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                            <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => this.loadProductList(params, list.length, 10)}>Reload</AppButton>
+                            <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductList(params, list.length, 10)}>Reload</AppButton>
                         </View>
                 }
             </Content >

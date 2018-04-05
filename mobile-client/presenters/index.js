@@ -1,4 +1,4 @@
-import { request, parseToQueryString, getAction } from '../utils'
+import { request, parseToQueryString, getAction, delay } from '../utils'
 import navigator from '../models/navigations'
 import {
     USER_LOG_IN,
@@ -211,6 +211,30 @@ function saveToBuffer(data) {
 
 }
 
+function loadNewestProducts() {
+
+    return new Promise(async (resolve, reject) => {
+
+        try {
+
+            const response = await request('/products/latest?offset=0&limit=10', 'GET', {})
+            const { status, data } = response
+
+            if (status === 200)
+                resolve({ ok: true, list: data })
+
+        } catch (error) {
+
+
+        }
+
+        resolve({ ok: false })
+
+
+    })
+
+}
+
 function loadCategories() {
 
     return new Promise(async (resolve, reject) => {
@@ -241,20 +265,28 @@ function selectCategory(category) {
 
 }
 
+function search(values) {
+
+    const { q } = values
+    const { navigation } = this.props
+    navigation.navigate('ProductList', { q })
+
+}
+
 function loadProductList(conditions, offset, limit) {
 
     return async dispatch => {
 
         dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADING', firstLoad: offset === 0 }))
 
-        const queryString = parseToQueryString(conditions)
+        const url = '/products/' + (conditions.newest ? 'latest?' : 'search?' + parseToQueryString(conditions) + '&')
 
         try {
 
-            const response = await request(`/products/search?${queryString}&offset=${offset}&limit=${limit}`, 'GET', {})
+            const response = await request(`${url}offset=${offset}&limit=${limit}`, 'GET', {})
             const { status, data } = response
 
-            console.log(status)
+            console.log(data)
             if (status === 200)
                 return dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADED', data, conditions }))
 
@@ -302,12 +334,14 @@ function loadProductInformation(productID) {
 
 }
 
-function loadProductFeedback(productID) {
+function loadProductFeedback(productID, needDelay) {
 
     return async dispatch => {
         dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADING' }))
         try {
 
+            if (needDelay)
+                await delay(3000)
             const response = await request(`/comments/${productID}`, 'GET', {})
             const { status, data } = response
 
@@ -473,6 +507,8 @@ module.exports = {
     loadProductFeedback,
     sendReview,
     sendQuestionOrAnswer,
-    setCart
+    setCart,
+    search,
+    loadNewestProducts
 
 }

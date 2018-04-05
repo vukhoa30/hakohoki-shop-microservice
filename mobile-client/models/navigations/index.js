@@ -13,6 +13,8 @@ import ProductFeedback from '../../views/ProductFeedback'
 import QuestionForm from '../../views/QuestionForm'
 import ReviewForm from '../../views/ReviewForm'
 import Cart from '../../views/Cart'
+import Search from '../../views/Search'
+import AllQuestionsOrReviews from '../../views/AllQuestionsOrReviews'
 import { Icon } from "native-base";
 
 const mainNavigator = TabNavigator(
@@ -73,7 +75,18 @@ const productDetailNavigator = TabNavigator(
         tabBarComponent: TabBarTop,
         tabBarPosition: 'top',
         tabBarOptions: {
-            upperCaseLabel: false
+            upperCaseLabel: true,
+            activeTintColor: 'orange',
+            labelStyle: {
+                fontWeight: 'bold'
+            },
+            indicatorStyle: {
+                backgroundColor: 'orange'
+            },
+            inactiveTintColor: 'gray',
+            style: {
+                backgroundColor: 'white'
+            }
         }
     }
 )
@@ -91,39 +104,92 @@ const accountNavigator = TabNavigator(
         tabBarComponent: TabBarTop,
         tabBarPosition: 'top',
         tabBarOptions: {
-            upperCaseLabel: false
-        },
+            upperCaseLabel: true,
+            activeTintColor: 'orange',
+            labelStyle: {
+                fontWeight: 'bold'
+            },
+            indicatorStyle: {
+                backgroundColor: 'orange'
+            },
+            inactiveTintColor: 'gray',
+            style: {
+                backgroundColor: 'white'
+            }
+        }
     }
 )
 
 const rootNavigator = StackNavigator({
 
     Main: {
-        screen: mainNavigator
+        screen: mainNavigator,
+        navigationOptions: ({ navigation }) => ({
+
+            headerRight:
+                <View style={{ flexDirection: 'row' }}>
+                    <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
+                    <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
+                </View>
+
+        })
     },
 
     Account: {
         screen: accountNavigator,
         navigationOptions: {
-            title: 'Account'
+            title: 'Account',
+            headerRight: <View />
         }
     },
 
     Activation: {
-        screen: Activation
+        screen: Activation,
+        navigationOptions: {
+            headerRight: <View />
+        }
     },
 
     ProductList: {
-        screen: ProductList
+        screen: ProductList,
+        navigationOptions: ({ navigation }) => {
+
+            const { params } = navigation.state
+
+            let title = 'Product list'
+
+            if (params.category) {
+                title = params.category
+            } else if (params.newest) {
+                title = 'Newest products'
+            }
+
+            return {
+
+                title
+
+            }
+
+        }
     },
 
     Cart: {
-        screen: Cart
+        screen: Cart,
+        navigationOptions: ({ navigation }) => ({
+            title: 'Cart',
+            headerRight:
+                <View style={{ flexDirection: 'row' }}>
+                    <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
+                    <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Home')} />
+                </View>
+        })
     },
 
     ProductDetail: {
         screen: productDetailNavigator,
-        navigationOptions: ({ navigationOptions }) => ({ ...navigationOptions, title: 'Product detail' })
+        navigationOptions: {
+            title: 'Product detail'
+        }
     },
 
     QuestionForm: {
@@ -138,18 +204,36 @@ const rootNavigator = StackNavigator({
         navigationOptions: {
             header: null
         }
+    },
+
+    Search: {
+        screen: Search,
+        navigationOptions: {
+            header: null
+        }
+    },
+
+    AllQuestionsOrReviews: {
+        screen: AllQuestionsOrReviews
     }
 
 }, {
 
         navigationOptions: ({ navigation }) =>
             ({
+                headerStyle: {
+                    backgroundColor: '#1B7887',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                    fontWeight: 'bold',
+                },
                 headerRight:
                     <View style={{ flexDirection: 'row' }}>
-                        <Icon name='home' style={{ marginRight: 20 }} onPress={() => navigation.navigate('Home')} />
-                        <Icon name='cart' style={{ marginRight: 20 }} onPress={() => navigation.navigate('Cart')}/>
+                        <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
+                        <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Home')} />
+                        <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
                     </View>
-
             })
 
     })

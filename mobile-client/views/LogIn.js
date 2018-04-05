@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
 import AppButton from './components/AppButton'
-import { View, Image, ImageBackground, Alert } from 'react-native'
+import { View, Image, ImageBackground } from 'react-native'
 import { Container, Form, Item, Icon, Input, Content, Grid, Row, Col, Spinner } from 'native-base'
 import { connect } from "react-redux";
 import { Field, reduxForm, SubmissionError, formValueSelector } from 'redux-form';
-import { validateEmail } from '../utils'
+import { validateEmail, alert } from '../utils'
 import { authenticate, logIn } from "../presenters";
 
 class LogIn extends Component {
@@ -28,7 +28,7 @@ class LogIn extends Component {
 
         } else if (submitFailed && error) {
 
-            Alert.alert('Error', error)
+            alert('Error', error)
             clearSubmitErrors()
         }
 
@@ -50,20 +50,22 @@ class LogIn extends Component {
         const { navigation, logIn, handleSubmit, submitting, invalid, error } = this.props
 
         return (
-            <Content>
-                <View style={{ marginHorizontal: 10 }}>
-                    <Field name="email" placeholder="EMAIL" component={this.renderInput} />
-                    <Field name="password" placeholder="MẬT KHẨU" type="password" component={this.renderInput} />
-                </View>
-                <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
-                    LOG IN
+            <Container>
+                <Content>
+                    <View style={{ marginHorizontal: 10 }}>
+                        <Field name="email" placeholder="EMAIL" component={this.renderInput} />
+                        <Field name="password" placeholder="PASSWORD" type="password" component={this.renderInput} />
+                    </View>
+                    <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
+                        LOG IN
                             </AppButton>
-                <AppText center>--------- or log in through ----------</AppText>
-                <View style={{ alignSelf: 'center', flexDirection: 'row', flex: 1, marginTop: 20 }}>
-                    <AppButton icon="logo-facebook" style={{ margin: 5 }}>Facebook</AppButton>
-                    <AppButton icon="logo-google" style={{ backgroundColor: 'red', margin: 5 }}>Google</AppButton>
-                </View>
-            </Content>
+                    <AppText center>--------- or log in through ----------</AppText>
+                    <View style={{ alignSelf: 'center', flexDirection: 'row', flex: 1, marginTop: 20 }}>
+                        <AppButton icon="logo-facebook" style={{ margin: 5 }}>Facebook</AppButton>
+                        <AppButton icon="logo-google" style={{ backgroundColor: 'red', margin: 5 }}>Google</AppButton>
+                    </View>
+                </Content>
+            </Container>
         );
     }
 }

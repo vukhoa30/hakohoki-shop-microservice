@@ -1,5 +1,24 @@
 import { gatewayAddress } from '../config'
 import { stringify } from 'query-string'
+import { AlertAndroid, Alert, Platform } from 'react-native'
+
+function alert(title, content) {
+
+    if (Platform.OS === 'ios')
+        AlertIOS.alert(title, content)
+    else
+        Alert.alert(title, content)
+
+}
+
+function confirm(title, content, callback) {
+
+    if (Platform.OS === 'ios')
+        AlertIOS.alert(title, content, [{ text: 'No', style: 'cancel' }, { text: 'Yes', onPress: () => callback() }])
+    else
+        Alert.alert(title, content, [{ text: 'No', style: 'cancel' }, { text: 'Yes', onPress: () => callback() }])
+
+}
 
 function request(url, method, header, data) {
 
@@ -74,11 +93,20 @@ function getAction(type, obj) {
 
 }
 
+function delay(ms) {
+
+    return new Promise(res => setTimeout(() => res(), ms))
+
+}
+
 module.exports = {
     request,
     currencyFormat,
     validateEmail,
     formatTime,
     parseToQueryString,
-    getAction
+    getAction,
+    alert,
+    confirm,
+    delay
 }
