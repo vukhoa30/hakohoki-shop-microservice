@@ -61,14 +61,14 @@ module.exports = {
     .then(rslt => {
       return db.GetSpecificProductsInStock(rslt._id)
       .then(async specifics => {
-        var token;
-        if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-          token = req.headers.authorization.split(' ')[1]
-        } else { return catchUnauthorized(res) }
+        var token, authentication;
         try {
-          var authentication = await msgBroker.requestAuthenticateCustomer(token)
-          if (!authentication) {
-            authentication = await msgBroker.requestAuthenticateEmployee(token)
+          if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+            token = req.headers.authorization.split(' ')[1]
+            authentication = await msgBroker.requestAuthenticateCustomer(token)
+            if (!authentication) {
+              authentication = await msgBroker.requestAuthenticateEmployee(token)
+            }
           }
           if (authentication) {
             var watchlists = await msgBroker.requestGetWatchlistUsers([req.params.id])
