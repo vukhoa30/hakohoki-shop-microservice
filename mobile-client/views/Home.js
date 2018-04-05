@@ -58,7 +58,7 @@ class Home extends Component {
         headerTitle:
             <View style={{ flexDirection: 'row', paddingLeft: 20 }}>
                 <Image source={require('../resources/images/logoTitle.png')} style={{ width: 30, height: 30, resizeMode: 'stretch' }} />
-                <Image source={require('../resources/images/title.png')} style={{ marginLeft: 10, width: 150, height: 40, resizeMode: 'stretch' }} />
+                <Image source={require('../resources/images/title.png')} style={{ marginLeft: 10, width: 150, height: 30, resizeMode: 'stretch' }} />
             </View>
 
 

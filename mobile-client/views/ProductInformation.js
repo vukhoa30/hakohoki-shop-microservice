@@ -184,8 +184,7 @@ const mapStateToProps = state => {
 
     const { current } = state.product
     const { list } = state.cart
-    const { id, info } = current
-    const { status, data } = info
+    const { id, status, data } = current
 
     return {
         productID: id,

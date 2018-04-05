@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { loadProductFeedback, setCart } from '../presenters'
+import { loadProductFeedback, setCart, getAnswer } from '../presenters'
 import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail, Footer, FooterTab } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
-import { formatTime, alert, confirm } from "../utils";
+import { alert, confirm } from "../utils";
+import AppComment from './components/AppComment'
 
 class ProductFeedback extends Component {
 
@@ -52,7 +53,7 @@ class ProductFeedback extends Component {
     }
 
     render() {
-        const { data, isAddedToCart, status, reviews, questions, statistic, reviewScore, reviewCount, questionCount, navigation, productID, loadProductFeedback } = this.props
+        const { getAnswer, data, isAddedToCart, status, reviews, comments, statistic, reviewScore, reviewCount, commentCount, navigation, productID, loadProductFeedback } = this.props
 
         switch (status) {
 
@@ -125,27 +126,8 @@ class ProductFeedback extends Component {
                                         <List dataArray={reviews} renderRow={review => (
 
                                             <ListItem avatar key={'review-' + review.id}>
-                                                <Left>
-                                                    <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                                                </Left>
-                                                <Body>
-                                                    <Grid>
-                                                        <Col>
-                                                            <AppText>{review.userName}</AppText>
-                                                        </Col>
-                                                        <Col style={{ alignItems: 'flex-end' }}>
-                                                            <AppText note small>{formatTime(review.createdAt)}</AppText>
-                                                        </Col>
-                                                    </Grid>
-                                                    <View style={{ flexDirection: 'row' }}>
-                                                        {
-                                                            this.renderStars(review.reviewScore)
-                                                        }
-                                                    </View>
-                                                    <AppText note>{review.content}</AppText>
-                                                </Body>
+                                                <AppComment comment={review} />
                                             </ListItem>
-
 
                                         )} />
 
@@ -160,41 +142,28 @@ class ProductFeedback extends Component {
                             <List>
                                 <ListItem itemHeader first icon>
                                     <Body>
-                                        <AppText style={{ fontWeight: 'bold' }}>QUESTIONS ({questionCount})</AppText>
+                                        <AppText style={{ fontWeight: 'bold' }}>COMMENTS ({commentCount})</AppText>
                                     </Body>
                                     {
-                                        questionCount > 5 && <Right>
-                                            <AppText small onPress={() => navigation.navigate('AllQuestionsOrReviews', { type: 'questions' })}>See all questions >></AppText>
+                                        commentCount > 5 && <Right>
+                                            <AppText small onPress={() => navigation.navigate('AllQuestionsOrReviews', { type: 'comments' })}>See all questions >></AppText>
                                         </Right>
                                     }
                                 </ListItem>
                             </List>
                             {
-                                questionCount > 0 ?
+                                commentCount > 0 ?
                                     <View>
-                                        <List dataArray={questions} renderRow={question => (
+                                        <List dataArray={comments} renderRow={comment => (
 
-                                            <ListItem avatar key={'question-' + question.id}>
-                                                <Left>
-                                                    <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                                                </Left>
-                                                <Body>
-                                                    <Grid>
-                                                        <Col>
-                                                            <AppText>{question.userName}</AppText>
-                                                        </Col>
-                                                        <Col style={{ alignItems: 'flex-end' }}>
-                                                            <AppText note small>{formatTime(question.createdAt)}</AppText>
-                                                        </Col>
-                                                    </Grid>
-                                                    <AppText note>{question.content}</AppText>
-                                                </Body>
+                                            <ListItem onPress={() => getAnswer(comment.id)} avatar key={'comment-' + comment.id}>
+                                                <AppComment comment={comment} />
                                             </ListItem>
 
 
                                         )} />
                                     </View> :
-                                    <AppText style={{ marginVertical: 10 }} note center>No questions for this product</AppText>
+                                    <AppText style={{ marginVertical: 10 }} note center>No comments for this product</AppText>
                             }
                             <Button block light onPress={() => navigation.navigate('QuestionForm', { productID })}>
                                 <AppText>GIVE A QUESTION</AppText>
@@ -236,9 +205,8 @@ class ProductFeedback extends Component {
 const mapStateToProps = (state) => {
 
     const { current } = state.product
-    const { id, feedback, info } = current
-    const { data } = info
-    const { status, reviews, statistic, questions } = feedback
+    const { id, data } = current
+    const { status, reviews, statistic, comments } = state.feedback
     const { list } = state.cart
 
     return {
@@ -248,8 +216,8 @@ const mapStateToProps = (state) => {
         reviews: reviews.slice(0, 5),
         reviewCount: data !== null && data.reviewCount ? data.reviewCount : 0,
         statistic,
-        questions: questions.slice(0, 5),
-        questionCount: questions.length,
+        comments: comments.slice(0, 5),
+        commentCount: comments.length,
         reviewScore: data !== null && data.reviewScore ? data.reviewScore : 0,
         isAddedToCart: list.find(product => product._id === id),
         data
@@ -261,7 +229,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
 
     loadProductFeedback: (productID) => dispatch(loadProductFeedback(productID)),
-    setCart: (product, type) => dispatch(setCart(product, type))
+    setCart: (product, type) => dispatch(setCart(product, type)),
+    getAnswer: commentID => dispatch(getAnswer(commentID))
 
 })
 

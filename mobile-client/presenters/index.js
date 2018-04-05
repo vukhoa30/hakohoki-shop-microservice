@@ -6,6 +6,9 @@ import {
     SELECT_PRODUCT,
     PRODUCT_LIST_LOADING,
     PRODUCT_DETAIL_LOADING,
+    FEEDBACK_LOADING,
+    GET_ANSWERS,
+    ADD_INVALIDATED_COMMENT,
     ADD_TO_CART,
     REMOVE_FROM_CART,
     REMOVE_ALL,
@@ -314,30 +317,34 @@ function selectProduct(productID) {
 function loadProductInformation(productID) {
 
     return async dispatch => {
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADING' }))
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADING' }))
         try {
 
             const response = await request(`/products/info/${productID}`, 'GET', {})
             const { status, data } = response
 
-            if (status === 200)
-                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADED', data }))
+            if (status === 200) {
+
+                if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
+                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADED', data }))
+            }
+
 
         } catch (error) {
 
 
         }
 
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'info', status: 'LOADING_FAILED' }))
+        dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADING_FAILED' }))
 
     }
 
 }
 
-function loadProductFeedback(productID, needDelay) {
+function loadProductFeedback(productID, needDelay = false) {
 
     return async dispatch => {
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADING' }))
+        dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADING' }))
         try {
 
             if (needDelay)
@@ -347,16 +354,16 @@ function loadProductFeedback(productID, needDelay) {
 
             if (status === 200) {
 
-                const { reviews, comments } = reduce(data, (result, item) => {
+                const { reviews, notFilteredComments } = reduce(data, (result, item) => {
 
                     if (item.reviewScore)
                         result['reviews'].push(item)
                     else
-                        result['comments'].push(item)
+                        result['notFilteredComments'].push(item)
 
                     return result
 
-                }, { reviews: [], comments: [] })
+                }, { reviews: [], notFilteredComments: [] })
 
                 const statistic = reduce(reviews, (result, review) => {
 
@@ -371,9 +378,15 @@ function loadProductFeedback(productID, needDelay) {
                         '1': 0
                     })
 
-                const questions = comments.filter(item => !item.parentID)
+                const comments = notFilteredComments.filter(comment => !comment.parentId)
 
-                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADED', reviews, comments, statistic, questions }))
+                comments.forEach(comment => {
+
+                    comment.reply = notFilteredComments.filter(cmt => cmt.parentId === comment.id)
+
+                })
+
+                return dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADED', reviews, comments, statistic }))
 
             }
 
@@ -384,7 +397,7 @@ function loadProductFeedback(productID, needDelay) {
 
         }
 
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { dataType: 'feedback', status: 'LOADING_FAILED' }))
+        dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADING_FAILED' }))
 
     }
 
@@ -397,10 +410,10 @@ function sendReview(values) {
         let err = `Undefined error, try again later!`
         const content = values.review
         const reviewScore = this.state.starCount
-        const { productID, logOut, navigation, token } = this.props
+        const { productID: productId, logOut, navigation, token } = this.props
         try {
 
-            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId: productID, content, reviewScore })
+            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, reviewScore })
             const { status, data } = response
 
             switch (status) {
@@ -430,16 +443,17 @@ function sendReview(values) {
 
 }
 
-function sendQuestionOrAnswer(values) {
+function sendComment(values) {
 
     return new Promise(async (resolve, reject) => {
 
         let err = `Undefined error, try again later!`
         try {
 
-            const content = values.question
-            const { productID, logOut, navigation, token } = this.props
-            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId: productID, content })
+            const content = values.comment
+            const { productId, logOut, navigation, token, parentId, fullName, reset } = this.props
+            if (parentId) reset()
+            const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, parentId })
             const { status, data } = response
 
             switch (status) {
@@ -467,6 +481,17 @@ function sendQuestionOrAnswer(values) {
         reject(new SubmissionError({ _error: err }))
 
     })
+
+}
+
+function getAnswer(commentID) {
+
+    return dispatch => {
+
+        dispatch(getAction(GET_ANSWERS, { commentID }))
+        dispatch(navigator.router.getActionForPathAndParams('Answers'))
+
+    }
 
 }
 
@@ -506,7 +531,8 @@ module.exports = {
     loadProductInformation,
     loadProductFeedback,
     sendReview,
-    sendQuestionOrAnswer,
+    sendComment,
+    getAnswer,
     setCart,
     search,
     loadNewestProducts

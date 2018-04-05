@@ -1,61 +1,37 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { View } from 'react-native'
-import { } from '../presenters'
-import { Container, Content, Button, List, ListItem, Grid, Col, Body, Left, Thumbnail } from 'native-base'
+import { View, Dimensions } from 'react-native'
+import { getAnswer, loadProductFeedback } from '../presenters'
+import { Container, Content, Button, List, ListItem, Grid, Col, Body, Left, Thumbnail, Icon, Spinner } from 'native-base'
 import AppText from './components/AppText'
-import { formatTime } from "../utils";
+import AppComment from './components/AppComment'
+
+const { width, height } = Dimensions.get('window')
 
 class AllQuestionsOrReviews extends Component {
-
-    static navigationOptions = ({ navigation }) => ({ title: navigation.state.params.type === 'reviews' ? 'All reviews' : 'All questions' })
 
     constructor(props) {
         super(props)
         this.state = {}
     }
 
-    renderStars(reviewScore, large = false) {
-
-        const stars = [];
-        let i = 0
-        for (; i < reviewScore; i++)
-            stars.push(<Icon key={'star-' + i} name="ios-star" style={{ color: 'orange', fontSize: large ? 15 : 10, fontWeight: 'bold', marginVertical: 5 }} />)
-        for (; i < 5; i++)
-            stars.push(<Icon key={'star-' + i} name="ios-star-outline" style={{ color: 'orange', fontSize: large ? 15 : 10, fontWeight: 'bold', marginVertical: 5 }} />)
-        return stars
-
-    }
-
     render() {
-        const { navigation, reviews, questions } = this.props
+        const { status, navigation, reviews, comments, getAnswer, productID, loadProductFeedback } = this.props
         const { params } = navigation.state
 
         return (
             <Container>
+                {
+                    status === 'LOADING' &&
+                    <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center', width, height: height - 50 }}>
+                        <Spinner />
+                    </View>
+                }
                 <Content>
-                    <List dataArray={params.type === 'reviews' ? reviews : questions} renderRow={item => (
+                    <List dataArray={params.type === 'reviews' ? reviews : comments} renderRow={item => (
 
-                        <ListItem avatar key={'comment-' + item.id}>
-                            <Left>
-                                <Thumbnail source={{ uri: 'https://medizzy.com/_nuxt/img/user-placeholder.d2a3ff8.png' }} />
-                            </Left>
-                            <Body>
-                                <Grid>
-                                    <Col>
-                                        <AppText>{item.userName}</AppText>
-                                    </Col>
-                                    <Col style={{ alignItems: 'flex-end' }}>
-                                        <AppText note small>{formatTime(item.createdAt)}</AppText>
-                                    </Col>
-                                </Grid>
-                                <View style={{ flexDirection: 'row' }}>
-                                    {
-                                        item.reviewScore && this.renderStars(item.reviewScore)
-                                    }
-                                </View>
-                                <AppText note>{item.content}</AppText>
-                            </Body>
+                        <ListItem avatar key={'comment-' + item.id} onPress={() => params.type === 'comments' && getAnswer(item.id)} >
+                            <AppComment comment={item} />
                         </ListItem>
 
 
@@ -69,13 +45,17 @@ class AllQuestionsOrReviews extends Component {
 
 const mapStateToProps = (state) => ({
 
-    reviews: state.product.current.feedback.reviews,
-    questions: state.product.current.feedback.questions
+    productID: state.product.current.id,
+    status: state.feedback.status,
+    reviews: state.feedback.reviews,
+    comments: state.feedback.comments
 
 })
 
-const mapDispatchToProps = () => ({
+const mapDispatchToProps = (dispatch) => ({
 
+    getAnswer: commentID => dispatch(getAnswer(commentID)),
+    loadProductFeedback: questionID => dispatch(loadProductFeedback(questionID))
 
 })
 

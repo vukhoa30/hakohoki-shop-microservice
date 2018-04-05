@@ -15,23 +15,8 @@ const initialState = {
     },
     current: {
         id: null,
-        info: {
-            status: 'LOADING',
-            data: null
-        },
-        feedback: {
-            status: 'LOADING',
-            reviews: [],
-            comments: [],
-            statistic: {
-                '5': 0,
-                '4': 0,
-                '3': 0,
-                '2': 0,
-                '1': 0
-            },
-            questions: []
-        }
+        status: 'LOADING',
+        data: null
     }
 }
 
@@ -50,52 +35,13 @@ function getProductList(action, oldData) {
 
 }
 
-function getProductDetail(action, oldData) {
-
-    const { dataType, status } = action
-
-    if (dataType === 'info') {
-
-        const { data } = action
-        return {
-            ...oldData,
-            info: {
-                status,
-                data: data ? data : null
-            }
-        }
-
-    } else {
-
-        const { reviews, comments, statistic, questions } = action
-
-        return {
-            ...oldData,
-            feedback: {
-                status,
-                reviews: reviews ? reviews : [],
-                comments: comments ? comments : [],
-                statistic: statistic ? statistic : {
-                    '5': 0,
-                    '4': 0,
-                    '3': 0,
-                    '2': 0,
-                    '1': 0
-                },
-                questions: questions ? questions : []
-            }
-        }
-
-    }
-
-}
-
-
 function reducer(state = initialState, action) {
 
     let nextState = state
 
-    switch (action.type) {
+    const { type, status, data } = action
+
+    switch (type) {
 
         case PRODUCT_LIST_LOADING:
             nextState = { ...state, list: getProductList(action, state.list) }
@@ -104,7 +50,7 @@ function reducer(state = initialState, action) {
             nextState = { ...state, current: { ...initialState.current, id: action.productID } }
             break
         case PRODUCT_DETAIL_LOADING:
-            nextState = { ...state, current: getProductDetail(action, state.current) }
+            nextState = { ...state, current: { ...state.current, status, data } }
             break
     }
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import { View, Alert } from 'react-native'
-import { sendQuestionOrAnswer, logOut, loadProductFeedback } from '../presenters'
+import { sendComment, logOut, loadProductFeedback } from '../presenters'
 import { Container, Content, Button, Form, Spinner, Item, Input } from 'native-base'
 import AppText from './components/AppText'
 import { NavigationActions } from "react-navigation"
@@ -21,7 +21,7 @@ class QuestionForm extends Component {
         if (submitSucceeded) {
 
             navigation.goBack()
-            loadProductFeedback(productID)
+            loadProductFeedback(productID,true)
 
         } else if (submitFailed && error) {
 
@@ -49,10 +49,10 @@ class QuestionForm extends Component {
             <Container>
                 <Content style={{ paddingHorizontal: 20 }}>
                     <Form>
-                        <Field name='question' placeholder='TYPE YOUR QUESTION HERE' component={this.renderInput} />
+                        <Field name='comment' placeholder='TYPE YOUR QUESTION HERE' component={this.renderInput} />
                     </Form>
                     <Button block success disabled={(!error && invalid) || submitting} style={{ marginVertical: 10, marginTop: 50 }}
-                        onPress={handleSubmit(sendQuestionOrAnswer.bind(this))}
+                        onPress={handleSubmit(sendComment.bind(this))}
                     >
                         {submitting ? <Spinner /> : null}
                         <AppText>SUBMIT</AppText>

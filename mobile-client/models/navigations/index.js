@@ -15,6 +15,7 @@ import ReviewForm from '../../views/ReviewForm'
 import Cart from '../../views/Cart'
 import Search from '../../views/Search'
 import AllQuestionsOrReviews from '../../views/AllQuestionsOrReviews'
+import Answers from '../../views/Answers'
 import { Icon } from "native-base";
 
 const mainNavigator = TabNavigator(
@@ -209,12 +210,21 @@ const rootNavigator = StackNavigator({
     Search: {
         screen: Search,
         navigationOptions: {
-            header: null
+            title: 'Search',
+            headerRight: <View />
         }
     },
 
     AllQuestionsOrReviews: {
-        screen: AllQuestionsOrReviews
+        screen: AllQuestionsOrReviews,
+        navigationOptions : ({ navigation }) => ({ title: navigation.state.params.type === 'reviews' ? 'All reviews' : 'All questions' })
+    },
+
+    Answers: {
+        screen: Answers,
+        navigationOptions: {
+            title: 'Answers'
+        }
     }
 
 }, {

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import { View } from 'react-native'
 import { search } from '../presenters'
-import { Container, Header, Content, Button, Form, Spinner, Item, Input, Icon, Left, Right, Body } from 'native-base'
+import { Container, Header, Content, Button, Form, Spinner, Item, Input, Icon } from 'native-base'
 //import { Header, SearchBar } from 'react-native-elements'
 import AppText from './components/AppText'
 
@@ -18,7 +18,8 @@ class Search extends Component {
         const { handleSubmit } = this.props
         return (
             <Item style={{ borderBottomColor: '#1B7887' }} >
-                <Input {...input} placeholder={placeholder} last placeholderTextColor='white' style={{ color: 'white' }} onSubmitEditing={handleSubmit(search.bind(this))} />
+                <Input {...input} placeholder={placeholder} last onSubmitEditing={handleSubmit(search.bind(this))} />
+                <Icon name="ios-search" onPress={handleSubmit(search.bind(this))} />
             </Item>)
     }
 
@@ -26,21 +27,11 @@ class Search extends Component {
         const { error, invalid, submitting, handleSubmit, navigation } = this.props
         return (
             <Container>
-                <Header style={{ backgroundColor: '#1B7887' }}>
-                    <Left>
-                        <Button transparent onPress={() => navigation.goBack()}>
-                            <Icon name='arrow-back' />
-                        </Button>
-                    </Left>
-                    <Body>
-                        <Field name='q' placeholder='Search...' component={this.renderInput.bind(this)} />
-                    </Body>
-                    <Right>
-                        <Button transparent onPress={handleSubmit(search.bind(this))} ref={component => this.submit = component}>
-                            <Icon name='search' />
-                        </Button>
-                    </Right>
-                </Header>
+                <Content>
+                    <View>
+                        <Field name='q' placeholder='Search for product' component={this.renderInput.bind(this)} />
+                    </View>
+                </Content>
             </Container>
         )
     }
