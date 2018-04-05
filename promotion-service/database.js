@@ -17,10 +17,11 @@ module.exports = {
             product.promotion_id = id[0];
             return product;
           })
-        )
+        ).then(rslt => {
+          resolve(id[0])
+        })
       })
-      .then(rslt => { resolve(rslt) })
-      .catch(e => { reject(e) });
+      .catch(e => { console.log(e);reject(e) });
     })
   },
   GetCurrentPromotion: () => {

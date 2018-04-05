@@ -145,3 +145,14 @@ exports.GetCustomers = (ids) => {
     })
   })
 }
+
+exports.GetAllCustomers = () => {
+  return new Promise((resolve, reject) => {
+    models.Account
+    .find()
+    .exec((err, rslt) => {
+      if (err) { return reject(err) }
+      resolve(rslt.map(r => r._id))
+    })
+  })
+}

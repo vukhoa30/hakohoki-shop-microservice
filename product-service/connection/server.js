@@ -42,6 +42,7 @@ app.put('/product', core.alterProduct)
 
 //Response amqp
 responseAmqp.responseGetProducts()
+responseAmqp.responseGetSpecificProducts()
 responseAmqp.responseUpdateSpecificsStatus()
 
 //Running server-------------------------------------------------------------

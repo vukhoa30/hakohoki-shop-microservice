@@ -82,6 +82,7 @@ app.post('/activation', async function (req, res) {
 //---------------------------------------------------------------------------
 amqpResponse.responseAuthenticateCustomer()
 amqpResponse.responseGetCustomers()
+amqpResponse.responseGetAllCustomers()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

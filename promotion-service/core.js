@@ -36,13 +36,24 @@ module.exports = {
       if (!authentication || authentication.role !== 'manager') { 
         return catchUnauthorized(res)
       }
-    } catch (e) { return catchError(res, e) }
 
-    db.CreatePromotion(req.body)
-    .then(rslt => {
-      res.json({ ok: true })
-    })
-    .catch(err => catchError(res, err))
+      var promotionId = await db.CreatePromotion(req.body)
+      if (req.body.sendNotification) {
+        var allCustomerIds = await msgBroker.requestGetAllCustomers()
+        await msgBroker.requestNotificationRequest(
+          allCustomerIds.map(id => {
+            return {
+              type: 'promotionCreated',
+              accountId: id,
+              promotionId,
+              promotionName: req.body.name
+            }
+          })
+        )
+      }
+
+      res.json({ok: true})
+    } catch (e) { return catchError(res, e) }
   },
   cacheCurrentPromotion: (req, res, next) => {
     client.get(CACHE_CURRENT_PROMOTION, (err, data) => {

@@ -45,7 +45,7 @@ var responseAmqp = (promise, queue) => {
         var response = []
         try {
           response = await promise(JSON.parse(msg.content.toString()))
-        } catch (e) { }
+        } catch (e) { console.log(e) }
         ch.sendToQueue(msg.properties.replyTo,
           new Buffer(JSON.stringify(response)),
           {correlationId: msg.properties.correlationId})
@@ -66,5 +66,11 @@ module.exports = {
   },
   responsePromotionPrice: () => {
     responseAmqp(db.GetPromotionPrices, 'getPromotionPrices')
+  },
+  requestNotificationRequest: (notification) => {
+    return requestAmqp(notification, 'notificationRequest')
+  },
+  requestGetAllCustomers: () => {
+    return requestAmqp({}, 'getAllCustomers')
   }
 }

@@ -41,5 +41,11 @@ module.exports = {
   },
   requestGetEmployees: (ids) => {
     return requestAmqp(ids, 'getEmployees')
+  },
+  requestNotificationRequest: (notification) => {
+    return requestAmqp(notification, 'notificationRequest')
+  },
+  requestGetSpecificProducts: (specificIds) => {
+    return requestAmqp(specificIds, 'getSpecificProducts')
   }
 }

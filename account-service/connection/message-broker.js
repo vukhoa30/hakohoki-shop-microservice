@@ -33,5 +33,8 @@ module.exports = {
   },
   responseGetCustomers: () => {
     responseAmqp(db.GetCustomers, 'getCustomers')
+  },
+  responseGetAllCustomers: () => {
+    responseAmqp(db.GetAllCustomers, 'getAllCustomers')
   }
 }

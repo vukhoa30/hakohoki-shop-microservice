@@ -9,12 +9,18 @@ var typicalResponse = (res, func) => {
 }
 
 var catchError = (res, err) => {
+  console.log(err)
   res.status(500);
   res.json({ msg: 'INTERNAL SERVER ERROR', err: err });
 }
 
+var catchUnauthorized = (res) => {
+  res.status(401);
+  res.json({ msg: 'Unauthorized user.' })
+}
+
 module.exports = {
-  getNotification: async (req, res) => {
+  authenticate: async (req, res, next) => {
     var token;
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
       token = req.headers.authorization.split(' ')[1]
@@ -26,7 +32,13 @@ module.exports = {
       }
       if (!authentication) { return catchUnauthorized(res) }
 
-      res.json(await db.GetNotifications(authentication.accountId))
+      req.authentication = authentication
+      next()
+    } catch (e) { catchError(res, e) }
+  },
+  getNotification: async (req, res) => {
+    try {
+      res.json(await db.GetNotifications(req.authentication.accountId))
     } catch (e) { catchError(res, e) }
   },
   addNotification:  (notifications) => {
@@ -46,7 +58,13 @@ module.exports = {
           }
         }))
         resolve(true)
-      } catch (e) { reject(e) }
+      } catch (e) { catchError(res, e) }
     })
+  },
+  readNotifications: async (req, res) => {
+    try {
+      var rslt = await db.ReadNotifications(req.body, req.authentication.accountId)
+      res.json({ok: true})
+    } catch (e) { catchError(res, e) }
   }
 }

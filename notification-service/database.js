@@ -30,5 +30,19 @@ module.exports = {
         else { resolve(rslt) }
       })
     })
+  },
+  ReadNotifications: (ids, accountId) => {
+    return new Promise((resolve, reject) => {
+      models.Notification
+      .updateMany(
+        { _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))},
+          accountId },
+        { $set: {read: true} },
+        (err, rslt) => {
+          if (err) { return reject(err) }
+          resolve(rslt)
+        }
+      )
+    })
   }
 }

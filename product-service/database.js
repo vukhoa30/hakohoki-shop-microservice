@@ -74,7 +74,6 @@ module.exports = {
         queryObject[`specifications.${name}`] = query[`${name}`]
       }
     })
-    console.log(queryObject)
     //https://stackoverflow.com/questions/28775051/best-way-to-perform-a-full-text-search-in-mongodb-and-mongoose
     return new Promise((resolve, reject) => {
       models.Product
@@ -159,6 +158,21 @@ module.exports = {
           if (err2) { return reject(err2) }
           var product = parseRslt(products)[0]
           resolve({...product, specificId: id})
+        })
+      })
+    })
+  },
+  GetProductsBySpecificIds: (ids) => {
+    return new Promise(async (resolve, reject) => {
+      models.SpecificProduct
+      .find({_id: {$in: ids.map(id => mongoose.Types.ObjectId(id))}})
+      .exec((err, rslt) => {
+        if (err || rslt.length == 0) { return reject({msg: 'not found', err}) }
+        models.Product
+        .find({_id: {$in: rslt.map(r => r.productId)}})
+        .exec((err2, products) => {
+          if (err2) { return reject(err2) }
+          resolve(parseRslt(products))
         })
       })
     })
@@ -314,7 +328,6 @@ module.exports = {
       .updateMany({_id: {$in: ids}}, {
         $set: { status: 'sold' }
       }, (err, rslt) => {
-        console.log(rslt) 
         if (err) { return reject(err) }
         resolve(rslt)
       })

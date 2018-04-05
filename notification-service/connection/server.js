@@ -16,7 +16,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/', core.getNotification)
+app.get('/', core.authenticate, core.getNotification)
+app.put('/read', core.authenticate, core.readNotifications)
 
 //response amqp
 responseAmqp.responseNotificationRequest()

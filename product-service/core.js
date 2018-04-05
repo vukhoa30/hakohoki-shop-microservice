@@ -30,7 +30,6 @@ module.exports = {
           var productIds = rslt.map(r => r._id)
           var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
           var reviewScores = await msgBroker.requestReviewScores(productIds)
-          console.log(specifics)
           rslt.map(r => {
             var item = specifics.find(e => {
               return e._id.toString() == r._id.toString()
@@ -147,8 +146,17 @@ module.exports = {
     })
   },
   getProductsBySpecificIds: (ids) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       //tương tự getProductsByIds
+      try {
+        var products = await db.GetProductsBySpecificIds(ids)
+        resolve(products.map(p => {
+          return {
+            productId: p._id,
+            productName: p.name
+          }
+        }))
+      } catch(e) { reject(e) }
     })
   },
   getProductBySpecificId: async (req, res) => {

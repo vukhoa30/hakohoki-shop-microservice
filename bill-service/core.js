@@ -36,6 +36,18 @@ module.exports = {
       });
       await msgBroker.requestUpdateSpecificsStatus(
         req.body.specificProducts.map(p => p.id))
+      if (req.body.buyer.accountId) {
+        var products = await msgBroker.requestGetSpecificProducts(
+          req.body.specificProducts.map(p => p.id))
+        await msgBroker.requestNotificationRequest(products.map(p => {
+          return {
+            type: 'productBought',
+            accountId: req.body.buyer.accountId,
+            productId: p.productId,
+            productName: p.productName
+          }
+        }))
+      }
       res.json({ ok: true })
     } catch(e) { catchError(res, e) }
   },
