@@ -172,10 +172,19 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         var products = await db.GetProductsBySpecificIds(ids)
+        var specifics = await db.GetMultipleSpecificProductsInStock(products.map(p =>
+          p._id))
+        products.map(p => {
+          var item = specifics.find(e => 
+            e._id.toString() == p._id.toString())
+          if (!item) { p.quantity = 0}
+          else {p.quantity = item.count}
+        });
         resolve(products.map(p => {
           return {
             productId: p._id,
-            productName: p.name
+            productName: p.name,
+            productQuantity: p.quantity
           }
         }))
       } catch(e) { reject(e) }
@@ -260,17 +269,17 @@ module.exports = {
       var authentication = await msgBroker.requestAuthenticateEmployee(token)
       if (!authentication || authentication.role !== 'manager') { return catchUnauthorized(res) }
 
-      var specificProducts = await db.getSpecificProductsInStock(req.body.productId)
-      var productQuantity = specificProducts.length
+      var specificProducts = await db.GetSpecificProductsInStock(req.body.productId)
+      var productQuantity = specificProducts.specificProducts.length
       if (productQuantity == 0) {
-        var accountIds = await msgBroker.requestGetWatchlistUsers([req.body.productId])
-        var product = await db.getProduct(req.body.productId)
-        await msgBroker.requestNotificationRequest(accountIds.map(accountId => {
+        var watchlistUsers = await msgBroker.requestGetWatchlistUsers([req.body.productId])
+        var product = await db.GetProduct(req.body.productId)
+        await msgBroker.requestNotificationRequest(watchlistUsers.map(watchlistUser => {
           return {
             type: 'goodsReceipt',
-            accountId,
+            accountId: watchlistUser.accountId,
             productId: req.body.productId,
-            productName: product[0].name
+            productName: product.name
           }
         }))
       }

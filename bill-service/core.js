@@ -36,9 +36,10 @@ module.exports = {
       });
       await msgBroker.requestUpdateSpecificsStatus(
         req.body.specificProducts.map(p => p.id))
+
+      var products = await msgBroker.requestGetSpecificProducts(
+        req.body.specificProducts.map(p => p.id))
       if (req.body.buyer.accountId) {
-        var products = await msgBroker.requestGetSpecificProducts(
-          req.body.specificProducts.map(p => p.id))
         await msgBroker.requestNotificationRequest(products.map(p => {
           return {
             type: 'productBought',
@@ -48,6 +49,37 @@ module.exports = {
           }
         }))
       }
+
+      var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
+        .filter(p => p.productQuantity >= 1 && p.productQuantity <= 2)
+        .map(p => p.productId))
+      if (req.body.buyer.accountId) {
+        watchlistItems = watchlistItems.filter(i => i.accountId.toString != req.body.buyer.accountId.toString())
+      }
+
+      console.log(watchlistItems.map(i => {
+        var finder = products.find(
+          e => e.productId.toString() == i.productId.toString())
+        return {
+          type: 'almostOutOfStock',
+          accountId: i.accountId,
+          productId: i.productId,
+          productName: finder.productName,
+          amount: finder.productQuantity
+        }
+      }))
+
+      await msgBroker.requestNotificationRequest(watchlistItems.map(i => {
+        var finder = products.find(
+          e => e.productId.toString() == i.productId.toString())
+        return {
+          type: 'almostOutOfStock',
+          accountId: i.accountId,
+          productId: i.productId,
+          productName: finder.productName,
+          amount: finder.amount
+        }
+      }))
       res.json({ ok: true })
     } catch(e) { catchError(res, e) }
   },

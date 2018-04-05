@@ -37,7 +37,12 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db('watchlists')
       .whereRaw('product_id = any(?)', [productIds])
-      .then(rows => { resolve(rows) })
+      .then(rows => { resolve(rows.map(r => {
+        return {
+          productId: r.product_id,
+          accountId: r.account_id
+        }
+      })) })
       .catch(e => { reject(e) })
     })
   }

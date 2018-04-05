@@ -47,5 +47,8 @@ module.exports = {
   },
   requestGetSpecificProducts: (specificIds) => {
     return requestAmqp(specificIds, 'getSpecificProducts')
+  },
+  requestGetWatchlistUsers: (productIds) => {
+    return requestAmqp(productIds, 'getWatchlistUsers')
   }
 }

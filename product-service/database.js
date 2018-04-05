@@ -128,7 +128,8 @@ module.exports = {
       models.SpecificProduct.aggregate([
         {
           $match: {
-            productId: {$in: ids}
+            productId: {$in: ids},
+            status: 'inStock'
           }
         },
         {
