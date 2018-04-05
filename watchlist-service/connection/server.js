@@ -7,6 +7,8 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var core = require('../core.js')
 
+var responseAmqp = require('./message-broker')
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
@@ -20,6 +22,9 @@ app.get('/', core.getWatchlist)
 app.post('/:productId', core.addToWatchlist)
 
 app.delete('/:productId', core.removeFromWatchlist)
+
+//response Amqp
+responseAmqp.responseGetWatchlistUsers()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

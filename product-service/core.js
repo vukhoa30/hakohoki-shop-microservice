@@ -61,18 +61,41 @@ module.exports = {
     .then(rslt => {
       return db.GetSpecificProductsInStock(rslt._id)
       .then(async specifics => {
-        var promotionPrices = await msgBroker.requestPromotionPrices(
-          [ rslt._id ])
-        var reviewScores = await msgBroker.requestReviewScores(
-          [ rslt._id ])
-        if (promotionPrices[0]) {
-          rslt.promotionPrice = promotionPrices[0].promotionPrice
-        }
-        if (reviewScores[0]) {
-          rslt.reviewScore = reviewScores[0].avgScore
-          rslt.reviewCount = reviewScores[0].reviewCount
-        }
-        res.json({...rslt, quantity: specifics.specificProducts.length})
+        var token;
+        if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+          token = req.headers.authorization.split(' ')[1]
+        } else { return catchUnauthorized(res) }
+        try {
+          var authentication = await msgBroker.requestAuthenticateCustomer(token)
+          if (!authentication) {
+            authentication = await msgBroker.requestAuthenticateEmployee(token)
+          }
+          if (authentication) {
+            var watchlists = await msgBroker.requestGetWatchlistUsers([req.params.id])
+            console.log(watchlists)
+            var findAccountId = watchlists.find(
+              w => w.account_id.toString() == authentication.accountId.toString())
+            if (findAccountId) {
+              rslt.existsInWatchlist = true
+            } else { 
+              rslt.existsInWatchlist = false
+            }
+          }
+
+
+          var promotionPrices = await msgBroker.requestPromotionPrices(
+            [ rslt._id ])
+          var reviewScores = await msgBroker.requestReviewScores(
+            [ rslt._id ])
+          if (promotionPrices[0]) {
+            rslt.promotionPrice = promotionPrices[0].promotionPrice
+          }
+          if (reviewScores[0]) {
+            rslt.reviewScore = reviewScores[0].avgScore
+            rslt.reviewCount = reviewScores[0].reviewCount
+          }
+          res.json({...rslt, quantity: specifics.specificProducts.length})
+        } catch(e) { catchError(res, e) }
       })
     })
     .catch(err => catchError(res, err));
@@ -147,7 +170,6 @@ module.exports = {
   },
   getProductsBySpecificIds: (ids) => {
     return new Promise(async (resolve, reject) => {
-      //tương tự getProductsByIds
       try {
         var products = await db.GetProductsBySpecificIds(ids)
         resolve(products.map(p => {
@@ -238,7 +260,22 @@ module.exports = {
       var authentication = await msgBroker.requestAuthenticateEmployee(token)
       if (!authentication || authentication.role !== 'manager') { return catchUnauthorized(res) }
 
+      var specificProducts = await db.getSpecificProductsInStock(req.body.productId)
+      var productQuantity = specificProducts.length
+      if (productQuantity == 0) {
+        var accountIds = await msgBroker.requestGetWatchlistUsers([req.body.productId])
+        var product = await db.getProduct(req.body.productId)
+        await msgBroker.requestNotificationRequest(accountIds.map(accountId => {
+          return {
+            type: 'goodsReceipt',
+            accountId,
+            productId: req.body.productId,
+            productName: product[0].name
+          }
+        }))
+      }
       var rslt = await db.AddNewSpecificProducts(req.body.productId, req.body.amount)
+
       res.json(rslt)
     } catch(e) { catchError(res, e) }
   },

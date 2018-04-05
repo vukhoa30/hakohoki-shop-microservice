@@ -32,5 +32,13 @@ module.exports = {
       .then(rows => { resolve(rows.map(r => r.product_id)) })
       .catch(e => { reject(e) })
     })
+  },
+  GetWatchlistUsers: (productIds) => {
+    return new Promise((resolve, reject) => {
+      db('watchlists')
+      .whereRaw('product_id = any(?)', [productIds])
+      .then(rows => { resolve(rows) })
+      .catch(e => { reject(e) })
+    })
   }
 }
