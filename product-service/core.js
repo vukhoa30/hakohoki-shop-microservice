@@ -274,11 +274,26 @@ module.exports = {
       if (productQuantity == 0) {
         var watchlistUsers = await msgBroker.requestGetWatchlistUsers([req.body.productId])
         var product = await db.GetProduct(req.body.productId)
-        await msgBroker.requestNotificationRequest(watchlistUsers.map(watchlistUser => {
+        msgBroker.produceNotificationRequest(watchlistUsers.map(watchlistUser => {
           return {
             type: 'goodsReceipt',
             accountId: watchlistUser.accountId,
             productId: req.body.productId,
+            productName: product.name
+          }
+        }))
+
+        var customers = await msgBroker.requestCustomers(watchlistUsers.map(i =>
+          i.accountId))
+        watchlistUsers.map(i => {
+          var finder = customers.find(c => 
+            c.accountId.toString() == i.accountId.toString())
+          i.email = finder.email
+        })
+        msgBroker.produceEmailRequest(watchlistUsers.map(i => {
+          return {
+            type: 'goodsReceipt',
+            email: i.email,
             productName: product.name
           }
         }))

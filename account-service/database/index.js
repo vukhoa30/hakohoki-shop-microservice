@@ -152,7 +152,7 @@ exports.GetAllCustomers = () => {
     .find()
     .exec((err, rslt) => {
       if (err) { return reject(err) }
-      resolve(rslt.map(r => r._id))
+      resolve(rslt.map(r => { return { accountId: r._id, email: r.email } }))
     })
   })
 }

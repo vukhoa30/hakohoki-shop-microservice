@@ -57,6 +57,23 @@ var responseAmqp = (promise, queue) => {
   .catch(e => console.log(e))
 }
 
+var produceAmqp = (msgObject, queue) => {
+  amqp.connect('amqp://localhost')
+  .then(conn => { 
+    return conn.createChannel()
+    .then(ch => {
+      var ok = ch.assertQueue(queue, {durable: false})
+      return ok.then(_qok => {
+        ch.sendToQueue(queue, Buffer.from(JSON.stringify(msgObject)))
+        console.log('Sent: ' + msgObject)
+        return ch.close()
+      })
+    })
+    .finally(() => conn.close())
+  })
+  .catch(e => console.log(e))
+}
+
 module.exports = {
   requestPromotionPrices: (productIds) => {
     return requestAmqp(productIds, 'getPromotionPrices')
@@ -82,10 +99,16 @@ module.exports = {
   requestReviewScores: (productIds) => {
     return requestAmqp(productIds, 'getProductsScore')
   },
-  requestNotificationRequest: (notification) => {
-    return requestAmqp(notification, 'notificationRequest')
-  },
   requestGetWatchlistUsers: (productIds) => {
     return requestAmqp(productIds, 'getWatchlistUsers')
+  },
+  produceEmailRequest: (requests) => {
+    return produceAmqp(requests, 'emailRequest')
+  },
+  produceNotificationRequest: (requests) => {
+    return produceAmqp(requests, 'notificationRequest')
+  },
+  requestCustomers: (ids) => {
+    return requestAmqp(ids, 'getCustomers')
   }
 }

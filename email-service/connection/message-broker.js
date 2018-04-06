@@ -1,48 +1,25 @@
-var socketClient = require('socket.io-client')
+var amqp = require('amqplib');
+var amqpAddress = require('../config').amqpAddress;
 
-var brokerAddress = require('../config.js').messageBrokerAddress
-var socket = socketClient.connect(brokerAddress)
+var consumeAmqp = (func, queue) => {
+  amqp.connect('amqp://localhost')
+  .then(conn => conn.createChannel())
+  .then(ch => { 
+    var ok = ch.assertQueue(queue, {durable: false});
+    return ok.then(_qok => {
+      return ch.consume(queue, msg => {
 
-var core = require('../core')
+        func(JSON.parse(msg.content.toString()));
+        
+      }, {noAck: true})
+    })
+  })
+  .catch(e => console.log(e))
+}
 
-var isConnected = false
-
-socket.on('connect', function (socket) {
-
-    console.log("Message broker connected!")
-    isConnected = true
-
-})
-
-socket.on('error', function (error) {
-
-    console.log(error)
-
-})
-
-socket.on('NEW_MESSAGE', function (data) {
-
-})
-
-socket.on('disconnect', function () {
-
-    isConnected = false
-    console.log("Message broker disconnected!")
-    setTimeout(() => {
-
-        console.log("Attemping connecting to message broker ...")
-        socket.socketClient.connect(brokerAddresss)
-
-    }, 10000)
-
-})
-
-
-exports.sendMessage = function (message) {
-
-    if (!isConnected)
-        console.log("Message broker not available now. Couldn't send message")
-    else
-        socket.compress(true).emit('NEW_MESSAGE', message)
-
+module.exports = {
+  consumeEmailRequest: () => {
+    var core = require('../core');
+    consumeAmqp(core.sendMail, 'emailRequest')
+  }
 }

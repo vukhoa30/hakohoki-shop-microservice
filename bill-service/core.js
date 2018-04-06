@@ -40,11 +40,27 @@ module.exports = {
       var products = await msgBroker.requestGetSpecificProducts(
         req.body.specificProducts.map(p => p.id))
       if (req.body.buyer.accountId) {
-        await msgBroker.requestNotificationRequest(products.map(p => {
+        msgBroker.produceNotificationRequest(products.map(p => {
           return {
             type: 'productBought',
             accountId: req.body.buyer.accountId,
             productId: p.productId,
+            productName: p.productName
+          }
+        }))
+      }
+      if (req.body.buyer.accountId || req.body.buyer.email) {
+        var email
+        if (req.body.buyer.accountId) {
+          var customer = await msgBroker.requestCustomers([req.body.buyer.accountId])
+          var email = customer[0].email
+        } else {
+          email = req.body.buyer.email
+        }
+        msgBroker.produceEmailRequest(products.map(p => {
+          return {
+            type: 'productBought',
+            email,
             productName: p.productName
           }
         }))
@@ -54,32 +70,40 @@ module.exports = {
         .filter(p => p.productQuantity >= 1 && p.productQuantity <= 2)
         .map(p => p.productId))
       if (req.body.buyer.accountId) {
-        watchlistItems = watchlistItems.filter(i => i.accountId.toString != req.body.buyer.accountId.toString())
+        watchlistItems = watchlistItems.filter(i => i.accountId.toString() != req.body.buyer.accountId.toString())
       }
+      var customers = await msgBroker.requestCustomers(watchlistItems.map(i =>
+        i.accountId))
+      watchlistItems.map(i => {
+        var finder = customers.find(c => 
+          c.accountId.toString() == i.accountId.toString())
+        i.email = finder.email
 
-      console.log(watchlistItems.map(i => {
-        var finder = products.find(
+        finder = products.find(
           e => e.productId.toString() == i.productId.toString())
-        return {
-          type: 'almostOutOfStock',
-          accountId: i.accountId,
-          productId: i.productId,
-          productName: finder.productName,
-          amount: finder.productQuantity
-        }
-      }))
+        i.productName = finder.productName
+        i.amount = finder.productQuantity
+      })
 
-      await msgBroker.requestNotificationRequest(watchlistItems.map(i => {
-        var finder = products.find(
-          e => e.productId.toString() == i.productId.toString())
-        return {
-          type: 'almostOutOfStock',
-          accountId: i.accountId,
-          productId: i.productId,
-          productName: finder.productName,
-          amount: finder.amount
-        }
-      }))
+      if (watchlistItems.length > 0) {
+        msgBroker.produceNotificationRequest(watchlistItems.map(i => {
+          return {
+            type: 'almostOutOfStock',
+            accountId: i.accountId,
+            productId: i.productId,
+            productName: i.productName,
+            amount: i.amount
+          }
+        })),
+        msgBroker.produceEmailRequest(watchlistItems.map(i => {
+          return {
+            type: 'almostOutOfStock',
+            email: i.email,
+            productName: i.productName,
+            amount: i.amount
+          }
+        }))
+      }
       res.json({ ok: true })
     } catch(e) { catchError(res, e) }
   },

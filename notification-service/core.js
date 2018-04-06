@@ -51,7 +51,7 @@ module.exports = {
             promotionName: undefined,
           }
         }))
-        msgBroker.requestNotification(notifications.map(n => {
+        msgBroker.produceNotification(notifications.map(n => {
           return {
             ...n,
             time: new Date()

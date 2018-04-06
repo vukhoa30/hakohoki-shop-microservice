@@ -45,7 +45,7 @@ module.exports = {
       if (req.body.parentId) {
         var comments = await db.GetCommentById(req.body.parentId)
         var accountId = comments[0].accountId
-        await msgBroker.requestNotificationRequest([{
+        msgBroker.produceNotificationRequest([{
           type: 'commentReplied',
           accountId,
           productId: req.body.productId,
@@ -55,7 +55,7 @@ module.exports = {
       else {
         var receiptionistIds = await msgBroker.requestGetAllReceptionists({nothing:true})
         console.log(receiptionistIds)
-        await msgBroker.requestNotificationRequest(
+        msgBroker.produceNotificationRequest(
           receiptionistIds.map(id => {
             return {
               type: 'commentPosted',

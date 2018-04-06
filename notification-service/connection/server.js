@@ -20,7 +20,7 @@ app.get('/', core.authenticate, core.getNotification)
 app.put('/read', core.authenticate, core.readNotifications)
 
 //response amqp
-responseAmqp.responseNotificationRequest()
+responseAmqp.consumeNotificationRequest()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

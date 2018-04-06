@@ -11,6 +11,7 @@ var amqpAddress = require('../config').amqpAddress
 
 var getIDOnly = socketID => socketID.substring(socketID.indexOf('#') + 1);
 
+/*
 var responseAmqpNotification = (io, queue) => {
   amqp.connect(amqpAddress)
   .then(conn => { 
@@ -41,6 +42,33 @@ var responseAmqpNotification = (io, queue) => {
         ch.ack(msg)
         console.log('Sent: ' + response)
       })
+    })
+  })
+  .catch(e => console.log(e))
+}*/
+
+var consumeAmqpNotification = (io, queue) => {
+  amqp.connect(amqpAddress)
+  .then(conn => conn.createChannel())
+  .then(ch => { 
+    var ok = ch.assertQueue(queue, {durable: false});
+    return ok.then(_qok => {
+      return ch.consume(queue, msg => {
+
+        content = JSON.parse(msg.content.toString())
+        console.log(content)
+        content.map(notification => {
+          var socketDes = clientSockets.find(clientSocket =>
+            clientSocket.accountId.toString() == notification.accountId.toString()
+          );
+          if (socketDes) {
+            console.log(socketDes.id)
+            notification.accountId = undefined
+            io.of('/notifications').to(socketDes.id).emit('message', notification)
+          }
+        })
+        
+      }, {noAck: true})
     })
   })
   .catch(e => console.log(e))
@@ -97,7 +125,7 @@ module.exports = (server, db) => {
     })
   });
 
-  responseAmqpNotification(io, 'notificate')
+  consumeAmqpNotification(io, 'notificate')
 
   /*var serviceSocket = ioClient(service.serviceUrl);
   serviceSocket.on('message', data => {

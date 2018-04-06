@@ -38,14 +38,28 @@ module.exports = {
       }
 
       var promotionId = await db.CreatePromotion(req.body)
+      var allCustomers
+      if (req.body.sendNotification || req.body.sendEmail) {
+        allCustomers = await msgBroker.requestGetAllCustomers()
+      }
       if (req.body.sendNotification) {
-        var allCustomerIds = await msgBroker.requestGetAllCustomers()
-        await msgBroker.requestNotificationRequest(
-          allCustomerIds.map(id => {
+        msgBroker.produceNotificationRequest(
+          allCustomers.map(customer => {
             return {
               type: 'promotionCreated',
-              accountId: id,
+              accountId: customer.accountId,
               promotionId,
+              promotionName: req.body.name
+            }
+          })
+        )
+      }
+      if (req.body.sendEmail) {
+        msgBroker.produceEmailRequest(
+          allCustomers.map(customer => {
+            return {
+              type: 'promotionCreated',
+              email: customer.email,
               promotionName: req.body.name
             }
           })

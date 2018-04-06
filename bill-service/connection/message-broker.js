@@ -32,6 +32,23 @@ var requestAmqp = (msgObject, queue) => {
   })
 }
 
+var produceAmqp = (msgObject, queue) => {
+  amqp.connect('amqp://localhost')
+  .then(conn => { 
+    return conn.createChannel()
+    .then(ch => {
+      var ok = ch.assertQueue(queue, {durable: false})
+      return ok.then(_qok => {
+        ch.sendToQueue(queue, Buffer.from(JSON.stringify(msgObject)))
+        console.log('Sent: ' + msgObject)
+        return ch.close()
+      })
+    })
+    .finally(() => conn.close())
+  })
+  .catch(e => console.log(e))
+}
+
 module.exports = {
   requestAuthenticateEmployee: (token) => {
     return requestAmqp(token, 'authenticateEmployee')
@@ -42,13 +59,19 @@ module.exports = {
   requestGetEmployees: (ids) => {
     return requestAmqp(ids, 'getEmployees')
   },
-  requestNotificationRequest: (notification) => {
-    return requestAmqp(notification, 'notificationRequest')
-  },
   requestGetSpecificProducts: (specificIds) => {
     return requestAmqp(specificIds, 'getSpecificProducts')
   },
   requestGetWatchlistUsers: (productIds) => {
     return requestAmqp(productIds, 'getWatchlistUsers')
-  }
+  },
+  produceEmailRequest: (requests) => {
+    return produceAmqp(requests, 'emailRequest')
+  },
+  produceNotificationRequest: (requests) => {
+    return produceAmqp(requests, 'notificationRequest')
+  },
+  requestCustomers: (ids) => {
+    return requestAmqp(ids, 'getCustomers')
+  },
 }

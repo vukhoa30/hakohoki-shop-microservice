@@ -32,26 +32,35 @@ var requestAmqp = (msgObject, queue) => {
   })
 }
 
-var responseAmqp = (promise, queue) => {
-  amqp.connect(amqpAddress)
+var consumeAmqp = (func, queue) => {
+  amqp.connect('amqp://localhost')
+  .then(conn => conn.createChannel())
+  .then(ch => { 
+    var ok = ch.assertQueue(queue, {durable: false});
+    return ok.then(_qok => {
+      return ch.consume(queue, msg => {
+
+        func(JSON.parse(msg.content.toString()));
+        
+      }, {noAck: true})
+    })
+  })
+  .catch(e => console.log(e))
+}
+
+var produceAmqp = (msgObject, queue) => {
+  amqp.connect('amqp://localhost')
   .then(conn => { 
     return conn.createChannel()
     .then(ch => {
-      ch.assertQueue(queue, {durable: false})
-      ch.prefetch(1)
-      console.log('Awating...')
-      ch.consume(queue, async (msg) => {
-        var response = []
-        try {
-          response = await promise(JSON.parse(msg.content.toString()))
-        } catch (e) { console.log(e) }
-        ch.sendToQueue(msg.properties.replyTo,
-          new Buffer(JSON.stringify(response)),
-          {correlationId: msg.properties.correlationId})
-        ch.ack(msg)
-        console.log('Sent: ' + response)
+      var ok = ch.assertQueue(queue, {durable: false})
+      return ok.then(_qok => {
+        ch.sendToQueue(queue, Buffer.from(JSON.stringify(msgObject)))
+        console.log('Sent: ' + msgObject)
+        return ch.close()
       })
     })
+    .finally(() => conn.close())
   })
   .catch(e => console.log(e))
 }
@@ -63,11 +72,11 @@ module.exports = {
   requestAuthenticateEmployee: (token) => {
     return requestAmqp(token, 'authenticateEmployee')
   },
-  requestNotification: (notification) => {
-    return requestAmqp(notification, 'notificate')
+  produceNotification: (notification) => {
+    return produceAmqp(notification, 'notificate')
   },
-  responseNotificationRequest: () => {
+  consumeNotificationRequest: () => {
     var core = require('../core')
-    responseAmqp(core.addNotification, 'notificationRequest')
+    consumeAmqp(core.addNotification, 'notificationRequest')
   }
 }
