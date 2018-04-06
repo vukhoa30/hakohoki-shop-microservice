@@ -45,8 +45,8 @@ class ProductShowcase extends Component {
                             {
                                 item.promotionPrice ?
                                     <View style={{ flexDirection: 'row' }}>
-                                        <AppText small note style={{ marginRight: 10, textDecorationLine: 'line-through' }}>{currencyFormat(item.promotionPrice)}</AppText>
-                                        <AppText small color='red'>{currencyFormat(item.price)}</AppText>
+                                        <AppText small note style={{ marginRight: 10, textDecorationLine: 'line-through' }}>{currencyFormat(item.price)}</AppText>
+                                        <AppText small color='red'>{currencyFormat(item.promotionPrice)}</AppText>
                                     </View> :
                                     <AppText small color='red'>{currencyFormat(item.price)}</AppText>
                             }

@@ -21,7 +21,7 @@ class ProductList extends Component {
     }
 
     render() {
-        const { selectProduct, navigation, status, list, loadProductList, offset, limit, setCart } = this.props
+        const { selectProduct, navigation, status, list, loadProductList, setCart } = this.props
         const { params } = navigation.state
         const paramKeys = Object.keys(params)
         const isSearchMode = !params.newest && ((params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0))
@@ -94,7 +94,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductList: (firstLoad, conditions, offset, limit) => dispatch(loadProductList(firstLoad, conditions, offset, limit)),
+        loadProductList: (conditions, offset, limit) => dispatch(loadProductList(conditions, offset, limit)),
         selectProduct: productID => dispatch(selectProduct(productID)),
         setCart: (product, type) => dispatch(setCart(product, type))
     }

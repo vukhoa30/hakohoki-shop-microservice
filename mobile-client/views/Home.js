@@ -54,7 +54,7 @@ import { currencyFormat } from "../utils";
 class Home extends Component {
 
     static navigationOptions = {
-
+        
         headerTitle:
             <View style={{ flexDirection: 'row', paddingLeft: 20 }}>
                 <Image source={require('../resources/images/logoTitle.png')} style={{ width: 30, height: 30, resizeMode: 'stretch' }} />
