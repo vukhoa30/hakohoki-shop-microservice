@@ -62,9 +62,11 @@ module.exports = {
     query.limit = parseInt(query.limit) || defaultLimit
     query.offset = parseInt(query.offset) || 0
     var queryObject = query.q ? {
+      name: new RegExp(query.q, 'i')
+      /*
       $text: {
         $search: query.q
-      }
+      }*/
     } : {}
     if (query.category) {
       queryObject.category = query.category
