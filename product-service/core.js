@@ -74,7 +74,7 @@ module.exports = {
             var watchlists = await msgBroker.requestGetWatchlistUsers([req.params.id])
             console.log(watchlists)
             var findAccountId = watchlists.find(
-              w => w.account_id.toString() == authentication.accountId.toString())
+              w => w.accountId.toString() == authentication.accountId.toString())
             if (findAccountId) {
               rslt.existsInWatchlist = true
             } else { 
