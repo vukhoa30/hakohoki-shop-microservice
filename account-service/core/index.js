@@ -45,7 +45,7 @@ exports.authenticate = function (email, phoneNumber, password) {
                 email: result.email,
                 role: 'customer',
                 fullName: result.fullName,
-                phoneNumber: result.phone_number
+                phoneNumber: result.phoneNumber
               }
             }) : resolve({ code: 401, msg: "PASSWORD WRONG" })
         } catch (error) {
