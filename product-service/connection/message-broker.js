@@ -110,5 +110,8 @@ module.exports = {
   },
   requestCustomers: (ids) => {
     return requestAmqp(ids, 'getCustomers')
+  },
+  requestCheckReviewed: (accountAndProductId) => {
+    return requestAmqp(accountAndProductId, 'checkReviewed')
   }
 }

@@ -98,5 +98,9 @@ module.exports = {
   },
   requestGetAllReceptionists: () => {
     return requestAmqp({}, 'getAllReceptionists')
+  },
+  responseCheckReviewed: () => {
+    var db = require('../database')
+    return responseAmqp(db.CheckReviewed, 'checkReviewed')
   }
 }

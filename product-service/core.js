@@ -72,7 +72,6 @@ module.exports = {
           }
           if (authentication) {
             var watchlists = await msgBroker.requestGetWatchlistUsers([req.params.id])
-            console.log(watchlists)
             var findAccountId = watchlists.find(
               w => w.accountId.toString() == authentication.accountId.toString())
             if (findAccountId) {
@@ -80,8 +79,16 @@ module.exports = {
             } else { 
               rslt.existsInWatchlist = false
             }
+
+            rslt.reviewedBySelf = await msgBroker.requestCheckReviewed({
+              accountId: authentication.accountId,
+              productId: req.params.id
+            })
           }
 
+          var specificsSold = await db.GetSpecificProductsSold(req.params.id)
+          console.log(specificsSold.specificProducts.length)
+          rslt.sold5OrOver = specificsSold.specificProducts.length >= 5
 
           var promotionPrices = await msgBroker.requestPromotionPrices(
             [ rslt._id ])

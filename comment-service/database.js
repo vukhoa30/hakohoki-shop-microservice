@@ -76,5 +76,20 @@ module.exports = {
         }
       })
     })
+  },
+  CheckReviewed: (request) => {
+    return new Promise((resolve, reject) => {
+      models.Comment
+      .find({
+        accountId: request.accountId,
+        productId: request.productId,
+        reviewScore: {$exists: true}
+      })
+      .exec((err, rslt) => {
+        if (err) { console.log(e); return reject(false) }
+        console.log(rslt.length)
+        resolve(rslt.length > 0)
+      })
+    })
   }
 }

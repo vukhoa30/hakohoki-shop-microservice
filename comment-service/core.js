@@ -73,13 +73,7 @@ module.exports = {
     db.GetComments(req.params.productId)
     .then(async rslt => {
       var accountIds = rslt.map(r => r.accountId)
-      try {/*
-        var customers = await msgBroker.requestCustomers(accountIds.filter(e => 
-          e.length === 24
-        ))
-        var employees = await msgBroker.requestEmployees(accountIds.filter(e =>
-          e.length < 24 && parseInt(e)
-        ).map(e => parseInt(e)))*/
+      try {
         var customers = await msgBroker.requestCustomers(accountIds)
         var employees = await msgBroker.requestEmployees(accountIds
           .filter(e => parseInt(e))

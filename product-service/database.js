@@ -125,6 +125,26 @@ module.exports = {
       })
     })
   },
+  GetSpecificProductsSold: (id) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct
+      .find({
+        productId: id,
+        status: 'sold'
+      })
+      .exec((err, rslt) => {
+        if (err) reject(err);
+        else resolve({
+          productId: id,
+          status: 'sold',
+          specificProducts: rslt.map(item => { return {
+            addedAt: item.addedAt,
+            id: item._id
+          }})
+        });
+      })
+    })
+  },
   GetMultipleSpecificProductsInStock: (ids) => {
     return new Promise((resolve, reject) => {
       ids = ids.map(i => mongoose.Types.ObjectId(i))
