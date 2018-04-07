@@ -44,21 +44,30 @@ module.exports = {
   addNotification:  (notifications) => {
     return new Promise(async (resolve, reject) => {
       try {
-        db.AddNotification(notifications.map(n => {
+        var rslt = await db.AddNotifications(notifications.map(n => {
           return {
             ...n,
             productName: undefined,
             promotionName: undefined,
           }
         }))
-        msgBroker.produceNotification(notifications.map(n => {
-          return {
-            ...n,
-            time: new Date()
+        msgBroker.produceNotification(rslt.map(r => {
+          if (r.productId) {
+            var finder = notifications.find(n =>
+              r.productId.toString() == n.productId.toString()
+            )
+            r.productName = finder.productName
           }
+          if (r.promotionId) {
+            var finder = notifications.find(n =>
+              r.promotionId.toString() == n.promotionId.toString()
+            )
+            r.promotionName = finder.promotionName
+          }
+          return r
         }))
         resolve(true)
-      } catch (e) { catchError(res, e) }
+      } catch (e) { console.log(e);reject(false) }
     })
   },
   readNotifications: async (req, res) => {
