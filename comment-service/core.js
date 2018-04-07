@@ -73,24 +73,35 @@ module.exports = {
     db.GetComments(req.params.productId)
     .then(async rslt => {
       var accountIds = rslt.map(r => r.accountId)
-      try {
+      try {/*
         var customers = await msgBroker.requestCustomers(accountIds.filter(e => 
           e.length === 24
         ))
         var employees = await msgBroker.requestEmployees(accountIds.filter(e =>
           e.length < 24 && parseInt(e)
-        ).map(e => parseInt(e)))
+        ).map(e => parseInt(e)))*/
+        var customers = await msgBroker.requestCustomers(accountIds)
+        var employees = await msgBroker.requestEmployees(accountIds
+          .filter(e => parseInt(e))
+          .map(e => parseInt(e)))
+        var accounts = customers.concat(employees)
       } catch (e) {return catchError(res, e)}
-      res.json(rslt.map(r => {
-        var accountInfo = customers.concat(employees).find(e => 
-          e.accountId.toString() == r.accountId.toString())
-        return {
-          ...r,
-          userId: accountInfo.accountId,
-          userName: accountInfo.fullName,
-          userRole: accountInfo.role
-        }
-      }))
+      console.log(accounts)
+      console.log(rslt.map(r=>r.accountId))
+      res.json(rslt
+        .filter(r => { return accounts.find(e => 
+          e.accountId.toString() == r.accountId.toString()) })
+        .map(r => {
+          var accountInfo = accounts.find(e => 
+            e.accountId.toString() == r.accountId.toString())
+          return {
+            ...r,
+            userId: accountInfo.accountId,
+            userName: accountInfo.fullName,
+            userRole: accountInfo.role
+          }
+        })
+      )
     })
     .catch(e => catchError(res, e))
   }
