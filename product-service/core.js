@@ -23,19 +23,26 @@ module.exports = {
   getLatestProducts: (req, res) => {
     db.GetLatestProducts(req.query.limit, req.query.offset)
     .then(rslt => {
-      ids = rslt.map(r => r._id)
-      return db.GetMultipleSpecificProductsInStock(ids)
+      var ids = rslt.map(r => r._id)
+      return db.GetMultipleSpecificProducts(ids, 'inStock')
       .then(async (specifics) => {
         try {
           var productIds = rslt.map(r => r._id)
           var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
           var reviewScores = await msgBroker.requestReviewScores(productIds)
+          var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
           rslt.map(r => {
             var item = specifics.find(e => {
               return e._id.toString() == r._id.toString()
             })
             if (!item) { r.quantity = 0 }
             else { r.quantity = item.count }
+
+            item = specificsSold.find(e => {
+              return e._id.toString() == r._id.toString()
+            })
+            if (item) { r.sold5OrOver = item.count >= 5 }
+            else { r.sold5OrOver = false }
 
             item = promotionPrices.find(e => {
               return e.productId.toString() == r._id.toString()
@@ -87,7 +94,6 @@ module.exports = {
           }
 
           var specificsSold = await db.GetSpecificProductsSold(req.params.id)
-          console.log(specificsSold.specificProducts.length)
           rslt.sold5OrOver = specificsSold.specificProducts.length >= 5
 
           var promotionPrices = await msgBroker.requestPromotionPrices(
@@ -110,18 +116,25 @@ module.exports = {
   getProductsByName: (req, res) => {
     db.GetProductsByName(req.query)
     .then(rslt => {
-      ids = rslt.map(r => r._id)
-      return db.GetMultipleSpecificProductsInStock(ids)
+      var ids = rslt.map(r => r._id)
+      return db.GetMultipleSpecificProducts(ids, 'inStock')
       .then(async specifics => {
         var productIds = rslt.map(r => r._id)
         var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
         var reviewScores = await msgBroker.requestReviewScores(productIds)
+        var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
         rslt.map(r => {
           var item = specifics.find(e => {
             return e._id.toString() == r._id.toString()
           })
           if (!item) { r.quantity = 0 }
           else { r.quantity = item.count }
+
+          item = specificsSold.find(e => {
+            return e._id.toString() == r._id.toString()
+          })
+          if (item) { r.sold5OrOver = item.count >= 5 }
+          else { r.sold5OrOver = false }
 
           item = promotionPrices.find(e => {
             return e.productId.toString() == r._id.toString()
@@ -144,7 +157,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       Promise.all([
         db.GetProductsByIds(ids),
-        db.GetMultipleSpecificProductsInStock(ids)
+        db.GetMultipleSpecificProducts(ids, 'inStock')
       ])
       .then(async rslts => {
         var [ products, specifics ] = rslts
@@ -179,8 +192,8 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         var products = await db.GetProductsBySpecificIds(ids)
-        var specifics = await db.GetMultipleSpecificProductsInStock(products.map(p =>
-          p._id))
+        var specifics = await db.GetMultipleSpecificProducts(products.map(p =>
+          p._id), 'inStock')
         products.map(p => {
           var item = specifics.find(e => 
             e._id.toString() == p._id.toString())

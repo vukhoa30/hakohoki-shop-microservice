@@ -145,14 +145,14 @@ module.exports = {
       })
     })
   },
-  GetMultipleSpecificProductsInStock: (ids) => {
+  GetMultipleSpecificProducts: (ids, status) => {
     return new Promise((resolve, reject) => {
       ids = ids.map(i => mongoose.Types.ObjectId(i))
       models.SpecificProduct.aggregate([
         {
           $match: {
             productId: {$in: ids},
-            status: 'inStock'
+            status
           }
         },
         {
