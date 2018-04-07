@@ -27,10 +27,6 @@ module.exports = [{
     serviceUrl: 'http://localhost:7006'
   }, {
     type: 'api',
-    clientUrl: '/notifications',
-    serviceUrl: 'http://localhost:7006'
-  }, {
-    type: 'api',
     clientUrl: '/comments',
     serviceUrl: 'http://localhost:7007'
   }, {

@@ -31,8 +31,14 @@ exports.checkIfExisted = (collection, query) => {
 
     return new Promise(async (resolve, reject) => {
 
-        return resolve((await dbclient.db('account_service').collection(collection).find(query).limit(1).count()) > 0)
-
+        return resolve(
+          (await dbclient.db('account_service').collection(collection).find({
+            $or: [
+              { email: query.email },
+              { phoneNumber: query.phoneNumber }
+            ],
+            code: query.code
+          }).limit(1).count()) > 0)
     })
 
 }
@@ -41,7 +47,12 @@ exports.findOne = (collection, query) => {
 
     return new Promise((resolve, reject) => {
 
-        dbclient.db('account_service').collection(collection).findOne(query, function (err, res) {
+        dbclient.db('account_service').collection(collection).findOne({
+          $or: [
+            { email: query.email },
+            { phoneNumber: query.phoneNumber }
+          ] 
+        }, function (err, res) {
 
             if (err) {
                 console.log(err)
@@ -95,13 +106,17 @@ exports.update = (collection, query, obj) => {
 
     return new Promise((resolve, reject) => {
 
-        dbclient.db('account_service').collection(collection).updateOne(query, { $set: obj }, function (err, res) {
+        dbclient.db('account_service').collection(collection).updateOne({
+          $or: [
+            { email: query.email },
+            { phoneNumber: query.phoneNumber }
+          ]}, { $set: obj }, function (err, res) {
 
             if (err) {
                 console.log(err)
                 return reject()
             }
-            return resolve(res)
+            return resolve(res.result.nModified > 0)
 
         })
 

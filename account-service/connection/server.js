@@ -38,10 +38,9 @@ app.get('/', function (req, res) {
 app.post('/', async function (req, res) { //Create account
 
     const email = req.body.email, password = req.body.password,
-      fullName = req.body.fullName
-    console.log(req.body.email);
+      fullName = req.body.fullName, phoneNumber = req.body.phoneNumber
     try {
-        return (await core.createNewAccount(email, password, fullName)) ? res.json({ ok: true }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
+        return (await core.createNewAccount(email, password, fullName, phoneNumber)) ? res.json({ ok: true }) : res.status(409).json({ msg: 'ACCOUNT EXISTED' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ msg: "INTERNAL SERVER ERROR" })
@@ -51,9 +50,13 @@ app.post('/', async function (req, res) { //Create account
 
 app.post('/authentication', async function (req, res) { //Authenticate account
 
-    const email = req.body.email, password = req.body.password
+    var email = '', phoneNumber = req.body.emailOrPhoneNo
+    if (req.body.emailOrPhoneNo.indexOf('@') >= 0) {
+      email = req.body.emailOrPhoneNo
+    }
+    var password = req.body.password
     try {
-        const result = await core.authenticate(email, password)
+        const result = await core.authenticate(email, phoneNumber, password)
         if (result.code === 200)
             res.json({ token: result.token, account: result.account })
         else
@@ -67,9 +70,13 @@ app.post('/authentication', async function (req, res) { //Authenticate account
 
 app.post('/activation', async function (req, res) {
 
-    const email = req.body.email, activationCode = req.body.activationCode
+    var email = '', phoneNumber = req.body.emailOrPhoneNo
+    if (req.body.emailOrPhoneNo.indexOf('@') >= 0) {
+      email = req.body.emailOrPhoneNo
+    }
+    const activationCode = req.body.activationCode
     try {
-        const result = await core.activate(email, activationCode)
+        const result = await core.activate(email, phoneNumber, activationCode)
         return result ? res.json({ ok: true }) : res.status(401).json({ msg: 'ACTIVATION CODE NOT MATCHED' })
     } catch (error) {
         console.log(error)

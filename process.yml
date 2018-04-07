@@ -29,3 +29,6 @@ apps:
   - name  : 'watchlist'
     script: ./watchlist-service/connection/server.js
     watch : true
+  - name  : 'sms'
+    script: ./sms-service/connection/server.js
+    watch : true

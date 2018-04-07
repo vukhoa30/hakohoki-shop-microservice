@@ -1,17 +1,22 @@
 var db = require('../database')
 var helper = require('../helper')
+var msgBroker = require('../connection/message-broker')
 
-exports.createNewAccount = function (email, password, fullName) {
+exports.createNewAccount = function (email, password, fullName, phoneNumber) {
 
     return new Promise(async (resolve, reject) => {
 
         try {
-            if (await db.checkIfExisted('accounts', { email: email })) return resolve(false)
-            await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_ACTIVATED", fullName })
+            if (await db.checkIfExisted('accounts', { email, phoneNumber })) return resolve(false)
+            await db.create('accounts', { email: email, password: helper.hash(password), status: "NOT_ACTIVATED", fullName, phoneNumber })
             const activationCode = helper.getRandomCode()
             console.log(activationCode)
-            await db.create('activation', { email: email, code: activationCode })
-            //messageBroker.sendMessage({ topic: 'EMAIL', message: { tag: 'SEND_AUTHORIZATION_MAIL', email: email, authCode: authCode } })
+            await db.create('activation', { phoneNumber, code: activationCode })
+            msgBroker.produceSMSRequest([{
+              type: 'validationCode',
+              phoneNumber: phoneNumber,
+              validationCode: activationCode,
+            }])
             resolve(true)
         } catch (error) {
             console.log(error)
@@ -21,21 +26,18 @@ exports.createNewAccount = function (email, password, fullName) {
     })
 }
 
-exports.authenticate = function (email, password) {
+exports.authenticate = function (email, phoneNumber, password) {
 
     return new Promise(async (resolve, reject) => {
-
         try {
-            const result = await db.findOne('accounts', { email: email })
+            const result = await db.findOne('accounts', { email, phoneNumber })
             if (!result) return resolve({ code: 404, msg: "ACCOUNT NOT FOUND" })
             if (result.status === "NOT_ACTIVATED") return resolve({ code: 401, msg: "ACCOUNT NOT ACTIVATED" })
             return helper.compareHashValue(password, result.password) ? resolve({ 
               code: 200, 
               token: helper.getToken({
                 accountId: result._id,
-                //email, 
                 role: 'customer',
-                //fullName: result.fullName,
                 expireTime: helper.generateExpireTime()
               }),
               account: {
@@ -55,15 +57,15 @@ exports.authenticate = function (email, password) {
 
 }
 
-exports.activate = function (email, activationCode) {
+exports.activate = function (email, phoneNumber, activationCode) {
 
     return new Promise(async (resolve, reject) => {
 
         try {
-            const result = await db.checkIfExisted('activation', { email: email, code: activationCode })
+            const result = await db.checkIfExisted('activation', { email, phoneNumber, code: activationCode })
             if (!result) return resolve(false)
-            await db.update('accounts', { email: email }, { status: 'ACTIVATED' })
-            resolve(true)
+            var rslt = await db.update('accounts', { email, phoneNumber }, { status: 'ACTIVATED' })
+            resolve(rslt)
         } catch (error) {
             console.log(error)
             reject(error)
