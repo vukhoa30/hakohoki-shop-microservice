@@ -47,7 +47,7 @@ class AppComment extends Component {
                             </View>
                         }
                         <AppText note>{comment.content}</AppText>
-                        <AppText note small style={{ marginVertical: 5 }} >{formatTime(comment.createdAt)}</AppText>
+                        <AppText note small style={{ marginVertical: 5, fontSize: 10 }} >{formatTime(comment.createdAt)}</AppText>
                     </Body>
 
                 </Col>

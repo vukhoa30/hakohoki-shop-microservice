@@ -47,7 +47,6 @@ class Activation extends Component {
                 <Content>
                     <View style={{ marginHorizontal: 10, marginVertical: 20 }}>
                         <Image style={{ alignSelf: 'center', marginVertical: 50 }} source={{ uri: 'https://cdn4.iconfinder.com/data/icons/meBaze-Freebies/512/unlock.png', width: 100, height: 100 }} />
-                        <AppText color="gray" >{navigation.state.params.email}</AppText>
                         <Field name="activationCode" placeholder="ACTIVATION CODE" component={this.renderInput} />
                     </View>
                     <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered onPress={handleSubmit(activate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>

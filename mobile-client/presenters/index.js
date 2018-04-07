@@ -3,11 +3,19 @@ import navigator from '../models/navigations'
 import {
     USER_LOG_IN,
     USER_LOG_OUT,
+
     SELECT_PRODUCT,
-    PRODUCT_LIST_LOADING,
-    PRODUCT_DETAIL_LOADING,
-    WATCH_LIST_STATUS_FETCHING,
+
+    PRODUCT_DATA_LOADING,
+    PRODUCT_DATA_LOADED,
+    PRODUCT_DATA_LOADING_FAILED,
+    PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
+    PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
+
     FEEDBACK_LOADING,
+    FEEDBACK_LOADED,
+    FEEDBACK_LOADING_FAILED,
+
     GET_ANSWERS,
     ADD_INVALIDATED_COMMENT,
     ADD_TO_CART,
@@ -44,6 +52,9 @@ function loadUserInfo() {
                     case '@User:fullName':
                         result['fullName'] = item[1]
                         break
+                    case '@User:phoneNumber':
+                        result['phoneNumber'] = item[1]
+                        break
                 }
 
                 return result
@@ -53,7 +64,8 @@ function loadUserInfo() {
 
                     token: null,
                     email: null,
-                    fullName: null
+                    fullName: null,
+                    phoneNumber: null
 
                 })
 
@@ -66,11 +78,11 @@ function loadUserInfo() {
 
 }
 
-function logIn(token, email, fullName) {
+function logIn(token, email, fullName, phoneNumber) {
 
     return dispatch => {
 
-        dispatch(getAction(USER_LOG_IN, { token, email, fullName }))
+        dispatch(getAction(USER_LOG_IN, { token, email, fullName, phoneNumber }))
     }
 
 }
@@ -92,17 +104,17 @@ function authenticate(values) {
     return new Promise(async (resolve, reject) => {
 
         let err = `Undefined error, try again later!`
-        const { email, password } = values
+        const { emailOrPhoneNumber, password } = values
         try {
-            const response = await request('/accounts/authentication', 'POST', {}, { email, password })
+            const response = await request('/accounts/authentication', 'POST', {}, { emailOrPhoneNumber, password })
             const { status, data } = response
             const { logIn, navigation } = this.props
             const lastScreen = navigation.state.params ? navigation.state.params.lastScreen : null
             console.log(data)
             switch (status) {
                 case 200:
-                    logIn(data.token, email, data.account.fullName)
-                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:email', email], ['@User:fullName', data.account.fullName]], errors => console.log('Error' + errors))
+                    logIn(data.token, email, data.account.fullName, data.account.phoneNumber)
+                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:email', email], ['@User:fullName', data.account.fullName], ['@User:phoneNumber', data.account.phoneNumber]], errors => console.log('Error' + errors))
                     navigation.dispatch(NavigationActions.back())
                     return resolve()
                 case 401:
@@ -141,9 +153,9 @@ function enroll(values) {
     return new Promise(async (resolve, reject) => {
 
         let err = `Undefined error, try again later!`
-        const { email, password, fullName } = values
+        const { email, password, fullName, phoneNumber } = values
         try {
-            const response = await request('/accounts/', 'POST', {}, { email, password, fullName })
+            const response = await request('/accounts/', 'POST', {}, { email, password, fullName, phoneNumber })
             const { status, data } = response
             const { navigation } = this.props
 
@@ -181,7 +193,7 @@ function activate(values) {
         const { navigation } = this.props
 
         try {
-            const response = await request('/accounts/activation', 'POST', {}, { email: navigation.state.params.email, activationCode })
+            const response = await request('/accounts/activation', 'POST', {}, { emailOrPhoneNumber: navigation.state.params.email, activationCode })
             const { status, data } = response
 
             switch (status) {
@@ -270,19 +282,9 @@ function selectCategory(category) {
 
 }
 
-function search(values) {
-
-    const { q } = values
-    const { navigation } = this.props
-    navigation.navigate('ProductList', { q })
-
-}
-
 function loadProductList(conditions, offset, limit) {
 
-    return async dispatch => {
-
-        dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADING', firstLoad: offset === 0 }))
+    return new Promise(async resolve => {
 
         const url = '/products/' + (conditions.newest ? 'latest?' : 'search?' + parseToQueryString(conditions) + '&')
 
@@ -290,46 +292,44 @@ function loadProductList(conditions, offset, limit) {
 
             const response = await request(`${url}offset=${offset}&limit=${limit}`, 'GET', {})
             const { status, data } = response
-
-            console.log(data)
             if (status === 200)
-                return dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADED', data, conditions }))
+                resolve({ ok: true, data })
 
         } catch (error) {
 
         }
 
-        dispatch(getAction(PRODUCT_LIST_LOADING, { status: 'LOADING_FAILED' }))
+        resolve({ ok: false })
 
-    }
+    })
 
 }
 
-function selectProduct(productID) {
+function selectProduct(productId) {
 
     return dispatch => {
 
-        dispatch(getAction(SELECT_PRODUCT, { productID }))
+        dispatch(getAction(SELECT_PRODUCT, { productId }))
         dispatch(navigator.router.getActionForPathAndParams('ProductDetail/ProductInformation'))
 
     }
 
 }
 
-function loadProductInformation(productID, token) {
+function loadProductInformation(productId, token) {
 
     return async dispatch => {
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADING' }))
+
+        dispatch(getAction(PRODUCT_DATA_LOADING))
 
         try {
 
-            const response = await request(`/products/info/${productID}`, 'GET', { Authorization: 'JWT ' + token })
+            const response = await request(`/products/info/${productId}`, 'GET', { Authorization: 'JWT ' + token })
             const { status, data } = response
 
             if (status === 200) {
-
                 if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
-                return dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADED', data }))
+                return dispatch(getAction(PRODUCT_DATA_LOADED, { data }))
             }
 
 
@@ -339,35 +339,34 @@ function loadProductInformation(productID, token) {
 
         }
 
-        dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADING_FAILED' }))
+        dispatch(getAction(PRODUCT_DATA_LOADING_FAILED))
 
     }
 
 }
 
-function loadProductFeedback(productID, needDelay = false) {
+function loadProductFeedback(productId) {
 
     return async dispatch => {
-        dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADING' }))
+
         try {
 
-            if (needDelay)
-                await delay(3000)
-            const response = await request(`/comments/${productID}`, 'GET', {})
+            dispatch(getAction(FEEDBACK_LOADING))
+            const response = await request(`/comments/${productId}`, 'GET', {})
             const { status, data } = response
 
             if (status === 200) {
 
-                const { reviews, notFilteredComments } = reduce(data, (result, item) => {
+                const { reviews, comments } = reduce(data, (result, item) => {
 
                     if (item.reviewScore)
                         result['reviews'].push(item)
                     else
-                        result['notFilteredComments'].push(item)
+                        result['comments'].push(item)
 
                     return result
 
-                }, { reviews: [], notFilteredComments: [] })
+                }, { reviews: [], comments: [] })
 
                 const statistic = reduce(reviews, (result, review) => {
 
@@ -382,16 +381,7 @@ function loadProductFeedback(productID, needDelay = false) {
                         '1': 0
                     })
 
-                const comments = notFilteredComments.filter(comment => !comment.parentId)
-
-                comments.forEach(comment => {
-
-                    comment.reply = notFilteredComments.filter(cmt => cmt.parentId === comment.id)
-
-                })
-
-                return dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADED', reviews, comments, statistic }))
-
+                return dispatch(getAction(FEEDBACK_LOADED, { reviews, comments, originalComments: comments.filter(comment => !comment.parentId), statistic }))
             }
 
 
@@ -401,7 +391,7 @@ function loadProductFeedback(productID, needDelay = false) {
 
         }
 
-        dispatch(getAction(FEEDBACK_LOADING, { status: 'LOADING_FAILED' }))
+        dispatch(getAction(FEEDBACK_LOADING_FAILED))
 
     }
 
@@ -414,7 +404,7 @@ function sendReview(values) {
         let err = `Undefined error, try again later!`
         const content = values.review
         const reviewScore = this.state.starCount
-        const { productID: productId, logOut, navigation, token } = this.props
+        const { productId, logOut, token, loadProductFeedback } = this.props
         try {
 
             const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, reviewScore })
@@ -422,6 +412,7 @@ function sendReview(values) {
 
             switch (status) {
                 case 200:
+                    loadProductFeedback(productId)
                     return resolve()
                 case 401:
                     err = 'Authenticate user failed! Please log in again'
@@ -454,13 +445,14 @@ function sendComment(values) {
         try {
 
             const content = values.comment
-            const { productId, logOut, navigation, token, parentId, fullName, reset } = this.props
-            if (parentId) reset()
+            const { token, reset, productId, parentId, loadProductFeedback, logOut } = this.props
+            reset()
             const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, parentId })
             const { status, data } = response
 
             switch (status) {
                 case 200:
+                    loadProductFeedback(productId)
                     return resolve()
                 case 401:
                     err = 'Authenticate user failed! Please log in again'
@@ -484,16 +476,30 @@ function sendComment(values) {
 
     })
 
+
 }
 
-function getAnswer(commentID) {
+async function loadAnswers(productId, parentId) {
 
-    return dispatch => {
+    try {
 
-        dispatch(getAction(GET_ANSWERS, { commentID }))
-        dispatch(navigator.router.getActionForPathAndParams('Answers'))
+        this.setState({ status: 'LOADING' })
+
+        const response = await request(`/comments/${productId}`, 'GET', {})
+
+        const { status, data } = response
+
+        if (status === 200) {
+            return this.setState({ status: 'LOADED', replies: data.filter(comment => comment.parentId === parentId) })
+        }
+
+
+    } catch (error) {
 
     }
+
+    alert('Error', `Can't comment now!`)
+    this.setState({ status: 'LOADED' })
 
 }
 
@@ -517,69 +523,42 @@ function setCart(product, type) {
 
 }
 
-function setWatchList(productId, type, token, needToUpdateWatchList) {
+function addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct) {
 
     return async dispatch => {
 
-        console.log(token)
         if (token === null) {
-            alert('Authentication failed', 'You need to log in first')
-            dispatch(logOut())
-            return
+            return dispatch(logOut())
         }
 
-        dispatch(getAction(WATCH_LIST_STATUS_FETCHING, { isFetching: true }))
+        updateCurrentProduct('UPDATING')
 
         try {
 
-            let response = await request(`/watchlists/${productId}`, type === 'ADD' ? 'POST' : 'DELETE', { Authorization: 'JWT ' + token })
-            let { status, data } = response
+            const response = await request(`/watchlists/${productId}`, type === 'ADD' ? 'POST' : 'DELETE', { Authorization: 'JWT ' + token })
+            const { status } = response
 
             if (status === 200) {
 
-                if (needToUpdateWatchList){
-                }
-                response = await request(`/products/info/${productId}`, 'GET', { Authorization: 'JWT ' + token })
-                status = response.status
-                data = response.data
-                if (status === 200) {
-
-                    if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
-                    if (type === 'ADD')
-                        alert('Success', 'The product has been watched')
-                    else
-                        alert('Success', 'The product has been removed from your watch list')
-                    return dispatch(getAction(PRODUCT_DETAIL_LOADING, { status: 'LOADED', data }))
-
-                } else {
-
-                    alert('Errors', 'Some errors occur. Please try again later!')
+                if (watchList.state === 'LOADED') {
+                    dispatch(loadWatchList(token, 0, watchList.list.length))
                 }
 
-            } else {
+                alert('Success', type === 'ADD' ? 'Add product to watch list successfully' : 'Remove product from watch list successfully')
 
-                if (status === 401) {
+                return updateCurrentProduct(type)
 
-                    alert('Authentication failed', 'You need to log in first')
-                    dispatch(logOut())
-
-                } else {
-
-                    if (type === 'ADD')
-                        alert('Add to watch list failed', 'The product may exist in your watch list')
-                    else
-                        alert('Remove from watch list failed', 'The product may not exist in your watch list')
-
-                }
-
+            } else if (status === 401) {
+                alert('Authentication failed', 'Please log in')
+                return dispatch(logOut())
             }
-
 
         } catch (error) {
 
         }
 
-        dispatch(getAction(WATCH_LIST_STATUS_FETCHING, { isFetching: false }))
+        updateCurrentProduct('FAIL_TO_UPDATE')
+        alert('Error', `Could not ${type === 'ADD' ? 'add product to your watch list!' : 'remove product from your watch list!'} Please try again.`)
 
     }
 
@@ -686,12 +665,11 @@ module.exports = {
     loadProductFeedback,
     sendReview,
     sendComment,
-    getAnswer,
+    loadAnswers,
     setCart,
-    search,
     loadNewestProducts,
     loadWatchList,
-    setWatchList,
+    addOrRemoveProductFromWatchList,
     removeFromWatchlist
 
 }

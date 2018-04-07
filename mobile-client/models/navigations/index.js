@@ -9,12 +9,10 @@ import Activation from '../../views/Activation'
 import Categories from '../../views/Categories'
 import ProductList from '../../views/ProductList'
 import ProductInformation from '../../views/ProductInformation'
-import ProductFeedback from '../../views/ProductFeedback'
-import QuestionForm from '../../views/QuestionForm'
-import ReviewForm from '../../views/ReviewForm'
+import ProductReviews from '../../views/ProductReviews'
+import ProductComments from '../../views/ProductComments'
 import Cart from '../../views/Cart'
 import Search from '../../views/Search'
-import AllQuestionsOrReviews from '../../views/AllQuestionsOrReviews'
 import Answers from '../../views/Answers'
 import WatchList from '../../views/WatchList'
 import { Icon } from "native-base";
@@ -69,11 +67,15 @@ const productDetailNavigator = TabNavigator(
         ProductInformation: {
             screen: ProductInformation,
         },
-        ProductFeedback: {
-            screen: ProductFeedback
+        ProductReviews: {
+            screen: ProductReviews
+        },
+        ProductComments: {
+            screen: ProductComments
         }
     },
     {
+        initialRouteName: 'ProductInformation',
         tabBarComponent: TabBarTop,
         tabBarPosition: 'top',
         tabBarOptions: {
@@ -130,7 +132,6 @@ const rootNavigator = StackNavigator({
 
             headerRight:
                 <View style={{ flexDirection: 'row' }}>
-                    <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
                     <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
                 </View>
 
@@ -189,38 +190,20 @@ const rootNavigator = StackNavigator({
 
     ProductDetail: {
         screen: productDetailNavigator,
-        navigationOptions: {
-            title: 'Product detail'
-        }
-    },
-
-    QuestionForm: {
-        screen: QuestionForm,
-        navigationOptions: {
-            header: null
-        }
-    },
-
-    ReviewForm: {
-        screen: ReviewForm,
-        navigationOptions: {
-            header: null
-        }
+        navigationOptions: ({ navigation }) => ({
+            title: 'Product detail',
+            headerRight:
+                <View style={{ flexDirection: 'row' }}>
+                    <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
+                </View>
+        })
     },
 
     Search: {
-        screen: Search,
-        navigationOptions: {
-            title: 'Search',
-            headerRight: <View />
-        }
+        screen: Search
     },
 
-    AllQuestionsOrReviews: {
-        screen: AllQuestionsOrReviews,
-        navigationOptions : ({ navigation }) => ({ title: navigation.state.params.type === 'reviews' ? 'All reviews' : 'All questions' })
-    },
-
+    
     Answers: {
         screen: Answers,
         navigationOptions: {
@@ -249,7 +232,6 @@ const rootNavigator = StackNavigator({
                 headerRight:
                     <View style={{ flexDirection: 'row' }}>
                         <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
-                        <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Home')} />
                         <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
                     </View>
             })

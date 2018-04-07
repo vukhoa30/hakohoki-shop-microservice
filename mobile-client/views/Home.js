@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { View, Image, ScrollView, StyleSheet, Dimensions } from 'react-native'
+import { View, Image, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native'
 import { selectProduct, loadNewestProducts } from '../presenters'
 import { Container, Content, Button, List, ListItem, Spinner, Card, CardItem, Body, Left, Right, Icon, DeckSwiper } from 'native-base'
 import AppText from './components/AppText'
 import AppButton from './components/AppButton'
 import ProductShowcase from "./components/ProductShowcase";
 import { currencyFormat } from "../utils";
+import { SearchBar } from 'react-native-elements'
 // import Carousel from 'react-native-carousel';
 
 // const { width: viewportWidth, height: viewportHeight } = Dimensions.get('window')
@@ -53,16 +54,23 @@ import { currencyFormat } from "../utils";
 
 class Home extends Component {
 
-    static navigationOptions = {
-        
+    static navigationOptions = ({ navigation }) => ({
+
         headerTitle:
-            <View style={{ flexDirection: 'row', paddingLeft: 20 }}>
-                <Image source={require('../resources/images/logoTitle.png')} style={{ width: 30, height: 30, resizeMode: 'stretch' }} />
-                <Image source={require('../resources/images/title.png')} style={{ marginLeft: 10, width: 150, height: 30, resizeMode: 'stretch' }} />
+            <View style={{ flexDirection: 'row', width: '100%' }} onPress={() => navigation.navigate('Search')}>
+                <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{ width: '100%' }}>
+                    <SearchBar
+                        onTouchStart={e => navigation.navigate('Search')}
+                        icon={{ marginRight: 10 }}
+                        inputStyle={{ fontSize: 15 }}
+                        containerStyle={{ backgroundColor: 'transparent', width: '100%' }}
+                        lightTheme
+                        placeholder='Hakohoki shop' />
+                </TouchableOpacity>
             </View>
 
+    })
 
-    }
     constructor(props) {
         super(props)
         this.state = {

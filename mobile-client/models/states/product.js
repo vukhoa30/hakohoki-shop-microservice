@@ -1,63 +1,49 @@
 import {
     SELECT_PRODUCT,
-    PRODUCT_LIST_LOADING,
-    PRODUCT_DETAIL_LOADING,
-    WATCH_LIST_STATUS_FETCHING
+    PRODUCT_DATA_LOADING,
+    PRODUCT_DATA_LOADED,
+    PRODUCT_DATA_LOADING_FAILED,
+    PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
+    PRODUCT_DATA_UPDATE_WATCH_LIST_STATE
 }
     from "../../presenters/keys";
 
 
 const initialState = {
 
-    list: {
-        status: 'INIT',
-        data: [],
-        conditions: null
-    },
-    current: {
-        id: null,
-        status: 'INIT',
-        data: null
-    }
-}
-
-function getProductList(action, oldData) {
-
-    const { status, data, conditions, firstLoad } = action
-
-    switch (status) {
-        case 'LOADING':
-            return firstLoad ? { ...oldData, status, data: [] } : { ...oldData, status }
-        case 'LOADING_FAILED':
-            return { ...oldData, status }
-        default:
-            return { status, conditions, data: oldData.data.concat(data) }
-    }
+    productId: null,
+    status: 'LOADING',
+    data: null
 
 }
 
 function reducer(state = initialState, action) {
 
     let nextState = state
-
-    const { type, status, data, isAddedToWatchList, isFetching } = action
+    const { type, data, existInWatchList, productId } = action
 
     switch (type) {
 
-        case PRODUCT_LIST_LOADING:
-            nextState = { ...state, list: getProductList(action, state.list) }
-            break
         case SELECT_PRODUCT:
-            nextState = { ...state, current: { ...initialState.current, id: action.productID, status: 'INIT' } }
+            nextState = { ...initialState, productId  }
             break
-        case PRODUCT_DETAIL_LOADING:
-            nextState = { ...state, current: { ...state.current, status, data } }
+        case PRODUCT_DATA_LOADING:
+            nextState = { ...state, status: 'LOADING' }
             break
-        case WATCH_LIST_STATUS_FETCHING:
-            nextState = { ...state, current: { ...state.current, status:  isFetching ? 'WATCH_LIST_STATUS_FETCHING' : 'LOADED' } }
-     
-    }
+        case PRODUCT_DATA_LOADING_FAILED:
+            nextState = { ...state, status: 'LOADING_FAILED' }
+            break
+        case PRODUCT_DATA_LOADED:
+            nextState = { ...state, status: 'LOADED', data }
+            break
+        case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
+            nextState = { ...state, status: 'WATCH_LIST_UPDATING' }
+            break
+        case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
+            nextState = { ...state, status: 'LOADED', data: { ...state.data, existInWatchList } }
+            break
 
+    }
 
     return nextState
 
