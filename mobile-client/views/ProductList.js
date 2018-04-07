@@ -14,14 +14,44 @@ class ProductList extends Component {
     constructor(props) {
 
         super(props)
-        const { loadProductList, navigation, list, status } = props
+        this.state = {
+            status: 'FIRST_LOAD',
+            list: [],
+            offset: 0,
+            limit: 10
+        }
+
+    }
+
+    componentDidMount() {
+
+        const { status, offset, limit } = this.state
+        if (status === 'FIRST_LOAD') {
+            this.loadData()
+        }
+    }
+
+    async loadData() {
+
+        const { offset, limit } = this.state
+        const { navigation } = this.props
         const { params } = navigation.state
-        loadProductList(params, 0, 10)
+        this.setState({ status: 'LOADING' })
+
+        const result = await loadProductList(params, offset, limit)
+        const { ok, data } = result
+
+        if (ok) {
+            this.setState({ status: 'LOADED', list: data, offset: data.length })
+        } else {
+            this.setState({ status: 'LOADING_FAILED' })
+        }
 
     }
 
     render() {
-        const { selectProduct, navigation, status, list, loadProductList, setCart } = this.props
+        const { navigation, setCart, selectProduct } = this.props
+        const { status, list } = this.state
         const { params } = navigation.state
         const paramKeys = Object.keys(params)
         const isSearchMode = !params.newest && ((params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0))
@@ -47,10 +77,9 @@ class ProductList extends Component {
                 }
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 50, justifyContent: 'center' }}>
                     {
-                        status === 'LOADED' &&
-                        (list.length > 0 ?
-                            list.map(item =><View key={item._id} style={{ width: '50%' }}><ProductShowcase  onSelected={productID => selectProduct(productID)} item={item} /></View>)
-                            : <AppText note style={{ marginTop: 100 }}>NO PRODUCTS FOUND</AppText>)
+                        list.length > 0 ?
+                            list.map(item => <View key={item._id} style={{ width: '50%' }}><ProductShowcase onSelected={productID => selectProduct(productID)} item={item} /></View>)
+                            : (status === 'LOADED' && <AppText note style={{ marginTop: 100 }}>NO PRODUCTS FOUND</AppText>)
                     }
                 </View>
                 {
@@ -59,7 +88,7 @@ class ProductList extends Component {
                         status === 'LOADING_FAILED' &&
                         <View style={{ alignItems: 'center' }}>
                             <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                            <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductList(params, list.length, 10)}>Reload</AppButton>
+                            <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => this.loadData()}>Reload</AppButton>
                         </View>
                 }
             </Content >
@@ -80,23 +109,14 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
+const mapStateToProps = state => ({
 
-    const { status, data } = state.product.list
-
-    return {
-
-        status,
-        list: data,
-
-    }
-}
+})
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductList: (conditions, offset, limit) => dispatch(loadProductList(conditions, offset, limit)),
-        selectProduct: productID => dispatch(selectProduct(productID)),
-        setCart: (product, type) => dispatch(setCart(product, type))
+        setCart: (product, type) => dispatch(setCart(product, type)),
+        selectProduct: (productId) => dispatch(selectProduct(productId))
     }
 }
 

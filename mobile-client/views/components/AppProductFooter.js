@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { setCart, setWatchList, logOut } from '../../presenters'
+import { setCart, addOrRemoveProductFromWatchList } from '../../presenters'
 import { Container, Content, Button, Footer, FooterTab, Grid, Col, Icon, Spinner } from 'native-base'
 import AppText from './AppText'
 import { alert, confirm } from "../../utils";
@@ -11,11 +11,11 @@ class AppProductFooter extends Component {
     constructor(props) {
         super(props)
         this.state = {}
-        console.log(props.data)
+        console.log(props.product)
     }
 
     render() {
-        const { needToUpdateWatchList, isAddedToCart, data, token, status, setCart, setWatchList } = this.props
+        const { isAvailableInCart, isAvailableInWatchList, product, isUpdatingWatchListStatus, setCart } = this.props
 
         return (
             <Footer>
@@ -24,15 +24,15 @@ class AppProductFooter extends Component {
                         <Grid>
                             <Col>
                                 {
-                                    isAddedToCart ?
+                                    isAvailableInCart ?
                                         <Button danger full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                            confirm('Confirm', `Are you sure to remove product "${data.name}" from your cart?`, () => setCart(data, 'REMOVE'))
+                                            confirm('Confirm', `Are you sure to remove product "${product.name}" from your cart?`, () => setCart(product, 'REMOVE'))
                                         }}>
                                             <Icon name='close' />
                                             <AppText>CART</AppText>
                                         </Button> :
-                                        <Button disabled={data.quantity === 0} success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                            setCart(data, 'ADD')
+                                        <Button disabled={product.quantity === 0} success full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
+                                            setCart(product, 'ADD')
                                             alert('Success', 'Product has been added to cart')
                                         }}>
                                             <Icon name='add' />
@@ -42,19 +42,19 @@ class AppProductFooter extends Component {
                             </Col>
                             <Col>
                                 {
-                                    status === 'WATCH_LIST_STATUS_FETCHING' ?
+                                    isUpdatingWatchListStatus ?
                                         <Button block disabled>
                                             <Spinner />
                                         </Button> :
-                                        data.existsInWatchlist ?
+                                        isAvailableInWatchList ?
                                             <Button warning full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                confirm('Confirm', `Are you sure to remove product "${data.name}" from your watch list?`, () => setWatchList(data._id, 'REMOVE', token, needToUpdateWatchList))
+                                                confirm('Confirm', `Are you sure to remove product "${product.name}" from your watch list?`, () => console.log('Hello'))
                                             }}>
                                                 <Icon name='close' />
                                                 <AppText>WATCH LIST</AppText>
                                             </Button> :
                                             <Button primary full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                setWatchList(data._id, 'ADD', token, needToUpdateWatchList)
+                                                console.log('Hello')
                                             }}>
                                                 <Icon name='add' />
                                                 <AppText>WATCH LIST</AppText>
@@ -72,29 +72,24 @@ class AppProductFooter extends Component {
 
 const mapStateToProps = (state) => {
 
-    const { list: cardList } = state.cart
-    const { id, status, data } = state.product.current
-    const { token, isLoggedIn } = state.user
-    const { status: watchListStatus } = state.watchList
+    const { status, productId, data } = state.product
+    const { list: cartList } = state.cart
 
     return {
 
-        needToUpdateWatchList: watchListStatus !== 'INIT',
-        token,
-        status,
-        data,
-        isAddedToCart: cardList.find(product => product._id === id)
+        product: data,
+        isAvailableInCart: cartList.find(product => product._id === data._id),
+        isAvailableInWatchList: data !== null ? data.existsInWatchlist : false,
+        isUpdatingWatchListStatus: status === 'WATCH_LIST_STATUS_UPDATING'
 
     }
-
+    
 }
 
 const mapDispatchToProps = (dispatch) => ({
 
     setCart: (product, type) => dispatch(setCart(product, type)),
-    setWatchList: (id, type, token) => dispatch(setWatchList(id, type, token)),
-    logOut: () => dispatch(logOut())
-
+    addOrRemoveProductFromWatchList: (productId, token, type, watchList, updateCurrentProduct) => dispatch(addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppProductFooter)

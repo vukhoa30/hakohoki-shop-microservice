@@ -1,26 +1,57 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
-import { View } from 'react-native'
-import { search } from '../presenters'
-import { Container, Header, Content, Button, Form, Spinner, Item, Input, Icon } from 'native-base'
+import { View, Dimensions } from 'react-native'
+import { Container, Content, Button, Form, Spinner, Item, Input, Icon } from 'native-base'
 //import { Header, SearchBar } from 'react-native-elements'
 import AppText from './components/AppText'
+import { SearchBar } from 'react-native-elements'
+
+const { width } = Dimensions.get('window')
 
 class Search extends Component {
+
+    static navigationOptions = ({ navigation }) => {
+        const params = navigation.state.params || {}
+
+        return {
+
+            headerTitle:
+                <View style={{ flexDirection: 'row', width: '100%' }} onPress={() => navigation.navigate('Search')}>
+                    <SearchBar
+                        noIcon={true}
+                        inputStyle={{ backgroundColor: 'transparent', fontSize: 17, color: 'white' }}
+                        placeholderTextColor='white'
+                        containerStyle={{ backgroundColor: 'transparent', width: '100%' }}
+                        lightTheme
+                        placeholder='Search for product...'
+                        blurOnSubmit={true}
+                        onSubmitEditing={params.search}
+                        autoFocus={true}
+                    />
+                </View>,
+            headerRight: <View />
+
+        }
+
+    }
 
     constructor(props) {
         super(props)
         this.state = {}
+        this.search = this.search.bind(this)
     }
 
-    renderInput({ input, placeholder, type, meta: { touched, error, warning } }) {
-        const { handleSubmit } = this.props
-        return (
-            <Item style={{ borderBottomColor: '#1B7887' }} >
-                <Input {...input} placeholder={placeholder} last onSubmitEditing={handleSubmit(search.bind(this))} />
-                <Icon name="ios-search" onPress={handleSubmit(search.bind(this))} />
-            </Item>)
+    componentWillMount() {
+        this.props.navigation.setParams({ search: this.search });
+    }
+
+    search(text) {
+        const { navigation } = this.props
+        const q = text.nativeEvent.text
+        if (q.length > 0)
+            navigation.navigate('ProductList', { q })
+        return true
     }
 
     render() {
@@ -29,7 +60,6 @@ class Search extends Component {
             <Container>
                 <Content>
                     <View>
-                        <Field name='q' placeholder='Search for product' component={this.renderInput.bind(this)} />
                     </View>
                 </Content>
             </Container>
@@ -54,7 +84,6 @@ const ReduxForm = reduxForm({
     onSubmitFail: () => { },
     validate: values => {
         const errors = {}
-        if (!values.q) errors.q = 'Required'
         return errors
     },
 })(Search)

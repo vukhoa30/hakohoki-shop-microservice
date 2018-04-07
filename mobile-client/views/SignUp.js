@@ -56,7 +56,7 @@ class SignUp extends Component {
         return (
             <Item error={hasError}>
                 <Icon active name={iconName} />
-                <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={{ fontSize: 12 }} last />
+                <Input {...input} secureTextEntry={type === 'password'} keyboardType={ type === 'phoneNumber' ? 'numeric' : 'default'} placeholder={placeholder} style={{ fontSize: 12 }} last />
             </Item>)
     }
     render() {
@@ -67,6 +67,7 @@ class SignUp extends Component {
                 <Content>
                     <View style={{ marginHorizontal: 10 }}>
                         <Field name="fullName" placeholder="FULL NAME" component={this.renderInput} />
+                        <Field name="phoneNumber" placeholder="PHONE NUMBER" component={this.renderInput} />
                         <Field name="email" placeholder="EMAIL" component={this.renderInput} />
                         <Field name="password" placeholder="PASSWORD" type="password" component={this.renderInput} />
                         <Field name="retypePassword" placeholder="RETYPE PASSWORD" type="password" component={this.renderInput} />
@@ -107,6 +108,11 @@ const SignUpForm = reduxForm({
         if (!values.fullName) {
             errors.fullName = 'Full name is required.'
         }
+
+        if (!values.phoneNumber) {
+            errors.phoneNumber = 'Number phone is required.'
+        }
+
         if (!values.email) {
             errors.email = 'Email is required'
         } else if (!validateEmail(values.email)) {

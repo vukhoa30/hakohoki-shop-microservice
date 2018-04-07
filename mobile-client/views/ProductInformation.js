@@ -19,18 +19,16 @@ class ProductInformation extends Component {
     constructor(props) {
 
         super(props)
-        const { loadProductInformation, productID, token } = props
-        loadProductInformation(productID, token)
-
+        props.loadProductInformation(props.productId)
     }
 
     render() {
-        const { token, status, data, productID } = this.props
+        const { token, status, data, productId } = this.props
         const outOfOrder = require('../resources/images/sold-out.png')
 
         switch (status) {
 
-            case 'LOADING': case 'INIT':
+            case 'LOADING':
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <Spinner />
@@ -40,7 +38,7 @@ class ProductInformation extends Component {
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductInformation(productID,token)} >Reload</AppButton>
+                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductInformation(productId,token)} >Reload</AppButton>
                     </View>
                 )
 
@@ -156,15 +154,12 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
 
-    const { current } = state.product
-    const { list: cartList } = state.cart
-    const { list: watchList } = state.watchList
-    const { id, status, data } = current
     const { token } = state.user
+    const { status, data, productId } = state.product
 
     return {
         token,
-        productID: id,
+        productId,
         status,
         data
     }
@@ -172,7 +167,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductInformation: (productID,token) => dispatch(loadProductInformation(productID,token))
+        loadProductInformation: (productId,token) => dispatch(loadProductInformation(productId,token))
     }
 }
 

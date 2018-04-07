@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import { View, Dimensions } from 'react-native'
-import { loadProductFeedback, logOut, sendComment } from '../presenters'
+import { loadProductFeedback, logOut, sendComment, loadAnswers } from '../presenters'
 import { Container, Content, Form, List, ListItem, Thumbnail, Left, Right, Footer, FooterTab, Item, Input, Icon, Spinner, Body, Grid, Col } from 'native-base'
 import { alert } from "../utils"
 import AppText from './components/AppText'
@@ -14,15 +14,23 @@ class Answers extends Component {
 
     constructor(props) {
         super(props)
+        const { navigation } = props
+        const { params } = navigation.state
+        this.state = {
+            productId: params.productId,
+            status: 'LOADED',
+            parentId: params.parentId,
+            replies: params.replies
+        }
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate() {
 
-        const { submitSucceeded, submitFailed, error, clearSubmitErrors, navigation, loadProductFeedback, productId } = this.props
+        const { submitSucceeded, submitFailed, error, clearSubmitErrors } = this.props
 
         if (submitSucceeded) {
 
-            loadProductFeedback(productId, true)
+
 
         } else if (submitFailed && error) {
 
@@ -31,6 +39,7 @@ class Answers extends Component {
         }
 
     }
+
 
     renderInput({ input, placeholder, type, meta: { touched, error, warning } }) {
         const { handleSubmit } = this.props
@@ -43,7 +52,8 @@ class Answers extends Component {
     }
 
     render() {
-        const { status, comments, navigation, productID, loadProductFeedback, submitting } = this.props
+        const { submitting, navigation } = this.props
+        const { status, replies } = this.state
 
         return (
             <Container>
@@ -54,10 +64,10 @@ class Answers extends Component {
                     </View>
                 }
                 <Content style={{ opacity: status === 'LOADING' || submitting ? 0.5 : 1 }}>
-                    <List dataArray={comments} renderRow={item => (
+                    <List dataArray={replies} renderRow={item => (
 
                         <ListItem avatar key={'comment-' + item.id}>
-                           <AppComment comment={item}/>
+                            <AppComment comment={item} />
                         </ListItem>
 
                     )} />
@@ -77,28 +87,14 @@ class Answers extends Component {
 
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state) => ({
 
-    const { comments: allComments, currentCommentId: parentId } = state.feedback
-    const { token, fullName } = state.user
-    const { id: productId } = state.product.current
-    const comments = allComments.find(comment => comment.id === parentId).reply
+    token: state.user.token
 
-    return {
-
-        fullName,
-        parentId,
-        productId,
-        token,
-        comments
-
-    }
-
-}
+})
 
 const mapDispatchToProps = (dispatch) => ({
 
-    loadProductFeedback: productID => dispatch(loadProductFeedback(productID)),
     logOut: () => dispatch(logOut())
 
 })

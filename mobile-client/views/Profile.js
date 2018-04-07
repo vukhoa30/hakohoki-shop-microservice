@@ -36,7 +36,7 @@ class Profile extends Component {
 
     renderAsLoggedInMode() {
 
-        const { navigation, logOut, fullName, email } = this.props
+        const { navigation, logOut, fullName, email, phoneNumber } = this.props
         const { width } = Dimensions.get('window');
         const avatarSize = 100
 
@@ -69,6 +69,7 @@ class Profile extends Component {
                             <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
                                 <AppText color='white' large>{fullName}</AppText>
                                 <AppText color='white' small>{email}</AppText>
+                                <AppText color='white' small>{phoneNumber}</AppText>
                                 <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Log out</AppButton>
                             </Col>
                         </Grid>
@@ -132,7 +133,8 @@ const mapStateToProps = state => {
     return {
 
         isLoggedIn: state.user.isLoggedIn,
-        fullName: state.user.fullName ? state.user.fullName : 'UNKNOWN',
+        fullName: state.user.fullName !== null ? state.user.fullName : 'UNKNOWN',
+        phoneNumber: state.user.phoneNumber !== null ? state.user.phoneNumber : 'unknown phone number',
         email: state.user.email
 
     }

@@ -1,17 +1,25 @@
-import { FEEDBACK_LOADING, GET_ANSWERS } from "../../presenters/keys";
+import {
+
+    SELECT_PRODUCT,
+    FEEDBACK_LOADING,
+    FEEDBACK_LOADED,
+    FEEDBACK_LOADING_FAILED
+
+} from "../../presenters/keys";
 
 const initialState = {
 
-    status: 'INIT',
+    productId: null,
+    status: 'LOADING',
     reviews: [],
     comments: [],
-    currentCommentId: null,
+    originalComments: [],
     statistic: {
-        '1': 0,
-        '2': 0,
-        '3': 0,
+        '5': 0,
         '4': 0,
-        '5': 0
+        '3': 0,
+        '2': 0,
+        '1': 0
     }
 
 }
@@ -19,20 +27,23 @@ const initialState = {
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, status, reviews, comments, commentID, comment, statistic } = action
-    const { questions: currentQuestions, comments: currentComments } = state
+    const { type, reviews, comments, originalComments, productId, statistic } = action
 
     switch (type) {
 
+        case SELECT_PRODUCT:
+            nextState = { ...initialState, productId }
+            break
         case FEEDBACK_LOADING:
-            if (status === 'LOADED')
-                nextState = { ...state, status, reviews, comments, statistic }
-            else
-                nextState = { ...state, status }
+            nextState = { ...state, status: 'LOADING' }
             break
-        case GET_ANSWERS:
-            nextState = { ...state, currentCommentId: commentID }
+        case FEEDBACK_LOADING_FAILED:
+            nextState = { ...state, status: 'LOADING_FAILED' }
             break
+        case FEEDBACK_LOADED:
+            nextState = { ...state, status: 'LOADED', reviews, comments, originalComments, statistic }
+            break
+
     }
 
     return nextState

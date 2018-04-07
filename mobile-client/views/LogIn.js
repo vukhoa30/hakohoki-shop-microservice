@@ -53,7 +53,7 @@ class LogIn extends Component {
             <Container>
                 <Content>
                     <View style={{ marginHorizontal: 10 }}>
-                        <Field name="email" placeholder="EMAIL" component={this.renderInput} />
+                        <Field name="emailOrPhoneNumber" placeholder="EMAIL OR PHONE NUMBER" component={this.renderInput} />
                         <Field name="password" placeholder="PASSWORD" type="password" component={this.renderInput} />
                     </View>
                     <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
@@ -91,12 +91,9 @@ const LogInForm = reduxForm({
     validate: values => {
         const errors = {}
 
-        if (!values.email) {
-            errors.email = 'Email is required'
-        } else if (!validateEmail(values.email)) {
-            errors.email = 'Invalid email'
+        if (!values.emailOrPhoneNumber) {
+            errors.emailOrPhoneNumber = 'required'
         }
-
         if (!values.password) {
             errors.password = 'Password is required.'
         }
