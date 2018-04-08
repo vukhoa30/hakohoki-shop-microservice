@@ -41,7 +41,7 @@ class LogIn extends Component {
         }
         return (
             <Item error={hasError}>
-                <Icon active name={input.name === "email" ? "person" : "unlock"} />
+                <Icon active name={input.name === "emailOrPhoneNo" ? "person" : "unlock"} />
                 <Input {...input} secureTextEntry={type === 'password'} placeholder={placeholder} style={{ fontSize: 12 }} last />
             </Item>)
     }
@@ -53,7 +53,7 @@ class LogIn extends Component {
             <Container>
                 <Content>
                     <View style={{ marginHorizontal: 10 }}>
-                        <Field name="emailOrPhoneNumber" placeholder="EMAIL OR PHONE NUMBER" component={this.renderInput} />
+                        <Field name="emailOrPhoneNo" placeholder="EMAIL OR PHONE NUMBER" component={this.renderInput} />
                         <Field name="password" placeholder="PASSWORD" type="password" component={this.renderInput} />
                     </View>
                     <AppButton style={{ marginVertical: 20, marginHorizontal: 20 }} block bordered success onPress={handleSubmit(authenticate.bind(this))} disabled={(!error && invalid) || submitting} processing={submitting}>
@@ -91,8 +91,8 @@ const LogInForm = reduxForm({
     validate: values => {
         const errors = {}
 
-        if (!values.emailOrPhoneNumber) {
-            errors.emailOrPhoneNumber = 'required'
+        if (!values.emailOrPhoneNo) {
+            errors.emailOrPhoneNo = 'required'
         }
         if (!values.password) {
             errors.password = 'Password is required.'

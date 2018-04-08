@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { setCart, addOrRemoveProductFromWatchList } from '../../presenters'
+import { setCart, addOrRemoveProductFromWatchList, logOut } from '../../presenters'
 import { Container, Content, Button, Footer, FooterTab, Grid, Col, Icon, Spinner } from 'native-base'
 import AppText from './AppText'
 import { alert, confirm } from "../../utils";
@@ -11,11 +11,10 @@ class AppProductFooter extends Component {
     constructor(props) {
         super(props)
         this.state = {}
-        console.log(props.product)
     }
 
     render() {
-        const { isAvailableInCart, isAvailableInWatchList, product, isUpdatingWatchListStatus, setCart } = this.props
+        const { logOut, token, isLoggedIn, isAvailableInCart, isAvailableInWatchList, product, isUpdatingWatchListStatus, setCart } = this.props
 
         return (
             <Footer>
@@ -48,17 +47,24 @@ class AppProductFooter extends Component {
                                         </Button> :
                                         isAvailableInWatchList ?
                                             <Button warning full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                confirm('Confirm', `Are you sure to remove product "${product.name}" from your watch list?`, () => console.log('Hello'))
+                                                if (!isLoggedIn)
+                                                    logOut()
+                                                else
+                                                    confirm('Confirm', `Are you sure to remove product "${product.name}" from your watch list?`, () => console.log('Hello'))
                                             }}>
                                                 <Icon name='close' />
                                                 <AppText>WATCH LIST</AppText>
                                             </Button> :
                                             <Button primary full small iconLeft style={{ flexDirection: 'row' }} onPress={() => {
-                                                console.log('Hello')
+                                                if (!isLoggedIn)
+                                                    logOut()
+                                                else
+                                                    console.log('Hello')
                                             }}>
                                                 <Icon name='add' />
                                                 <AppText>WATCH LIST</AppText>
                                             </Button>
+
                                 }
                             </Col>
                         </Grid>
@@ -74,22 +80,26 @@ const mapStateToProps = (state) => {
 
     const { status, productId, data } = state.product
     const { list: cartList } = state.cart
+    const { token, isLoggedIn } = state.user
 
     return {
 
+        isLoggedIn,
+        token,
         product: data,
         isAvailableInCart: cartList.find(product => product._id === data._id),
         isAvailableInWatchList: data !== null ? data.existsInWatchlist : false,
         isUpdatingWatchListStatus: status === 'WATCH_LIST_STATUS_UPDATING'
 
     }
-    
+
 }
 
 const mapDispatchToProps = (dispatch) => ({
 
     setCart: (product, type) => dispatch(setCart(product, type)),
-    addOrRemoveProductFromWatchList: (productId, token, type, watchList, updateCurrentProduct) => dispatch(addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct))
+    addOrRemoveProductFromWatchList: (productId, token, type, watchList, updateCurrentProduct) => dispatch(addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct)),
+    logOut: () => dispatch(logOut())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppProductFooter)

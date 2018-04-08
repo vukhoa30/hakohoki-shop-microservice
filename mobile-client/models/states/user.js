@@ -2,21 +2,23 @@ import { USER_LOG_IN, USER_LOG_OUT } from "../../presenters/keys";
 
 const initialState = {
     isLoggedIn: false,
-    fullName: null,
     token: null,
-    email: null,
-    phoneNumber: null
+    account: {
+        name: 'Unknown',
+        email: 'Unknown',
+        phoneNumber: 'Unknown'
+    }
 }
 
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { token, email, type, fullName, phoneNumber } = action
+    const { type, token, account } = action
 
     switch (type) {
 
         case USER_LOG_IN:
-            nextState = { ...state, isLoggedIn: true, email, token, fullName, phoneNumber }
+            nextState = { ...state, isLoggedIn: true, token, account }
             break
         case USER_LOG_OUT:
             nextState = initialState

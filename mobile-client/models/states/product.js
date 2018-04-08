@@ -4,7 +4,8 @@ import {
     PRODUCT_DATA_LOADED,
     PRODUCT_DATA_LOADING_FAILED,
     PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
-    PRODUCT_DATA_UPDATE_WATCH_LIST_STATE
+    PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
+    REVIEW_PRODUCT
 }
     from "../../presenters/keys";
 
@@ -25,7 +26,7 @@ function reducer(state = initialState, action) {
     switch (type) {
 
         case SELECT_PRODUCT:
-            nextState = { ...initialState, productId  }
+            nextState = { ...initialState, productId }
             break
         case PRODUCT_DATA_LOADING:
             nextState = { ...state, status: 'LOADING' }
@@ -41,6 +42,9 @@ function reducer(state = initialState, action) {
             break
         case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
             nextState = { ...state, status: 'LOADED', data: { ...state.data, existInWatchList } }
+            break
+        case REVIEW_PRODUCT:
+            nextState = { ...state, status: 'LOADED', data: { ...state.data, reviewedBySelf: true } }
             break
 
     }

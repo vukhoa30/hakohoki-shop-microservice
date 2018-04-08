@@ -97,6 +97,7 @@ class Profile extends Component {
         switch (key) {
 
             case 'NOTIFICATION':
+                navigation.navigate('Notification')
                 break
             case 'ORDERS':
                 break
@@ -133,9 +134,9 @@ const mapStateToProps = state => {
     return {
 
         isLoggedIn: state.user.isLoggedIn,
-        fullName: state.user.fullName !== null ? state.user.fullName : 'UNKNOWN',
-        phoneNumber: state.user.phoneNumber !== null ? state.user.phoneNumber : 'unknown phone number',
-        email: state.user.email
+        fullName: state.user.account.fullName,
+        phoneNumber: state.user.account.phoneNumber,
+        email: state.user.account.email
 
     }
 }

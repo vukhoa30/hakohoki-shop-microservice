@@ -16,6 +16,7 @@ class ProductList extends Component {
         super(props)
         this.state = {
             status: 'FIRST_LOAD',
+            lockLoading: false,
             list: [],
             offset: 0,
             limit: 10
@@ -33,20 +34,25 @@ class ProductList extends Component {
 
     async loadData() {
 
-        const { offset, limit } = this.state
+        const { offset, limit, list: oldData } = this.state
         const { navigation } = this.props
         const { params } = navigation.state
-        this.setState({ status: 'LOADING' })
+        this.setState({ status: 'LOADING', lockLoading: true })
 
         const result = await loadProductList(params, offset, limit)
         const { ok, data } = result
 
         if (ok) {
-            this.setState({ status: 'LOADED', list: data, offset: data.length })
+            this.setState({ status: 'LOADED', list: oldData.concat(data), offset: oldData.length + data.length, lockLoading: false })
         } else {
             this.setState({ status: 'LOADING_FAILED' })
         }
 
+    }
+
+    isCloseToBottom({ layoutMeasurement, contentOffset, contentSize }) {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom
     }
 
     render() {
@@ -56,7 +62,13 @@ class ProductList extends Component {
         const paramKeys = Object.keys(params)
         const isSearchMode = !params.newest && ((params.category && paramKeys.length > 1) || (!params.category && paramKeys.length > 0))
         return (
-            <Content>
+            <Content
+                scrollEventThrottle={500}
+                onScroll={({ nativeEvent }) => {
+                    if (!this.state.lockLoading && this.isCloseToBottom(nativeEvent)) {
+                        this.loadData()
+                    }
+                }} >
                 {
                     isSearchMode &&
                     <View style={{ marginVertical: 10, marginHorizontal: 10 }}>

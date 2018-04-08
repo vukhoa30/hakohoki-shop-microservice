@@ -17,6 +17,9 @@ class WatchList extends Component {
     constructor(props) {
 
         super(props)
+        this.state = {
+            lockLoading: false,
+        }
         const { token, isLoggedIn, navigation, loadWatchList } = this.props
         if (!isLoggedIn) {
             alert('User not logged in', 'You need to log in first')
@@ -26,9 +29,13 @@ class WatchList extends Component {
 
     }
 
-    componentDidUpdate(){
-        console.log('OK')
+    componentWillReceiveProps(nextProps) {
+
+        if (this.props.status === 'LOADING' && (nextProps.status === 'LOADED' || nextProps.status === 'LOADING_FAILED'))
+            this.setState({ lockLoading: false })
+
     }
+
 
     renderStars(reviewScore, large = false) {
 
@@ -42,14 +49,25 @@ class WatchList extends Component {
 
     }
 
+
+    isCloseToBottom({ layoutMeasurement, contentOffset, contentSize }) {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom
+    }
+
     render() {
         const { status, list, selectProduct, navigation, loadWatchList, token, removeFromWatchlist } = this.props
         return (
-            <Content>
+            <Content scrollEventThrottle={500}
+                onScroll={({ nativeEvent }) => {
+                    if (!this.state.lockLoading && this.isCloseToBottom(nativeEvent)) {
+                        this.setState({ lockLoading: true })
+                        loadWatchList(token, list.length, 10)
+                    }
+                }}>
                 <View>
                     {
-                        status === 'LOADED' &&
-                        (list.length > 0 ?
+                        list.length > 0 ?
                             list.map(item =>
                                 <TouchableOpacity key={item._id} onPress={() => selectProduct(item._id)}>
                                     <Card style={{ width: '100%', marginVertical: 5, paddingRight: 5 }}>
@@ -94,7 +112,7 @@ class WatchList extends Component {
                                     </Card>
                                 </TouchableOpacity>
                             )
-                            : <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>)
+                            : <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>
                     }
                 </View>
                 {
@@ -126,7 +144,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
 
-    const { status, list , needToUpdate } = state.watchList
+    const { status, list, needToUpdate } = state.watchList
     const { token, isLoggedIn } = state.user
 
     return {

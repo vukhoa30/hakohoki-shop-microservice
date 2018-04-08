@@ -1,4 +1,4 @@
-import { TabNavigator, TabBarBottom, StackNavigator, TabBarTop } from "react-navigation";
+import { TabNavigator, TabBarBottom, StackNavigator, TabBarTop, NavigationActions } from "react-navigation";
 import React, { Component } from 'react';
 import { StyleSheet, View } from "react-native";
 import Home from '../../views/Home'
@@ -15,6 +15,7 @@ import Cart from '../../views/Cart'
 import Search from '../../views/Search'
 import Answers from '../../views/Answers'
 import WatchList from '../../views/WatchList'
+import NotificationComponent from '../../views/Notification'
 import { Icon } from "native-base";
 
 const mainNavigator = TabNavigator(
@@ -176,13 +177,19 @@ const rootNavigator = StackNavigator({
         }
     },
 
+    Notification: {
+        screen: NotificationComponent,
+        navigationOptions: {
+            title: 'Notification'
+        }
+    },
+
     Cart: {
         screen: Cart,
         navigationOptions: ({ navigation }) => ({
             title: 'Cart',
             headerRight:
                 <View style={{ flexDirection: 'row' }}>
-                    <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
                     <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Home')} />
                 </View>
         })
@@ -195,6 +202,10 @@ const rootNavigator = StackNavigator({
             headerRight:
                 <View style={{ flexDirection: 'row' }}>
                     <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
+                    <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.dispatch(NavigationActions.reset({
+                        index: 0,
+                        actions: [NavigationActions.navigate({ routeName: 'Main' })]
+                    }))} />
                 </View>
         })
     },
@@ -203,7 +214,7 @@ const rootNavigator = StackNavigator({
         screen: Search
     },
 
-    
+
     Answers: {
         screen: Answers,
         navigationOptions: {
@@ -233,6 +244,10 @@ const rootNavigator = StackNavigator({
                     <View style={{ flexDirection: 'row' }}>
                         <Icon name='search' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Search')} />
                         <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
+                        <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.dispatch(NavigationActions.reset({
+                            index: 0,
+                            actions: [NavigationActions.navigate({ routeName: 'Main' })]
+                        }))} />
                     </View>
             })
 
