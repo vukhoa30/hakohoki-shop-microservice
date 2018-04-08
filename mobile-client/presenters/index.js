@@ -11,17 +11,23 @@ import {
     PRODUCT_DATA_LOADING_FAILED,
     PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
     PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
+    REVIEW_PRODUCT,
 
     FEEDBACK_LOADING,
     FEEDBACK_LOADED,
     FEEDBACK_LOADING_FAILED,
 
-    GET_ANSWERS,
-    ADD_INVALIDATED_COMMENT,
+    NOTITICATION_LOADING,
+    NOTIFICATION_LOADING_FAILED,
+    NOTITICATION_LOADED,
+    SET_NOTIFICATION_STATUS,
+
     ADD_TO_CART,
     REMOVE_FROM_CART,
     REMOVE_ALL,
+
     SAVE_TO_BUFFER,
+
     WATCH_LIST_LOADING
 
 } from './keys'
@@ -35,25 +41,19 @@ function loadUserInfo() {
 
     return dispatch => {
 
-        AsyncStorage.multiGet(['@User:token', '@User:email', '@User:fullName'], (err, values) => {
+        AsyncStorage.multiGet(['@User:token', '@User:account'], (err, values) => {
 
             console.log(values)
             if (values[0][1] === null) return
 
-            const obj = reduce(values, (result, item) => {
+            const { token, accountString } = reduce(values, (result, item) => {
 
                 switch (item[0]) {
                     case '@User:token':
                         result['token'] = item[1]
                         break
-                    case '@User:email':
-                        result['email'] = item[1]
-                        break
-                    case '@User:fullName':
-                        result['fullName'] = item[1]
-                        break
-                    case '@User:phoneNumber':
-                        result['phoneNumber'] = item[1]
+                    case '@User:account':
+                        result['accountString'] = item[1]
                         break
                 }
 
@@ -63,13 +63,24 @@ function loadUserInfo() {
             }, {
 
                     token: null,
-                    email: null,
-                    fullName: null,
-                    phoneNumber: null
+                    accountString: null
 
                 })
 
-            dispatch(getAction(USER_LOG_IN, { ...obj }))
+            let account = { name: 'Unknown', email: 'Unknown', phoneNumber: 'Unknown' }
+
+            try {
+                
+                account = JSON.parse(accountString)
+
+            } catch (error) {
+                
+                console.log(error)
+
+            }
+            
+
+            dispatch(getAction(USER_LOG_IN, { token, account }))
 
         })
 
@@ -78,11 +89,11 @@ function loadUserInfo() {
 
 }
 
-function logIn(token, email, fullName, phoneNumber) {
+function logIn(token, account) {
 
     return dispatch => {
 
-        dispatch(getAction(USER_LOG_IN, { token, email, fullName, phoneNumber }))
+        dispatch(getAction(USER_LOG_IN, { token, account }))
     }
 
 }
@@ -91,7 +102,7 @@ function logOut() {
 
     return dispatch => {
 
-        AsyncStorage.multiRemove(['@User:token', '@User:email', '@User:fullName'])
+        AsyncStorage.multiRemove(['@User:token', '@User:account'])
         dispatch(getAction(USER_LOG_OUT))
         dispatch(navigator.router.getActionForPathAndParams('Account/LogIn'))
 
@@ -104,22 +115,21 @@ function authenticate(values) {
     return new Promise(async (resolve, reject) => {
 
         let err = `Undefined error, try again later!`
-        const { emailOrPhoneNumber, password } = values
+        const { emailOrPhoneNo, password } = values
         try {
-            const response = await request('/accounts/authentication', 'POST', {}, { emailOrPhoneNumber, password })
+            const response = await request('/accounts/authentication', 'POST', {}, { emailOrPhoneNo, password })
             const { status, data } = response
             const { logIn, navigation } = this.props
             const lastScreen = navigation.state.params ? navigation.state.params.lastScreen : null
-            console.log(data)
             switch (status) {
                 case 200:
-                    logIn(data.token, email, data.account.fullName, data.account.phoneNumber)
-                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:email', email], ['@User:fullName', data.account.fullName], ['@User:phoneNumber', data.account.phoneNumber]], errors => console.log('Error' + errors))
+                    logIn(data.token, data.account)
+                    AsyncStorage.multiSet([['@User:token', data.token],['@User:account',JSON.stringify(data.account)] ], errors => console.log('Error' + errors))
                     navigation.dispatch(NavigationActions.back())
                     return resolve()
                 case 401:
                     if (data.msg === 'ACCOUNT NOT ACTIVATED') {
-                        navigation.navigate('Activation', { email })
+                        navigation.navigate('Activation', { emailOrPhoneNo })
                         err = 'Your account has not been activated yet'
                     }
                     else
@@ -165,6 +175,7 @@ function enroll(values) {
                     return resolve()
                 case 409:
                     err = 'The email was registered'
+                    break
                 case 500:
                     err = 'Internal server error! Try again later'
                     break
@@ -193,12 +204,12 @@ function activate(values) {
         const { navigation } = this.props
 
         try {
-            const response = await request('/accounts/activation', 'POST', {}, { emailOrPhoneNumber: navigation.state.params.email, activationCode })
+            const response = await request('/accounts/activation', 'POST', {}, { emailOrPhoneNo: navigation.state.params.emailOrPhoneNo, activationCode })
             const { status, data } = response
 
             switch (status) {
                 case 200:
-                    navigation.navigate('LogIn')
+                    navigation.navigate(NavigationActions.back())
                     return resolve()
                 case 401:
                     err = 'Activation code is wrong'
@@ -328,6 +339,7 @@ function loadProductInformation(productId, token) {
             const { status, data } = response
 
             if (status === 200) {
+                console.log(data)
                 if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
                 return dispatch(getAction(PRODUCT_DATA_LOADED, { data }))
             }
@@ -357,6 +369,7 @@ function loadProductFeedback(productId) {
 
             if (status === 200) {
 
+                console.log('Comments length: ' + data.length)
                 const { reviews, comments } = reduce(data, (result, item) => {
 
                     if (item.reviewScore)
@@ -397,6 +410,12 @@ function loadProductFeedback(productId) {
 
 }
 
+function reviewProduct() {
+    
+    return dispatch => dispatch(getAction(REVIEW_PRODUCT))
+
+}
+
 function sendReview(values) {
 
     return new Promise(async (resolve, reject) => {
@@ -404,7 +423,7 @@ function sendReview(values) {
         let err = `Undefined error, try again later!`
         const content = values.review
         const reviewScore = this.state.starCount
-        const { productId, logOut, token, loadProductFeedback } = this.props
+        const { productId, logOut, token, loadProductFeedback, reviewProduct } = this.props
         try {
 
             const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, reviewScore })
@@ -413,6 +432,7 @@ function sendReview(values) {
             switch (status) {
                 case 200:
                     loadProductFeedback(productId)
+                    reviewProduct()
                     return resolve()
                 case 401:
                     err = 'Authenticate user failed! Please log in again'
@@ -648,6 +668,42 @@ function loadWatchList(token, offset, limit) {
 
 }
 
+function loadNotifications(token) {
+
+    return async dispatch => {
+
+        dispatch(getAction(NOTITICATION_LOADING))
+        try {
+
+            const response = await request('/notifications', 'GET', { Authorization: 'JWT ' + token })
+            const { status, data } = response
+
+            if (status === 200) {
+                return dispatch(getAction(NOTITICATION_LOADED, { status, data }))
+            } else if (status === 401) {
+                dispatch(logOut())
+                alert('Authentication failed', 'Please log in again!')
+            }
+
+        } catch (error) {
+
+        }
+        dispatch(getAction(NOTITICATION_LOADING_FAILED))
+
+    }
+
+}
+
+function makeNotificationAsRead(notificationId) {
+
+    return async dispatch => {
+
+        dispatch(getAction(SET_NOTIFICATION_STATUS, { notificationId, read: true }))
+
+    }
+
+}
+
 module.exports = {
 
     authenticate,
@@ -663,6 +719,7 @@ module.exports = {
     selectCategory,
     loadProductInformation,
     loadProductFeedback,
+    reviewProduct,
     sendReview,
     sendComment,
     loadAnswers,
@@ -670,6 +727,8 @@ module.exports = {
     loadNewestProducts,
     loadWatchList,
     addOrRemoveProductFromWatchList,
-    removeFromWatchlist
+    removeFromWatchlist,
+    makeNotificationAsRead,
+    loadNotifications
 
 }

@@ -44,7 +44,7 @@ class Cart extends Component {
                 <Footer>
                     <FooterTab>
                         <View style={{ width: '100%' }}>
-                            <Button block warning disabled={list.length === 0} small>
+                            <Button block primary disabled={list.length === 0} small>
                                 <AppText>
                                     CHECK OUT
                                 </AppText>

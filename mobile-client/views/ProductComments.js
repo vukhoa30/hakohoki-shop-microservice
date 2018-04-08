@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View, ScrollView, Dimensions } from 'react-native'
-import { loadProductFeedback } from '../presenters'
+import { loadProductFeedback, logOut } from '../presenters'
 import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
@@ -27,7 +27,7 @@ class ProductComments extends Component {
     }
 
     render() {
-        const { loadProductFeedback, status, productId, comments } = this.props
+        const { logOut, isLoggedIn, loadProductFeedback, status, productId, comments } = this.props
 
         switch (status) {
 
@@ -61,11 +61,15 @@ class ProductComments extends Component {
                             </Body>
                         </ListItem>
                     </List>
-                    <SendComment />
+                    {
+                        isLoggedIn ?
+                            <SendComment /> :
+                            <Button danger style={{ alignSelf: 'center', marginVertical: 10 }} onPress={() => logOut()} ><AppText>Log in to comment</AppText></Button>
+                    }
                     {
                         comments.length > 0 ?
                             <ScrollView style={{ height: height / 2 }}>
-                                <List dataArray={comments} renderRow={comment => (
+                                <List dataArray={comments.reverse()} renderRow={comment => (
 
                                     <ListItem avatar key={'comment-' + comment.id}>
                                         <AppComment comment={comment} />
@@ -87,9 +91,11 @@ class ProductComments extends Component {
 const mapStateToProps = (state) => {
 
     const { productId, status, originalComments: comments } = state.feedback
+    const { isLoggedIn } = state.user
 
     return {
 
+        isLoggedIn,
         productId,
         status,
         comments
@@ -101,6 +107,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
 
     loadProductFeedback: (productId) => dispatch(loadProductFeedback(productId)),
+    logOut: () => dispatch(logOut())
 
 })
 

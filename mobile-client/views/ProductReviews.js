@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { View } from 'react-native'
 import { Field, reduxForm } from "redux-form"
 import StarRating from 'react-native-star-rating'
-import { loadProductFeedback, sendReview, logOut } from '../presenters'
+import { loadProductFeedback, sendReview, logOut, reviewProduct } from '../presenters'
 import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail, Form, Item, Input } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
@@ -97,7 +97,7 @@ class ProductReviews extends Component {
     }
 
     render() {
-        const { handleSubmit, submitting, loadProductFeedback, status, reviews, originalComments, statistic, reviewScore, reviewCount, productId } = this.props
+        const { isReviewed, isLoggedIn, logOut, handleSubmit, submitting, loadProductFeedback, status, reviews, originalComments, statistic, reviewScore, reviewCount, productId } = this.props
 
         switch (status) {
 
@@ -153,22 +153,32 @@ class ProductReviews extends Component {
                     <Card style={{ marginVertical: 10 }}>
                         <CardItem>
                             <Body style={{ alignItems: 'center' }}>
-                                <StarRating
-                                    disabled={false}
-                                    maxStars={5}
-                                    fullStarColor='orange'
-                                    emptyStarColor='orange'
-                                    rating={this.state.starCount}
-                                    selectedStar={(rating) => this.onStarRatingPress(rating)}
-                                />
-                                <AppText note style={{ marginVertical: 5 }}>{this.state.status}</AppText>
-                                <Field name='review' placeholder='TYPE YOUR REVIEW HERE' component={this.renderInput} />
-                                <Button block success disabled={this.state.starCount === 0 || submitting} style={{ marginVertical: 10 }}
-                                    onPress={handleSubmit(sendReview.bind(this))}
-                                >
-                                    {submitting ? <Spinner /> : null}
-                                    <AppText>SUBMIT</AppText>
-                                </Button>
+                                {
+                                    isLoggedIn ?
+                                        (
+                                            isReviewed ?
+                                                <AppText style={{ marginVertical: 20 }}>You reviewed this product</AppText> :
+                                                <View style={{ alignItems: 'center' }}>
+                                                    <StarRating
+                                                        disabled={false}
+                                                        maxStars={5}
+                                                        fullStarColor='orange'
+                                                        emptyStarColor='orange'
+                                                        rating={this.state.starCount}
+                                                        selectedStar={(rating) => this.onStarRatingPress(rating)}
+                                                    />
+                                                    <AppText note style={{ marginVertical: 5 }}>{this.state.status}</AppText>
+                                                    <Field name='review' placeholder='TYPE YOUR REVIEW HERE' component={this.renderInput} />
+                                                    <Button block success disabled={this.state.starCount === 0 || submitting} style={{ marginVertical: 10 }}
+                                                        onPress={handleSubmit(sendReview.bind(this))}
+                                                    >
+                                                        {submitting ? <Spinner /> : null}
+                                                        <AppText>SUBMIT</AppText>
+                                                    </Button>
+                                                </View>
+                                        ) :
+                                        <Button danger style={{ alignSelf: 'center' }} onPress={() => logOut()} ><AppText>Log in to review</AppText></Button>
+                                }
                             </Body>
                         </CardItem>
                     </Card>
@@ -176,14 +186,14 @@ class ProductReviews extends Component {
                         <List>
                             <ListItem itemHeader first icon>
                                 <Body>
-                                    <AppText style={{ fontWeight: 'bold' }}>REVIEWS ({reviewCount})</AppText>
+                                    <AppText style={{ fontWeight: 'bold' }}>REVIEWS ({reviews.length})</AppText>
                                 </Body>
                             </ListItem>
                         </List>
                         {
-                            reviewCount > 0 ?
+                            reviews.length > 0 ?
                                 <View>
-                                    <List dataArray={reviews} renderRow={review => (
+                                    <List dataArray={reviews.reverse()} renderRow={review => (
 
                                         <ListItem avatar key={'review-' + review.id}>
                                             <AppComment comment={review} />
@@ -207,10 +217,12 @@ const mapStateToProps = (state) => {
 
     const { productId, status, reviews, statistic } = state.feedback
     const { data } = state.product
-    const { token } = state.user
+    const { token, isLoggedIn } = state.user
 
     return {
 
+        isReviewed: data.reviewedBySelf,
+        isLoggedIn,
         token,
         productId,
         status,
@@ -226,7 +238,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
 
     loadProductFeedback: (productId) => dispatch(loadProductFeedback(productId)),
-    logOut: () => dispatch(logOut())
+    logOut: () => dispatch(logOut()),
+    reviewProduct: () => dispatch(reviewProduct())
 
 })
 

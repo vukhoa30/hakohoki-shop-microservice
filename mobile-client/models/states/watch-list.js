@@ -15,7 +15,7 @@ function reducer(state = initialState, action) {
 
         case WATCH_LIST_LOADING:
             if (status === 'LOADED')
-                nextState = { ...state, status, list: data }
+                nextState = { ...state, status, list: state.list.concat(data) }
             else
                 nextState = { ...state, status }
             break
