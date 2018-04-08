@@ -26,8 +26,8 @@ module.exports = {
       models.Comment
       .find({ productId })
       .exec((err, rslt) => {
-        if (err) reject(err);
-        else resolve(rslt.map(r => {
+        if (err) return reject(err);
+        else { resolve(rslt.map(r => {
           return {
             id: r._id,
             content: r.content,
@@ -37,7 +37,7 @@ module.exports = {
             createdAt: r.createdAt,
             reviewScore: r.reviewScore
           }
-        }))
+        }))}
       })
     })
   },

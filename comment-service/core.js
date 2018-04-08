@@ -74,7 +74,8 @@ module.exports = {
     .then(async rslt => {
       var accountIds = rslt.map(r => r.accountId)
       try {
-        var customers = await msgBroker.requestCustomers(accountIds)
+        var customers = await msgBroker.requestCustomers(accountIds
+          .filter(id => id.length == 24))
         var employees = await msgBroker.requestEmployees(accountIds
           .filter(e => parseInt(e))
           .map(e => parseInt(e)))

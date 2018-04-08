@@ -146,7 +146,7 @@ exports.delete = (collection, query) => {
 exports.GetCustomers = (ids) => {
   return new Promise((resolve, reject) => {
     models.Account
-    .find({ _id: {$in: ids} })
+    .find({ _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))} })
     .exec((err, rslt) => {
       if (err) { console.log(err); return reject(err) }
       resolve(rslt.map(r => {
