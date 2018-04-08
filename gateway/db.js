@@ -22,7 +22,7 @@ module.exports = [{
     clientUrl: '/watchlists',
     serviceUrl: 'http://localhost:7005'
   }, {
-    type: 'socket',
+    type: 'api',
     clientUrl: '/notifications',
     serviceUrl: 'http://localhost:7006'
   }, {
