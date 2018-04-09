@@ -14,10 +14,14 @@ class SendComment extends Component {
     }
 
     renderInput({ input, placeholder, type, meta: { touched, error, warning } }) {
-        const { handleSubmit } = this.props
+        const { handleSubmit, submitting } = this.props
         return (
             <Item>
-                <Input {...input} autoFocus placeholder={placeholder} style={{ fontSize: 12 }} onSubmitEditing={handleSubmit(sendComment.bind(this))} />
+                <Input {...input} disabled={submitting} autoFocus placeholder={placeholder} style={{ fontSize: 12 }} onSubmitEditing={handleSubmit(sendComment.bind(this))} />
+                {
+                    submitting &&
+                    <Spinner style={{ width: 10, height: 10, marginRight: 20 }} />
+                }
             </Item>)
     }
 
@@ -33,8 +37,8 @@ class SendComment extends Component {
 
 const mapStateToProps = (state) => ({
 
-    productId: state.product.productId,
-    token: state.user
+    token: state.user.token,
+    productId: state.product.productId
 
 })
 

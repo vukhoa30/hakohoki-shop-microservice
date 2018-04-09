@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { View, Image, StyleSheet } from 'react-native'
 import { loadUserInfo } from "../presenters";
+
 class Loading extends Component {
     state = {}
     constructor(props) {

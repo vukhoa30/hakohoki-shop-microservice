@@ -12,8 +12,8 @@ const initialState = {
     productId: null,
     status: 'LOADING',
     reviews: [],
-    comments: [],
-    originalComments: [],
+    questions: [],
+    answers: [],
     statistic: {
         '5': 0,
         '4': 0,
@@ -27,7 +27,7 @@ const initialState = {
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, reviews, comments, originalComments, productId, statistic } = action
+    const { type, reviews, questions, answers, productId, statistic } = action
 
     switch (type) {
 
@@ -41,7 +41,7 @@ function reducer(state = initialState, action) {
             nextState = { ...state, status: 'LOADING_FAILED' }
             break
         case FEEDBACK_LOADED:
-            nextState = { ...state, status: 'LOADED', reviews, comments, originalComments, statistic }
+            nextState = { ...state, status: 'LOADED', reviews, questions, answers, statistic }
             break
 
     }

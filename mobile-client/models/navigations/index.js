@@ -28,7 +28,16 @@ const mainNavigator = TabNavigator(
             screen: Profile
         },
         Categories: {
-            screen: Categories
+            screen: Categories,
+            navigationOptions: {
+                header: null
+            }
+        },
+        Notification: {
+            screen: NotificationComponent,
+            navigationOptions: {
+                header: null
+            }
         }
     },
     {
@@ -45,6 +54,8 @@ const mainNavigator = TabNavigator(
                         return <Icon name={focused ? 'ios-person' : 'ios-person-outline'} style={styles.icon} />
                     case 'Categories':
                         return <Icon name={focused ? 'ios-apps' : 'ios-apps-outline'} style={styles.icon} />
+                    case 'Notification':
+                        return <Icon name={focused ? 'ios-notifications' : 'ios-notifications-outline'} style={styles.icon} />
                     default:
                         return <Icon name='ios-information-circle-outline' style={styles.icon} />
 
@@ -81,16 +92,16 @@ const productDetailNavigator = TabNavigator(
         tabBarPosition: 'top',
         tabBarOptions: {
             upperCaseLabel: true,
-            activeTintColor: 'orange',
+            activeTintColor: 'white',
             labelStyle: {
                 fontWeight: 'bold'
             },
             indicatorStyle: {
-                backgroundColor: 'orange'
-            },
-            inactiveTintColor: 'gray',
-            style: {
                 backgroundColor: 'white'
+            },
+            inactiveTintColor: 'white',
+            style: {
+                backgroundColor: '#1B7887'
             }
         }
     }
@@ -110,16 +121,16 @@ const accountNavigator = TabNavigator(
         tabBarPosition: 'top',
         tabBarOptions: {
             upperCaseLabel: true,
-            activeTintColor: 'orange',
+            activeTintColor: 'white',
             labelStyle: {
                 fontWeight: 'bold'
             },
             indicatorStyle: {
-                backgroundColor: 'orange'
-            },
-            inactiveTintColor: 'gray',
-            style: {
                 backgroundColor: 'white'
+            },
+            inactiveTintColor: 'white',
+            style: {
+                backgroundColor: '#1B7887'
             }
         }
     }
@@ -143,6 +154,11 @@ const rootNavigator = StackNavigator({
         screen: accountNavigator,
         navigationOptions: {
             title: 'Account',
+            headerStyle: {
+                backgroundColor: '#1B7887',
+                elevation: 0,
+                shadowOpacity: 0
+            },
             headerRight: <View />
         }
     },
@@ -177,21 +193,11 @@ const rootNavigator = StackNavigator({
         }
     },
 
-    Notification: {
-        screen: NotificationComponent,
-        navigationOptions: {
-            title: 'Notification'
-        }
-    },
-
     Cart: {
         screen: Cart,
         navigationOptions: ({ navigation }) => ({
             title: 'Cart',
-            headerRight:
-                <View style={{ flexDirection: 'row' }}>
-                    <Icon name='home' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Home')} />
-                </View>
+            headerRight: <View />
         })
     },
 
@@ -199,6 +205,11 @@ const rootNavigator = StackNavigator({
         screen: productDetailNavigator,
         navigationOptions: ({ navigation }) => ({
             title: 'Product detail',
+            headerStyle: {
+                backgroundColor: '#1B7887',
+                elevation: 0,
+                shadowOpacity: 0
+            },
             headerRight:
                 <View style={{ flexDirection: 'row' }}>
                     <Icon name='cart' style={{ marginRight: 20, color: 'white' }} onPress={() => navigation.navigate('Cart')} />
@@ -218,14 +229,16 @@ const rootNavigator = StackNavigator({
     Answers: {
         screen: Answers,
         navigationOptions: {
-            title: 'Answers'
+            title: 'Answers',
+            headerRight: <View />
         }
     },
 
     WatchList: {
         screen: WatchList,
         navigationOptions: {
-            title: 'Watch list'
+            title: 'Watch list',
+            headerRight: <View />
         }
     }
 

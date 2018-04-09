@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import { Grid, Row, Icon, Col, Card, CardItem, Container, Content } from 'native-base'
+import { Grid, Row, Icon, Col, Card, CardItem, Container, Content, Badge, List, ListItem, Left, Right, Body } from 'native-base'
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
 import { View, Image, StyleSheet, Dimensions, ImageBackground } from "react-native";
 import AppButton from "./components/AppButton";
 import AppIconButton from "./components/AppIconButton"
-import FeatureList from "./components/FeatureList"
 import { connect } from "react-redux";
 import { logOut } from "../presenters";
 
@@ -36,7 +35,7 @@ class Profile extends Component {
 
     renderAsLoggedInMode() {
 
-        const { navigation, logOut, fullName, email, phoneNumber } = this.props
+        const { notificationUnreadCount, navigation, logOut, fullName, email, phoneNumber } = this.props
         const { width } = Dimensions.get('window');
         const avatarSize = 100
 
@@ -79,11 +78,16 @@ class Profile extends Component {
                         <AppIconButton name="md-key" buttonName="Password" />
                         <AppIconButton name="ios-cart-outline" buttonName="My cart" onPress={() => navigation.navigate('Cart')} />
                     </View>
-                    <Card style={{ marginVertical: 5 }}>
-                        <CardItem>
-                            <FeatureList list={featureList} onFeatureSelected={(key) => this.select(key)} />
-                        </CardItem>
-                    </Card>
+                    <List style={{ marginVertical: 5 }}>
+                        <ListItem icon onPress={() => this.select('WATCH_LIST')} >
+                            <Left>
+                                <Icon name='md-paper' />
+                            </Left>
+                            <Body>
+                                <AppText>Watch list</AppText>
+                            </Body>
+                        </ListItem>
+                    </List>
                 </Content>
             </Container>
         );
@@ -133,6 +137,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
 
+        notificationUnreadCount: state.notification.list.filter(notification => !notification.read).length,
         isLoggedIn: state.user.isLoggedIn,
         fullName: state.user.account.fullName,
         phoneNumber: state.user.account.phoneNumber,

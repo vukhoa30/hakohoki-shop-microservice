@@ -3,7 +3,6 @@ import {
     PRODUCT_DATA_LOADING,
     PRODUCT_DATA_LOADED,
     PRODUCT_DATA_LOADING_FAILED,
-    PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
     PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
     REVIEW_PRODUCT
 }
@@ -21,7 +20,7 @@ const initialState = {
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, data, existInWatchList, productId } = action
+    const { type, data, existsInWatchlist, productId } = action
 
     switch (type) {
 
@@ -38,10 +37,7 @@ function reducer(state = initialState, action) {
             nextState = { ...state, status: 'LOADED', data }
             break
         case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
-            nextState = { ...state, status: 'WATCH_LIST_UPDATING' }
-            break
-        case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
-            nextState = { ...state, status: 'LOADED', data: { ...state.data, existInWatchList } }
+            nextState = { ...state,  data: { ...state.data, existsInWatchlist } }
             break
         case REVIEW_PRODUCT:
             nextState = { ...state, status: 'LOADED', data: { ...state.data, reviewedBySelf: true } }

@@ -97,7 +97,9 @@ class ProductReviews extends Component {
     }
 
     render() {
-        const { isReviewed, isLoggedIn, logOut, handleSubmit, submitting, loadProductFeedback, status, reviews, originalComments, statistic, reviewScore, reviewCount, productId } = this.props
+        const { userId, isReviewed, isLoggedIn, logOut, handleSubmit, submitting, loadProductFeedback, status, reviews, originalComments, statistic, reviewScore, reviewCount, productId } = this.props
+        const currentUserReview = reviews.find(review => review.userId === userId)
+        const currentUserRating = currentUserReview ? currentUserReview.reviewScore : 0
 
         switch (status) {
 
@@ -157,7 +159,17 @@ class ProductReviews extends Component {
                                     isLoggedIn ?
                                         (
                                             isReviewed ?
-                                                <AppText style={{ marginVertical: 20 }}>You reviewed this product</AppText> :
+                                                <View style={{ alignItems: 'center' }}>
+                                                    <StarRating
+                                                        disabled={true}
+                                                        maxStars={5}
+                                                        fullStarColor='orange'
+                                                        emptyStarColor='orange'
+                                                        rating={currentUserRating}
+                                                    />
+                                                    <AppText style={{ marginVertical: 20 }} note>You reviewed this product</AppText>
+                                                </View>
+                                                :
                                                 <View style={{ alignItems: 'center' }}>
                                                     <StarRating
                                                         disabled={false}
@@ -217,10 +229,11 @@ const mapStateToProps = (state) => {
 
     const { productId, status, reviews, statistic } = state.feedback
     const { data } = state.product
-    const { token, isLoggedIn } = state.user
+    const { token, isLoggedIn, account } = state.user
 
     return {
 
+        userId: account.accountId,
         isReviewed: data.reviewedBySelf,
         isLoggedIn,
         token,

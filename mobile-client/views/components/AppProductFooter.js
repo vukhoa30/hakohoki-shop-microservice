@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { setCart, addOrRemoveProductFromWatchList, logOut } from '../../presenters'
+import { setCart, updateWatchList, logOut, loadWatchList, updateWatchListStateOfProduct } from '../../presenters'
 import { Container, Content, Button, Footer, FooterTab, Grid, Col, Icon, Spinner } from 'native-base'
 import AppText from './AppText'
 import { alert, confirm } from "../../utils";
@@ -10,11 +10,13 @@ class AppProductFooter extends Component {
 
     constructor(props) {
         super(props)
-        this.state = {}
+        this.state = {
+            isWatchListUpdating: false
+        }
     }
 
     render() {
-        const { logOut, token, isLoggedIn, isAvailableInCart, isAvailableInWatchList, product, isUpdatingWatchListStatus, setCart } = this.props
+        const { logOut, token, isLoggedIn, isAvailableInCart, isAvailableInWatchList, product, setCart } = this.props
 
         return (
             <Footer>
@@ -41,7 +43,7 @@ class AppProductFooter extends Component {
                             </Col>
                             <Col>
                                 {
-                                    isUpdatingWatchListStatus ?
+                                    this.state.isWatchListUpdating ?
                                         <Button block disabled>
                                             <Spinner />
                                         </Button> :
@@ -50,7 +52,7 @@ class AppProductFooter extends Component {
                                                 if (!isLoggedIn)
                                                     logOut()
                                                 else
-                                                    confirm('Confirm', `Are you sure to remove product "${product.name}" from your watch list?`, () => console.log('Hello'))
+                                                    confirm('Confirm', `Are you sure to remove product "${product.name}" from your watch list?`, () => updateWatchList.call(this, 'REMOVE'))
                                             }}>
                                                 <Icon name='close' />
                                                 <AppText>WATCH LIST</AppText>
@@ -59,7 +61,7 @@ class AppProductFooter extends Component {
                                                 if (!isLoggedIn)
                                                     logOut()
                                                 else
-                                                    console.log('Hello')
+                                                    updateWatchList.call(this, 'ADD')
                                             }}>
                                                 <Icon name='add' />
                                                 <AppText>WATCH LIST</AppText>
@@ -78,18 +80,19 @@ class AppProductFooter extends Component {
 
 const mapStateToProps = (state) => {
 
-    const { status, productId, data } = state.product
+    const { status, data } = state.product
     const { list: cartList } = state.cart
     const { token, isLoggedIn } = state.user
+    const { list: watchList } = state.watchList
 
     return {
 
         isLoggedIn,
+        watchList,
         token,
         product: data,
         isAvailableInCart: cartList.find(product => product._id === data._id),
         isAvailableInWatchList: data !== null ? data.existsInWatchlist : false,
-        isUpdatingWatchListStatus: status === 'WATCH_LIST_STATUS_UPDATING'
 
     }
 
@@ -98,8 +101,10 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
 
     setCart: (product, type) => dispatch(setCart(product, type)),
-    addOrRemoveProductFromWatchList: (productId, token, type, watchList, updateCurrentProduct) => dispatch(addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct)),
-    logOut: () => dispatch(logOut())
+    logOut: () => dispatch(logOut()),
+    loadWatchList: (token, offset, length) => dispatch(loadWatchList(token, offset, length)),
+    updateWatchListStateOfProduct: (existsInWatchlist) => dispatch(updateWatchListStateOfProduct(existsInWatchlist))
+
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppProductFooter)

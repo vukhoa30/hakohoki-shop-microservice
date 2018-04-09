@@ -1,4 +1,4 @@
-import { request, parseToQueryString, getAction, delay, alert } from '../utils'
+import { request, parseToQueryString, getAction, delay, alert, createSocketConnection } from '../utils'
 import navigator from '../models/navigations'
 import {
     USER_LOG_IN,
@@ -9,7 +9,6 @@ import {
     PRODUCT_DATA_LOADING,
     PRODUCT_DATA_LOADED,
     PRODUCT_DATA_LOADING_FAILED,
-    PRODUCT_DATA_UPDATING_WATCH_LIST_STATE,
     PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
     REVIEW_PRODUCT,
 
@@ -17,10 +16,12 @@ import {
     FEEDBACK_LOADED,
     FEEDBACK_LOADING_FAILED,
 
-    NOTITICATION_LOADING,
+    NOTIFICATION_LOADING,
     NOTIFICATION_LOADING_FAILED,
-    NOTITICATION_LOADED,
+    NOTIFICATION_LOADED,
     SET_NOTIFICATION_STATUS,
+    APPEND_NOTIFICATION,
+    CONNECTION_STATUS_SETTING,
 
     ADD_TO_CART,
     REMOVE_FROM_CART,
@@ -36,6 +37,41 @@ import { SubmissionError } from "redux-form";
 import { reduce, assign, transform } from "lodash";
 import { NavigationActions } from "react-navigation";
 import { AsyncStorage } from "react-native";
+
+var socket = null
+
+function connectToServer(accountId) {
+
+    return async dispatch => {
+
+        dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'CONNECTING' }))
+        socket = createSocketConnection(() => {
+
+            console.log('Connected')
+            if (socket !== null) {
+                socket.emit('give-accountid', accountId)
+                dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'CONNECTED' }))
+            }
+
+        }, (data) => {
+
+            dispatch(getAction(APPEND_NOTIFICATION, { data }))
+
+
+        }, () => {
+
+            console.log('Disconnected')
+            dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'NOT_CONNECTED' }))
+            socket = null
+
+        })
+
+
+    }
+
+
+}
+
 
 function loadUserInfo() {
 
@@ -70,17 +106,17 @@ function loadUserInfo() {
             let account = { name: 'Unknown', email: 'Unknown', phoneNumber: 'Unknown' }
 
             try {
-                
+
                 account = JSON.parse(accountString)
 
             } catch (error) {
-                
+
                 console.log(error)
 
             }
-            
 
-            dispatch(getAction(USER_LOG_IN, { token, account }))
+
+            dispatch(logIn(token, account))
 
         })
 
@@ -93,6 +129,7 @@ function logIn(token, account) {
 
     return dispatch => {
 
+        //dispatch(connectToServer(account.accountId))
         dispatch(getAction(USER_LOG_IN, { token, account }))
     }
 
@@ -102,6 +139,8 @@ function logOut() {
 
     return dispatch => {
 
+        if (socket !== null)
+            socket.disconnect()
         AsyncStorage.multiRemove(['@User:token', '@User:account'])
         dispatch(getAction(USER_LOG_OUT))
         dispatch(navigator.router.getActionForPathAndParams('Account/LogIn'))
@@ -124,7 +163,8 @@ function authenticate(values) {
             switch (status) {
                 case 200:
                     logIn(data.token, data.account)
-                    AsyncStorage.multiSet([['@User:token', data.token],['@User:account',JSON.stringify(data.account)] ], errors => console.log('Error' + errors))
+                    createUserSession(data.account.accountId)
+                    AsyncStorage.multiSet([['@User:token', data.token], ['@User:account', JSON.stringify(data.account)]], errors => console.log('Error' + errors))
                     navigation.dispatch(NavigationActions.back())
                     return resolve()
                 case 401:
@@ -339,7 +379,6 @@ function loadProductInformation(productId, token) {
             const { status, data } = response
 
             if (status === 200) {
-                console.log(data)
                 if (data.reviewScore) data.reviewScore = Math.round(data.reviewScore, 1)
                 return dispatch(getAction(PRODUCT_DATA_LOADED, { data }))
             }
@@ -394,7 +433,17 @@ function loadProductFeedback(productId) {
                         '1': 0
                     })
 
-                return dispatch(getAction(FEEDBACK_LOADED, { reviews, comments, originalComments: comments.filter(comment => !comment.parentId), statistic }))
+                const { questions, answers } = reduce(comments, (result, comment) => {
+
+                    result[comment.parentId ? 'answers' : 'questions'].push(comment)
+                    return result
+
+                }, {
+                        'questions': [],
+                        'answers': []
+                    })
+
+                return dispatch(getAction(FEEDBACK_LOADED, { reviews, comments, questions, answers, statistic }))
             }
 
 
@@ -411,7 +460,7 @@ function loadProductFeedback(productId) {
 }
 
 function reviewProduct() {
-    
+
     return dispatch => dispatch(getAction(REVIEW_PRODUCT))
 
 }
@@ -543,44 +592,52 @@ function setCart(product, type) {
 
 }
 
-function addOrRemoveProductFromWatchList(productId, token, type, watchList, updateCurrentProduct) {
+function updateWatchListStateOfProduct(existsInWatchlist) {
 
     return async dispatch => {
 
-        if (token === null) {
-            return dispatch(logOut())
-        }
-
-        updateCurrentProduct('UPDATING')
-
-        try {
-
-            const response = await request(`/watchlists/${productId}`, type === 'ADD' ? 'POST' : 'DELETE', { Authorization: 'JWT ' + token })
-            const { status } = response
-
-            if (status === 200) {
-
-                if (watchList.state === 'LOADED') {
-                    dispatch(loadWatchList(token, 0, watchList.list.length))
-                }
-
-                alert('Success', type === 'ADD' ? 'Add product to watch list successfully' : 'Remove product from watch list successfully')
-
-                return updateCurrentProduct(type)
-
-            } else if (status === 401) {
-                alert('Authentication failed', 'Please log in')
-                return dispatch(logOut())
-            }
-
-        } catch (error) {
-
-        }
-
-        updateCurrentProduct('FAIL_TO_UPDATE')
-        alert('Error', `Could not ${type === 'ADD' ? 'add product to your watch list!' : 'remove product from your watch list!'} Please try again.`)
+        dispatch(getAction(PRODUCT_DATA_UPDATE_WATCH_LIST_STATE, { existsInWatchlist }))
 
     }
+
+}
+
+async function updateWatchList(type) {
+
+    const { product, token, logOut, loadWatchList, watchList, updateWatchListStateOfProduct } = this.props
+    this.setState({ isWatchListUpdating: true })
+
+    if (token === null) {
+        logOut()
+    }
+
+    try {
+
+        const response = await request(`/watchlists/${product._id}`, type === 'ADD' ? 'POST' : 'DELETE', { Authorization: 'JWT ' + token })
+        const { status } = response
+
+        if (status === 200) {
+
+            if (watchList.length > 0) {
+                loadWatchList(token, 0, watchList.length)
+            }
+            updateWatchListStateOfProduct(type === 'ADD')
+            alert('Success', type === 'ADD' ? 'Add product to watch list successfully' : 'Remove product from watch list successfully')
+
+        } else if (status === 401) {
+            alert('Authentication failed', 'Please log in')
+            return logOut()
+        } else {
+            alert('Error', `Could not ${type === 'ADD' ? 'add product to your watch list!' : 'remove product from your watch list!'} Please try again.`)
+        }
+
+    } catch (error) {
+
+    }
+
+    this.setState({ isWatchListUpdating: false })
+
+
 
 }
 
@@ -588,7 +645,6 @@ function removeFromWatchlist(productId, token, offset, limit) {
 
     return async dispatch => {
 
-        console.log(token)
         if (token === null) {
             alert('Authentication failed', 'You need to log in first')
             dispatch(logOut())
@@ -672,14 +728,14 @@ function loadNotifications(token) {
 
     return async dispatch => {
 
-        dispatch(getAction(NOTITICATION_LOADING))
+        dispatch(getAction(NOTIFICATION_LOADING))
         try {
 
             const response = await request('/notifications', 'GET', { Authorization: 'JWT ' + token })
             const { status, data } = response
 
             if (status === 200) {
-                return dispatch(getAction(NOTITICATION_LOADED, { status, data }))
+                return dispatch(getAction(NOTIFICATION_LOADED, { status, data }))
             } else if (status === 401) {
                 dispatch(logOut())
                 alert('Authentication failed', 'Please log in again!')
@@ -688,17 +744,36 @@ function loadNotifications(token) {
         } catch (error) {
 
         }
-        dispatch(getAction(NOTITICATION_LOADING_FAILED))
+        dispatch(getAction(NOTIFICATION_LOADING_FAILED))
 
     }
 
 }
 
-function makeNotificationAsRead(notificationId) {
+function makeNotificationAsRead(token, notificationId) {
 
     return async dispatch => {
 
         dispatch(getAction(SET_NOTIFICATION_STATUS, { notificationId, read: true }))
+
+        try {
+            const response = await request('/notifications/read', 'PUT', { Authorization: 'JWT ' + token }, [notificationId])
+            const { status } = response
+
+            if (status === 200) {
+                return
+            } else if (status === 401) {
+                dispatch(logOut())
+                alert('Authentication failed', 'Please log in again!')
+            }
+
+        } catch (error) {
+
+            console.log(error)
+
+        }
+
+        dispatch(getAction(SET_NOTIFICATION_STATUS, { notificationId, read: false }))
 
     }
 
@@ -726,7 +801,8 @@ module.exports = {
     setCart,
     loadNewestProducts,
     loadWatchList,
-    addOrRemoveProductFromWatchList,
+    updateWatchListStateOfProduct,
+    updateWatchList,
     removeFromWatchlist,
     makeNotificationAsRead,
     loadNotifications

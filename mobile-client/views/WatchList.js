@@ -112,7 +112,7 @@ class WatchList extends Component {
                                     </Card>
                                 </TouchableOpacity>
                             )
-                            : <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>
+                            : ( status === 'LOADED' && <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>)
                     }
                 </View>
                 {

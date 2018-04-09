@@ -10,10 +10,6 @@ import { loadCategories, selectCategory } from "../presenters";
 
 class Categories extends Component {
 
-    static navigationOptions = {
-        title: 'Categories'
-    }
-
     constructor(props) {
 
         super(props)

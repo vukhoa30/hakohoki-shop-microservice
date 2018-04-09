@@ -7,6 +7,7 @@ import { Container, Content, Form, List, ListItem, Thumbnail, Left, Right, Foote
 import { alert } from "../utils"
 import AppText from './components/AppText'
 import AppComment from './components/AppComment'
+import SendComment from './components/SendComment'
 
 const { height, width } = Dimensions.get('window')
 
@@ -14,46 +15,14 @@ class Answers extends Component {
 
     constructor(props) {
         super(props)
-        const { navigation } = props
-        const { params } = navigation.state
-        this.state = {
-            productId: params.productId,
-            status: 'LOADED',
-            parentId: params.parentId,
-            replies: params.replies
-        }
-    }
-
-    componentDidUpdate() {
-
-        const { submitSucceeded, submitFailed, error, clearSubmitErrors } = this.props
-
-        if (submitSucceeded) {
-
-
-
-        } else if (submitFailed && error) {
-
-            alert('Error', error)
-            clearSubmitErrors()
-        }
-
-    }
-
-
-    renderInput({ input, placeholder, type, meta: { touched, error, warning } }) {
-        const { handleSubmit } = this.props
-
-        return (
-            <Item>
-                <Input {...input} placeholder={placeholder} style={{ fontSize: 12 }} last onSubmitEditing={handleSubmit(sendComment.bind(this))} />
-                <Icon active name='send' onPress={handleSubmit(sendComment.bind(this))} />
-            </Item>)
     }
 
     render() {
-        const { submitting, navigation } = this.props
-        const { status, replies } = this.state
+        const { submitting, navigation, status, answers } = this.props
+        const { params } = navigation.state
+        const { parentId } = params
+
+        console.log('parentId: ' + parentId)
 
         return (
             <Container>
@@ -64,7 +33,7 @@ class Answers extends Component {
                     </View>
                 }
                 <Content style={{ opacity: status === 'LOADING' || submitting ? 0.5 : 1 }}>
-                    <List dataArray={replies} renderRow={item => (
+                    <List dataArray={answers} renderRow={item => (
 
                         <ListItem avatar key={'comment-' + item.id}>
                             <AppComment comment={item} />
@@ -73,11 +42,9 @@ class Answers extends Component {
                     )} />
                 </Content>
                 <Footer>
-                    <FooterTab >
-                        <View style={{ width: '100%', backgroundColor: 'white' }}>
-                            <Form>
-                                <Field name='comment' placeholder='TYPE YOUR REPLY FOR THIS COMMENT ....' component={this.renderInput.bind(this)} />
-                            </Form>
+                    <FooterTab>
+                        <View style={{ width: '100%', backgroundColor: 'white' }} >
+                            <SendComment parentId={parentId} />
                         </View>
                     </FooterTab>
                 </Footer>
@@ -89,7 +56,8 @@ class Answers extends Component {
 
 const mapStateToProps = (state) => ({
 
-    token: state.user.token
+    status: state.feedback.status,
+    answers: state.feedback.answers
 
 })
 

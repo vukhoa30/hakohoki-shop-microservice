@@ -19,7 +19,8 @@ class ProductInformation extends Component {
     constructor(props) {
 
         super(props)
-        props.loadProductInformation(props.productId)
+        const { loadProductInformation, token, productId } = this.props
+        loadProductInformation(productId,token)
     }
 
     render() {

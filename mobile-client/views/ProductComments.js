@@ -20,14 +20,16 @@ class ProductComments extends Component {
 
     constructor(props) {
         super(props)
-        this.state = {}
+        this.state = {
+            
+        }
         const { productId, loadProductFeedback, status } = this.props
         if (status !== 'LOADED')
             loadProductFeedback(productId)
     }
 
     render() {
-        const { logOut, isLoggedIn, loadProductFeedback, status, productId, comments } = this.props
+        const { logOut, isLoggedIn, loadProductFeedback, status, productId, questions, navigation } = this.props
 
         switch (status) {
 
@@ -57,7 +59,7 @@ class ProductComments extends Component {
                     <List>
                         <ListItem itemHeader first icon>
                             <Body>
-                                <AppText style={{ fontWeight: 'bold' }}>COMMENTS ({comments.length})</AppText>
+                                <AppText style={{ fontWeight: 'bold' }}>COMMENTS ({questions.length})</AppText>
                             </Body>
                         </ListItem>
                     </List>
@@ -67,11 +69,11 @@ class ProductComments extends Component {
                             <Button danger style={{ alignSelf: 'center', marginVertical: 10 }} onPress={() => logOut()} ><AppText>Log in to comment</AppText></Button>
                     }
                     {
-                        comments.length > 0 ?
+                        questions.length > 0 ?
                             <ScrollView style={{ height: height / 2 }}>
-                                <List dataArray={comments.reverse()} renderRow={comment => (
+                                <List dataArray={questions.reverse()} renderRow={comment => (
 
-                                    <ListItem avatar key={'comment-' + comment.id}>
+                                    <ListItem avatar key={'comment-' + comment.id} onPress={() => navigation.navigate('Answers',{ parentId: comment.id })} >
                                         <AppComment comment={comment} />
                                     </ListItem>
 
@@ -90,7 +92,7 @@ class ProductComments extends Component {
 
 const mapStateToProps = (state) => {
 
-    const { productId, status, originalComments: comments } = state.feedback
+    const { productId, status, questions } = state.feedback
     const { isLoggedIn } = state.user
 
     return {
@@ -98,7 +100,7 @@ const mapStateToProps = (state) => {
         isLoggedIn,
         productId,
         status,
-        comments
+        questions
 
     }
 
