@@ -64,7 +64,17 @@ module.exports = {
             )
             r.promotionName = finder.promotionName
           }
-          return r
+          return {
+            createdAt: r.createdAt,
+            read: r.read,
+            type: r.type,
+            accountId: r.accountId,
+            productId: r.productId,
+            _id: r._id,
+            commentId: r.commentId,
+            productName: r.productName,
+            promotionName: r.promotionName
+          }
         }))
         resolve(true)
       } catch (e) { console.log(e);reject(false) }
