@@ -130,7 +130,7 @@ function logIn(token, account) {
 
     return dispatch => {
 
-        //dispatch(connectToServer(account.accountId))
+        dispatch(connectToServer(account.accountId))
         dispatch(getAction(USER_LOG_IN, { token, account }))
     }
 

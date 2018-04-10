@@ -11,7 +11,7 @@ import { alert } from "../utils";
 var Carousel = require('react-native-carousel');
 
 var RNCarousel = () => (
-    <Carousel width={200}>
+    <Carousel width={200} >
         <View style={styles.container}>
             <Image source={{ uri: 'https://vidientuvtcpay.files.wordpress.com/2016/02/km.png?w=750' }} style={{ width: '100%', height: 200, resizeMode: 'stretch' }} />
         </View>
@@ -70,8 +70,9 @@ class Home extends Component {
         }
     }
 
+
     componentWillMount() {
-        this.props.navigation.setParams({ search: this.search.bind(this) });
+        this.props.navigation.setParams({ search: this.search.bind(this) })
     }
 
     componentDidMount() {
@@ -141,11 +142,10 @@ class Home extends Component {
 
     render() {
         const { categoryStatus, categories, productStatus, list, selectedCategory, categoryMinimized } = this.state
+
         return (
             <Container>
-                {
-                    !categoryMinimized &&  <RNCarousel />
-                }   
+                <RNCarousel />
                 <View style={{ padding: 5, backgroundColor: '#1B7887' }}>
                     {
                         <ScrollView style={{ width: '100%' }} horizontal={true} showsHorizontalScrollIndicator={false} >
