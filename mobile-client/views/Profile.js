@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Grid, Row, Icon, Col, Card, CardItem, Container, Content, Badge, List, ListItem, Left, Right, Body } from 'native-base'
+import { Grid, Row, Icon, Col, Card, CardItem, Container, Content, Badge, List, ListItem, Left, Right, Body, Form, Button } from 'native-base'
 import AppContainer from './components/AppContainer'
 import AppText from './components/AppText'
+import AppButton from './components/AppButton'
 import { View, Image, StyleSheet, Dimensions, ImageBackground } from "react-native";
-import AppButton from "./components/AppButton";
 import AppIconButton from "./components/AppIconButton"
 import { connect } from "react-redux";
 import { logOut } from "../presenters";
@@ -58,7 +58,7 @@ class Profile extends Component {
         ]
 
         return (
-            <Container>
+            <Container style={{ backgroundColor: '#eee' }} >
                 <Content>
                     <ImageBackground source={{ uri: 'https://opticalcortex.com/app/uploads/2014/08/grad-670x376.jpg' }} style={styles.background}>
                         <Grid>
@@ -67,24 +67,50 @@ class Profile extends Component {
                             </Col>
                             <Col style={{ flexDirection: 'column', justifyContent: 'center' }}>
                                 <AppText color='white' large>{fullName}</AppText>
-                                <AppText color='white' small>{email}</AppText>
-                                <AppText color='white' small>{phoneNumber}</AppText>
-                                <AppButton bordered style={{ marginTop: 5 }} small danger onPress={() => logOut()} >Log out</AppButton>
+                                <Button style={{ marginVertical: 5 }} iconLeft  small danger onPress={() => logOut()} >
+                                    <Icon name='md-exit' />
+                                    <AppText small >
+                                        Log out
+                                    </AppText>
+                                </Button>
                             </Col>
                         </Grid>
                     </ImageBackground>
-                    <View style={{ marginVertical: 5, flexDirection: 'row', justifyContent: 'center' }}>
-                        <AppIconButton name="ios-information-circle-outline" buttonName="Information" />
-                        <AppIconButton name="md-key" buttonName="Password" />
-                        <AppIconButton name="ios-cart-outline" buttonName="My cart" onPress={() => navigation.navigate('Cart')} />
+                    <View style={{ marginBottom: 20, backgroundColor: 'white' }}>
+                        <List>
+                            <ListItem icon>
+                                <Left>
+                                    <Icon name="ios-mail" />
+                                </Left>
+                                <Body>
+                                    <AppText small>{email}</AppText>
+                                </Body>
+                            </ListItem>
+                            <ListItem icon>
+                                <Left>
+                                    <Icon name="ios-phone-portrait" />
+                                </Left>
+                                <Body>
+                                    <AppText small>{phoneNumber}</AppText>
+                                </Body>
+                            </ListItem>
+                        </List>
                     </View>
-                    <List style={{ marginVertical: 5 }}>
+                    <List style={{ marginVertical: 5, backgroundColor: 'white' }}>
                         <ListItem icon onPress={() => this.select('WATCH_LIST')} >
                             <Left>
                                 <Icon name='md-paper' />
                             </Left>
                             <Body>
                                 <AppText>Watch list</AppText>
+                            </Body>
+                        </ListItem>
+                        <ListItem icon onPress={() => this.select('CART')} >
+                            <Left>
+                                <Icon name='cart' />
+                            </Left>
+                            <Body>
+                                <AppText>My cart</AppText>
                             </Body>
                         </ListItem>
                     </List>
@@ -100,10 +126,8 @@ class Profile extends Component {
 
         switch (key) {
 
-            case 'NOTIFICATION':
-                navigation.navigate('Notification')
-                break
-            case 'ORDERS':
+            case 'CART':
+                navigation.navigate('Cart')
                 break
             case 'WATCH_LIST':
                 navigation.navigate('WatchList')

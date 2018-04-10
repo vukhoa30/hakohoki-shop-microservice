@@ -42,7 +42,7 @@ const reducer = (state = initialState, action) => {
             }
             break
         case APPEND_NOTIFICATION:
-            nextState = { ...state, list: state.list.concat(data) }
+            nextState = { ...state, status: 'LOADED', list: [{ ...data }].concat(state.list) }
             break
         case CONNECTION_STATUS_SETTING:
             nextState = { ...state, connectionStatus }

@@ -58,61 +58,64 @@ class WatchList extends Component {
     render() {
         const { status, list, selectProduct, navigation, loadWatchList, token, removeFromWatchlist } = this.props
         return (
-            <Content scrollEventThrottle={500}
-                onScroll={({ nativeEvent }) => {
-                    if (!this.state.lockLoading && this.isCloseToBottom(nativeEvent)) {
-                        this.setState({ lockLoading: true })
-                        loadWatchList(token, list.length, 10)
-                    }
-                }}>
+            <Content>
                 <View>
                     {
                         list.length > 0 ?
-                            list.map(item =>
-                                <TouchableOpacity key={item._id} onPress={() => selectProduct(item._id)}>
-                                    <Card style={{ width: '100%', marginVertical: 5, paddingRight: 5 }}>
-                                        <CardItem>
-                                            <Body>
-                                                <Grid>
-                                                    <Col style={{ width: width / 2 }} >
-                                                        <Thumbnail source={{ uri: item.mainPicture }} style={{ resizeMode: 'stretch', width: '100%', height: height / 4, alignItems: 'center' }} />
-                                                    </Col>
-                                                    <Col>
-                                                        <AppText style={{ fontWeight: 'bold' }}>{item.name}</AppText>
-                                                        {
-                                                            item.quantity > 0 ?
-                                                                <AppText small note>Quantity: {item.quantity}</AppText> :
-                                                                <AppText small style={{ fontWeight: 'bold', color: 'red' }}>Sold out</AppText>
-                                                        }
-                                                        {
-                                                            item.promotionPrice ?
-                                                                <View style={{ flexDirection: 'row' }}>
-                                                                    <AppText small note style={{ marginRight: 10, textDecorationLine: 'line-through' }}>{currencyFormat(item.price)}</AppText>
-                                                                    <AppText small color='red'>{currencyFormat(item.promotionPrice)}</AppText>
-                                                                </View> :
-                                                                <AppText small color='red'>{currencyFormat(item.price)}</AppText>
-                                                        }
-                                                        <View style={{ flexDirection: 'row' }}>
+                            <View>{
+                                list.map(item =>
+                                    <TouchableOpacity key={item._id} onPress={() => selectProduct(item._id)}>
+                                        <Card style={{ width: '100%', marginVertical: 5, paddingRight: 5 }}>
+                                            <CardItem>
+                                                <Body>
+                                                    <Grid>
+                                                        <Col style={{ width: width / 2 }} >
+                                                            <Thumbnail source={{ uri: item.mainPicture }} style={{ resizeMode: 'stretch', width: '100%', height: height / 4, alignItems: 'center' }} />
+                                                        </Col>
+                                                        <Col>
+                                                            <AppText style={{ fontWeight: 'bold' }}>{item.name}</AppText>
                                                             {
-                                                                this.renderStars(item.reviewScore || 0)
+                                                                item.quantity > 0 ?
+                                                                    <AppText small note>Quantity: {item.quantity}</AppText> :
+                                                                    <AppText small style={{ fontWeight: 'bold', color: 'red' }}>Sold out</AppText>
                                                             }
-                                                            <AppText small style={{ alignSelf: 'flex-end' }} note>({item.reviewCount || 0})</AppText>
-                                                        </View>
-                                                        <Button block danger small onPress={() => {
-                                                            confirm('Confirm', `Are you sure to remove product "${item.name}" from your watch list?`, () => removeFromWatchlist(item._id, token, 0, list.length))
-                                                        }} >
-                                                            <AppText small>
-                                                                Remove
-                                                        </AppText>
-                                                        </Button>
-                                                    </Col>
-                                                </Grid>
-                                            </Body>
-                                        </CardItem>
-                                    </Card>
-                                </TouchableOpacity>
-                            )
-                            : ( status === 'LOADED' && <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>)
+                                                            {
+                                                                item.promotionPrice ?
+                                                                    <View style={{ flexDirection: 'row' }}>
+                                                                        <AppText small note style={{ marginRight: 10, textDecorationLine: 'line-through' }}>{currencyFormat(item.price)}</AppText>
+                                                                        <AppText small color='red'>{currencyFormat(item.promotionPrice)}</AppText>
+                                                                    </View> :
+                                                                    <AppText small color='red'>{currencyFormat(item.price)}</AppText>
+                                                            }
+                                                            <View style={{ flexDirection: 'row' }}>
+                                                                {
+                                                                    this.renderStars(item.reviewScore || 0)
+                                                                }
+                                                                <AppText small style={{ alignSelf: 'flex-end' }} note>({item.reviewCount || 0})</AppText>
+                                                            </View>
+                                                            <Button block danger small onPress={() => {
+                                                                confirm('Confirm', `Are you sure to remove product "${item.name}" from your watch list?`, () => removeFromWatchlist(item._id, token, 0, list.length))
+                                                            }} >
+                                                                <AppText small>
+                                                                    Remove
+                                                            </AppText>
+                                                            </Button>
+                                                        </Col>
+                                                    </Grid>
+                                                </Body>
+                                            </CardItem>
+                                        </Card>
+                                    </TouchableOpacity>
+                                )
+                            }
+                                {
+                                    status === 'LOADED' &&
+                                    <Button light block onPress={() => loadWatchList(token, list.length, 10)} >
+                                        <AppText>Load more products ...</AppText>
+                                    </Button>
+                                }
+                            </View>
+                            : (status === 'LOADED' && <AppText note style={{ marginTop: 100, alignSelf: 'center' }}>NO PRODUCTS</AppText>)
                     }
                 </View>
                 {

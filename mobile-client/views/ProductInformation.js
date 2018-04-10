@@ -20,7 +20,7 @@ class ProductInformation extends Component {
 
         super(props)
         const { loadProductInformation, token, productId } = this.props
-        loadProductInformation(productId,token)
+        loadProductInformation(productId, token)
     }
 
     render() {
@@ -39,7 +39,7 @@ class ProductInformation extends Component {
                 return (
                     <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                         <AppText color='red' small style={{ marginBottom: 10 }}>Could not load data</AppText>
-                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductInformation(productId,token)} >Reload</AppButton>
+                        <AppButton small warning style={{ alignSelf: 'center' }} onPress={() => loadProductInformation(productId, token)} >Reload</AppButton>
                     </View>
                 )
 
@@ -49,6 +49,10 @@ class ProductInformation extends Component {
             <Container>
                 <Content>
                     <Card style={{ flex: 1 }}>
+                        {
+                            data.sold5OrOver &&
+                            <Image source={require('../resources/images/hot-sale.png')} style={{ right: 0, zIndex: 100, width: 100, height: 100, position: 'absolute', resizeMode: 'stretch' }} />
+                        }
                         {
                             data.quantity === 0 &&
                             <Image source={outOfOrder} style={{ width: '80%', height: 200, position: 'absolute', zIndex: 100, resizeMode: 'stretch', top: 140, left: 20 }} />
@@ -64,7 +68,7 @@ class ProductInformation extends Component {
                         </CardItem>
                         <CardItem>
                             <Body>
-                                <Image source={{ uri: data.mainPicture }} style={{ height: 350, width: '100%', flex: 1, resizeMode: 'stretch' }} />
+                                <Image source={{ uri: data.mainPicture && data.mainPicture !== '' ? data.mainPicture : 'https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801' }} style={{ height: 350, width: '100%', flex: 1, resizeMode: 'stretch' }} />
                                 <Text style={{ fontSize: 30, fontWeight: 'bold', alignSelf: 'center', marginTop: 20, color: 'red' }}>
                                     {currencyFormat(data.price)}
                                 </Text>
@@ -134,7 +138,7 @@ class ProductInformation extends Component {
 
                     }
                 </Content>
-                <AppProductFooter/>
+                <AppProductFooter />
             </Container>
         );
     }
@@ -168,7 +172,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadProductInformation: (productId,token) => dispatch(loadProductInformation(productId,token))
+        loadProductInformation: (productId, token) => dispatch(loadProductInformation(productId, token))
     }
 }
 

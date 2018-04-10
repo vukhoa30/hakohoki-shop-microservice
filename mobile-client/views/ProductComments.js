@@ -21,7 +21,7 @@ class ProductComments extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            
+
         }
         const { productId, loadProductFeedback, status } = this.props
         if (status !== 'LOADED')
@@ -55,31 +55,29 @@ class ProductComments extends Component {
 
         return (
             <Container>
+                <List>
+                    <ListItem itemHeader first icon>
+                        <Body>
+                            <AppText style={{ fontWeight: 'bold' }}>COMMENTS ({questions.length})</AppText>
+                        </Body>
+                    </ListItem>
+                </List>
+                {
+                    isLoggedIn ?
+                        <SendComment /> :
+                        <Button danger style={{ alignSelf: 'center', marginVertical: 10 }} onPress={() => logOut()} ><AppText>Log in to comment</AppText></Button>
+                }
                 <Content>
-                    <List>
-                        <ListItem itemHeader first icon>
-                            <Body>
-                                <AppText style={{ fontWeight: 'bold' }}>COMMENTS ({questions.length})</AppText>
-                            </Body>
-                        </ListItem>
-                    </List>
-                    {
-                        isLoggedIn ?
-                            <SendComment /> :
-                            <Button danger style={{ alignSelf: 'center', marginVertical: 10 }} onPress={() => logOut()} ><AppText>Log in to comment</AppText></Button>
-                    }
                     {
                         questions.length > 0 ?
-                            <ScrollView style={{ height: height / 2 }}>
-                                <List dataArray={questions.reverse()} renderRow={comment => (
+                            <List dataArray={questions.reverse()} renderRow={comment => (
 
-                                    <ListItem avatar key={'comment-' + comment.id} onPress={() => navigation.navigate('Answers',{ parentId: comment.id })} >
-                                        <AppComment comment={comment} />
-                                    </ListItem>
+                                <ListItem avatar key={'comment-' + comment.id} onPress={() => navigation.navigate('Answers', { parentId: comment.id, productId })} >
+                                    <AppComment comment={comment} />
+                                </ListItem>
 
 
-                                )} />
-                            </ScrollView> :
+                            )} /> :
                             <AppText style={{ marginVertical: 10 }} note center>No comments for this product</AppText>
                     }
                 </Content>

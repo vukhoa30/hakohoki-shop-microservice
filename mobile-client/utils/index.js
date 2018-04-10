@@ -5,7 +5,7 @@ import io from 'socket.io-client'
 
 function createSocketConnection(onConnect, onEvent, onDisconnect) {
 
-    const socket = io(gatewayAddress,{
+    const socket = io(gatewayAddress + '/notifications',{
         reconnection: false,
         timeout: 5000
 
@@ -14,7 +14,7 @@ function createSocketConnection(onConnect, onEvent, onDisconnect) {
     socket.on('connect', onConnect)
     socket.on('connect_timeout', () => console.log('Connection timeout'))
     socket.on('connect_error', () => console.log('Connection error'))
-    socket.on('event', onEvent)
+    socket.on('message', onEvent)
     socket.on('disconnect', onDisconnect)
 
     return socket

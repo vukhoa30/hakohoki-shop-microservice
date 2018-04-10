@@ -37,8 +37,7 @@ class SendComment extends Component {
 
 const mapStateToProps = (state) => ({
 
-    token: state.user.token,
-    productId: state.product.productId
+    token: state.user.token
 
 })
 

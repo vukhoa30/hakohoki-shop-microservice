@@ -5,7 +5,7 @@ import {
     USER_LOG_OUT,
 
     SELECT_PRODUCT,
-
+    SELECT_CATEGORY,
     PRODUCT_DATA_LOADING,
     PRODUCT_DATA_LOADED,
     PRODUCT_DATA_LOADING_FAILED,
@@ -55,6 +55,7 @@ function connectToServer(accountId) {
 
         }, (data) => {
 
+            console.log(data)
             dispatch(getAction(APPEND_NOTIFICATION, { data }))
 
 
@@ -163,7 +164,6 @@ function authenticate(values) {
             switch (status) {
                 case 200:
                     logIn(data.token, data.account)
-                    createUserSession(data.account.accountId)
                     AsyncStorage.multiSet([['@User:token', data.token], ['@User:account', JSON.stringify(data.account)]], errors => console.log('Error' + errors))
                     navigation.dispatch(NavigationActions.back())
                     return resolve()
@@ -279,30 +279,6 @@ function saveToBuffer(data) {
 
 }
 
-function loadNewestProducts() {
-
-    return new Promise(async (resolve, reject) => {
-
-        try {
-
-            const response = await request('/products/latest?offset=0&limit=10', 'GET', {})
-            const { status, data } = response
-
-            if (status === 200)
-                resolve({ ok: true, list: data })
-
-        } catch (error) {
-
-
-        }
-
-        resolve({ ok: false })
-
-
-    })
-
-}
-
 function loadCategories() {
 
     return new Promise(async (resolve, reject) => {
@@ -313,7 +289,38 @@ function loadCategories() {
             const { status, data } = response
 
             if (status === 200)
-                resolve({ ok: true, list: data.map(item => ({ key: item, name: item })) })
+                resolve({
+                    ok: true, list: data.map(item => {
+
+                        let icon = 'info'
+
+                        switch (item) {
+
+                            case 'Phone':
+                                icon = 'md-phone-portrait'
+                                break
+                            case 'Tablet':
+                                icon = 'md-tablet-portrait'
+                                break
+                            case 'Accessory':
+                                icon = 'md-headset'
+                                break
+                            case 'SIM':
+                                icon = 'ios-card'
+                                break
+                            case 'Card':
+                                icon = 'md-card'
+                                break
+
+                        }
+
+                        return {
+                            name: item,
+                            icon
+                        }
+
+                    })
+                })
 
         } catch (error) {
 
@@ -329,7 +336,11 @@ function loadCategories() {
 
 function selectCategory(category) {
 
-    return dispatch => dispatch(navigator.router.getActionForPathAndParams('ProductList', { category }))
+    return dispatch => {
+
+        dispatch(getAction(SELECT_CATEGORY, { category }))
+
+    }
 
 }
 
@@ -337,7 +348,8 @@ function loadProductList(conditions, offset, limit) {
 
     return new Promise(async resolve => {
 
-        const url = '/products/' + (conditions.newest ? 'latest?' : 'search?' + parseToQueryString(conditions) + '&')
+        if (conditions.category === 'All') conditions.category = undefined
+        const url = '/products/' + (conditions.category === 'Latest' ? 'latest?' : 'search?' + parseToQueryString(conditions) + '&')
 
         try {
 
@@ -361,7 +373,7 @@ function selectProduct(productId) {
     return dispatch => {
 
         dispatch(getAction(SELECT_PRODUCT, { productId }))
-        dispatch(navigator.router.getActionForPathAndParams('ProductDetail/ProductInformation'))
+        dispatch(navigator.router.getActionForPathAndParams('ProductDetail/Information'))
 
     }
 
@@ -408,7 +420,6 @@ function loadProductFeedback(productId) {
 
             if (status === 200) {
 
-                console.log('Comments length: ' + data.length)
                 const { reviews, comments } = reduce(data, (result, item) => {
 
                     if (item.reviewScore)
@@ -515,6 +526,7 @@ function sendComment(values) {
 
             const content = values.comment
             const { token, reset, productId, parentId, loadProductFeedback, logOut } = this.props
+            console.log(`ProductId: ${productId} && ParentId: ${parentId}`)
             reset()
             const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, parentId })
             const { status, data } = response
@@ -779,8 +791,23 @@ function makeNotificationAsRead(token, notificationId) {
 
 }
 
+function viewAnswers(productId, commentId){
+
+    return async dispatch => {
+
+        console.log('Get here')
+        if (!commentId) return
+        dispatch(loadProductFeedback(productId))
+        dispatch(NavigationActions.navigate({ routeName: 'Answers', params: { parentId: commentId, productId } }))
+
+    }
+
+
+}
+
 module.exports = {
 
+    connectToServer,
     authenticate,
     enroll,
     activate,
@@ -799,12 +826,12 @@ module.exports = {
     sendComment,
     loadAnswers,
     setCart,
-    loadNewestProducts,
     loadWatchList,
     updateWatchListStateOfProduct,
     updateWatchList,
     removeFromWatchlist,
     makeNotificationAsRead,
-    loadNotifications
+    loadNotifications,
+    viewAnswers
 
 }

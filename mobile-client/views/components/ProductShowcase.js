@@ -24,13 +24,17 @@ class ProductShowcase extends Component {
             <TouchableOpacity style={{ width: '100%' }} onPress={() => onSelected(item._id)}>
                 <Card style={{ flex: 0, minHeight: 350 }}>
                     {
+                        item.sold5OrOver &&
+                        <Image source={require('../../resources/images/hot-sale.png')} style={{ right: 0, zIndex: 100, width: 50, height: 50, position: 'absolute', resizeMode: 'stretch' }} />
+                    }
+                    {
                         item.quantity === 0 &&
                         <Image source={outOfOrder} style={{ width: 140, height: 70, position: 'absolute', zIndex: 100, resizeMode: 'stretch', top: 140, left: 20 }} />
                     }
                     <CardItem>
                         <Left>
                             <Body>
-                                <AppText small style={{ fontWeight: 'bold' }}>{item.name}</AppText>
+                                <AppText small style={{ fontWeight: 'bold', zIndex: 101 }}>{item.name}</AppText>
                                 <AppText note small style={{ opacity: item.quantity > 0 ? 1 : 0 }}>Quantity: {item.quantity}</AppText>
                             </Body>
                         </Left>

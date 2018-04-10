@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import { View, Image, StyleSheet } from 'react-native'
-import { Spinner, Content, Container } from "native-base";
+import { View, Image, StyleSheet, ScrollView, Dimensions } from 'react-native'
+import { Spinner, Content, Container, Header, Icon, Tab, Tabs } from "native-base";
 import AppText from './components/AppText'
 import AppContainer from './components/AppContainer'
 import FeatureList from './components/FeatureList'
@@ -24,7 +24,7 @@ class Categories extends Component {
 
         if (this.state.firstLoad) {
             this.setState({ firstLoad: false })
-            this.loadData()
+           // this.loadData()
         }
 
     }
@@ -71,7 +71,8 @@ class Categories extends Component {
                     <FeatureList list={list} onFeatureSelected={category => selectCategory(category)} />
                 </Content>
             </Container>
-        );
+        )
+        
     }
 }
 

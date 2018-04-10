@@ -1,4 +1,5 @@
 import {
+    SELECT_CATEGORY,
     SELECT_PRODUCT,
     PRODUCT_DATA_LOADING,
     PRODUCT_DATA_LOADED,
@@ -11,6 +12,7 @@ import {
 
 const initialState = {
 
+    category: null,
     productId: null,
     status: 'LOADING',
     data: null
@@ -20,10 +22,13 @@ const initialState = {
 function reducer(state = initialState, action) {
 
     let nextState = state
-    const { type, data, existsInWatchlist, productId } = action
+    const { type, data, existsInWatchlist, productId, category } = action
 
     switch (type) {
 
+        case SELECT_CATEGORY:
+            nextState = { ...initialState, category }
+            break
         case SELECT_PRODUCT:
             nextState = { ...initialState, productId }
             break
@@ -37,7 +42,7 @@ function reducer(state = initialState, action) {
             nextState = { ...state, status: 'LOADED', data }
             break
         case PRODUCT_DATA_UPDATE_WATCH_LIST_STATE:
-            nextState = { ...state,  data: { ...state.data, existsInWatchlist } }
+            nextState = { ...state, data: { ...state.data, existsInWatchlist } }
             break
         case REVIEW_PRODUCT:
             nextState = { ...state, status: 'LOADED', data: { ...state.data, reviewedBySelf: true } }

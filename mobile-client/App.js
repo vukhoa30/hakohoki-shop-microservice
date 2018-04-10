@@ -11,8 +11,8 @@ import { createLogger } from 'redux-logger'
 
 const store = createStore(
   appReducer,
-  applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.notification }))
-  //applyMiddleware(reactNavigationReduxMiddleware, thunk)
+  //applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.product }))
+  applyMiddleware(reactNavigationReduxMiddleware, thunk)
 );
 
 

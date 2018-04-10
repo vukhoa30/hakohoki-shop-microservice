@@ -18,11 +18,11 @@ class Answers extends Component {
     }
 
     render() {
-        const { submitting, navigation, status, answers } = this.props
+        const { submitting, navigation, status, answers, questions } = this.props
         const { params } = navigation.state
-        const { parentId } = params
-
-        console.log('parentId: ' + parentId)
+        const { parentId, productId } = params
+        let currentQuestion = questions.find(question => question.id === parentId)
+        if (!currentQuestion) currentQuestion = { content: 'Unknown comment' }
 
         return (
             <Container>
@@ -32,8 +32,12 @@ class Answers extends Component {
                         <Spinner />
                     </View>
                 }
+                <View style={{ paddingLeft: 10, paddingVertical: 10, flexDirection: 'row' }}>
+                    <Icon name='ios-arrow-dropright-circle-outline' style={{ color: 'red', fontWeight: 'bold' }} />
+                    <AppText style={{ marginLeft: 10 }}>{currentQuestion.content}</AppText>
+                </View>
                 <Content style={{ opacity: status === 'LOADING' || submitting ? 0.5 : 1 }}>
-                    <List dataArray={answers} renderRow={item => (
+                    <List dataArray={answers.filter(answer => answer.parentId === parentId).reverse()} renderRow={item => (
 
                         <ListItem avatar key={'comment-' + item.id}>
                             <AppComment comment={item} />
@@ -44,7 +48,7 @@ class Answers extends Component {
                 <Footer>
                     <FooterTab>
                         <View style={{ width: '100%', backgroundColor: 'white' }} >
-                            <SendComment parentId={parentId} />
+                            <SendComment parentId={parentId} productId={productId} />
                         </View>
                     </FooterTab>
                 </Footer>
@@ -57,7 +61,8 @@ class Answers extends Component {
 const mapStateToProps = (state) => ({
 
     status: state.feedback.status,
-    answers: state.feedback.answers
+    answers: state.feedback.answers,
+    questions: state.feedback.questions
 
 })
 
