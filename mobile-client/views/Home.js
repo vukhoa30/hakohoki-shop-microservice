@@ -145,7 +145,9 @@ class Home extends Component {
 
         return (
             <Container>
-                <RNCarousel />
+                {
+                    !categoryMinimized && <RNCarousel />
+                }
                 <View style={{ padding: 5, backgroundColor: '#1B7887' }}>
                     {
                         <ScrollView style={{ width: '100%' }} horizontal={true} showsHorizontalScrollIndicator={false} >
