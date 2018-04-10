@@ -203,7 +203,7 @@ module.exports = {
   },
   AddNewProduct: (product) => {
     return new Promise((resolve, reject) => {
-      var newProduct = new models.Product(product);
+      var newProduct = new models.Product({...product, createdAt: new Date()});
       newProduct.save((err, rslt) => {
         if (err) reject(err);
         else resolve({ id: rslt._id });
@@ -215,7 +215,8 @@ module.exports = {
       var specificProducts = [];
       for (var i = 0; i < amount; i++) {
         specificProducts.push({
-          productId: id
+          productId: id,
+          createdAt: new Date()
         })
       }
       models.SpecificProduct

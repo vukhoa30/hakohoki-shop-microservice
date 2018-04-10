@@ -47,6 +47,7 @@ module.exports = {
         var rslt = await db.AddNotifications(notifications.map(n => {
           return {
             ...n,
+            createdAt: new Date(),
             productName: undefined,
             promotionName: undefined,
           }

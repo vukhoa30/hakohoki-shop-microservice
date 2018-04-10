@@ -32,7 +32,8 @@ module.exports = {
       var rslt = await db.CreateBill({
         seller: authentication.accountId,
         buyer: req.body.buyer,
-        specificProducts: req.body.specificProducts
+        specificProducts: req.body.specificProducts,
+        createdAt: new Date()
       });
       await msgBroker.requestUpdateSpecificsStatus(
         req.body.specificProducts.map(p => p.id))

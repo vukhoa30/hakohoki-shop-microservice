@@ -37,7 +37,8 @@ module.exports = {
         accountId: authentication.accountId,
         productId: req.body.productId,
         parentId: req.body.parentId,
-        reviewScore: req.body.reviewScore
+        reviewScore: req.body.reviewScore,
+        createdAt: new Date()
       })
 
       var products = await msgBroker.requestGetProducts([req.body.productId])
