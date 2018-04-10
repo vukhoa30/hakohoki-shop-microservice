@@ -7,7 +7,8 @@ module.exports = (mongoose) => {
       type: String,
       productId: mongoose.Schema.ObjectId,
       promotionId: Number,
-      amount: Number
+      amount: Number,
+      commentId: mongoose.Schema.ObjectId
     })
   }
 }

@@ -49,7 +49,8 @@ module.exports = {
           type: 'commentReplied',
           accountId,
           productId: req.body.productId,
-          productName
+          productName,
+          commentId: req.body.parentId
         }])
       }
       else {
