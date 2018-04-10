@@ -104,7 +104,7 @@ module.exports = (server, db) => {
 
   return wsProxy;*/
 
-  var io = require('socket.io')(server);
+  var io = require('socket.io')(server, { pingTimeout: 30000, pingInterval: 30000 });
   clientSockets = [];
 
   io.on('connection', (socket) => {
