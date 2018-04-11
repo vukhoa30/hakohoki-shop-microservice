@@ -29,7 +29,8 @@ module.exports = {
       .where({ account_id })
       .offset(offset)
       .limit(limit)
-      .then(rows => { resolve(rows.map(r => r.product_id)) })
+      .then(rows => { 
+        console.log(rows);resolve(rows.map(r => r.product_id)) })
       .catch(e => { reject(e) })
     })
   },

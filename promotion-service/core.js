@@ -69,7 +69,7 @@ module.exports = {
       res.json({ok: true})
     } catch (e) { return catchError(res, e) }
   },
-  cacheCurrentPromotion: (req, res, next) => {
+  cacheCurrentPromotions: (req, res, next) => {
     client.get(CACHE_CURRENT_PROMOTION, (err, data) => {
       if (data != null) {
         console.log('cache taken')
@@ -79,12 +79,26 @@ module.exports = {
       }
     })
   },
-  getCurrentPromotion: (req, res) => {
-    db.GetCurrentPromotion()
+  getCurrentPromotions: (req, res) => {
+    db.GetCurrentPromotions()
     .then(async rslt => {
-      rslt.products = await msgBroker.requestGetProducts(rslt.products.map(p => p.id))
+      var { promotions, products } = rslt
+      console.log(products)
+      var productsInfo = await msgBroker.requestGetProducts(rslt.products.map(p => p.product_id))
+      console.log(productsInfo)
+      promotions.forEach(p => { p.products = [] });
+
+      productsInfo.forEach(p => {
+        var idx = promotions.findIndex(e => {
+          var productFinder = products.find(i => 
+            p._id.toString() == i.product_id.toString())
+          return productFinder.promotion_id === e.id
+        })
+        promotions[idx].products.push(p)
+      })
+
       client.setex(CACHE_CURRENT_PROMOTION, 10, JSON.stringify(rslt));
-      res.json(rslt);
+      res.json(promotions);
     })
     .catch(e => catchError(res, e))
   },

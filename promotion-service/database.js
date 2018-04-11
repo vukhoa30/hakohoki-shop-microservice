@@ -8,7 +8,8 @@ module.exports = {
       .insert({
         start_at: promotion.start,
         end_at: promotion.end,
-        name: promotion.name
+        name: promotion.name,
+        poster_url: promotion.posterUrl
       })
       .returning('id')
       .then(id => {
@@ -24,33 +25,18 @@ module.exports = {
       .catch(e => { console.log(e);reject(e) });
     })
   },
-  GetCurrentPromotion: () => {
-    return new Promise((resolve, reject) => {
-      db({ a: 'promotions', b: 'products' })
-      .select({
-        aid: 'a.id',
-        bpromotion_id: 'b.promotion_id',
-        bproduct_id: 'b.product_id',
-        astart: 'a.start_at',
-        aend: 'a.end_at',
-        aname: 'a.name',
-        bnew_price: 'b.new_price'
-      })
-      .whereRaw('?? = ?? and CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??', 
-        [ 'a.id', 'b.promotion_id', 'a.start_at', 'a.end_at' ])
-      .then(rows => {
-        if (rows.length === 0) { resolve({ msg: 'No currently promotion.' }); }
-        else { resolve({
-          start: rows[0].astart,
-          end: rows[0].aend,
-          name: rows[0].aname,
-          products: rows.map(row => { return {
-            newPrice: row.bnew_price,
-            id: row.bproduct_id
-          }})
-        })}
-      })
-      .catch(e => { reject(e) })
+  GetCurrentPromotions: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var promotions = await db('promotions')
+          .whereRaw('CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??',
+            ['start_at', 'end_at'])
+        var products = await db('products')
+          .whereRaw('?? = any(?)',
+            ['promotion_id', promotions.map(p => p.id)])
+        
+        resolve({promotions, products})
+      } catch(e) { console.log(e); reject(e); }
     })
   },
   GetPromotionPrices: (ids) => {

@@ -17,9 +17,9 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/', core.cacheCurrentPromotion, core.getCurrentPromotion)
+app.get('/', core.cacheCurrentPromotions, core.getCurrentPromotions)
 
-app.post('/price', core.getNewPrices)
+//app.post('/price', core.getNewPrices)
 app.post('/', core.createPromotion)
 
 //Message response listener
