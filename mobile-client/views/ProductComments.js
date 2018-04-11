@@ -64,7 +64,7 @@ class ProductComments extends Component {
                 </List>
                 {
                     isLoggedIn ?
-                        <SendComment /> :
+                        <SendComment productId={productId} /> :
                         <Button danger style={{ alignSelf: 'center', marginVertical: 10 }} onPress={() => logOut()} ><AppText>Log in to comment</AppText></Button>
                 }
                 <Content>

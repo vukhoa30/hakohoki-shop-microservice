@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Platform, ScrollView, View, Image, Text, StyleSheet } from "react-native";
+import { Platform, ScrollView, View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Container, Header, Title, Content, Button, Icon, Right, Body, Left, Picker, Form, Item, Spinner, Input } from "native-base";
 import { connect } from 'react-redux'
 import { loadProductList, loadCategories } from '../presenters'
@@ -8,32 +8,7 @@ import AppText from './components/AppText'
 import AppIconButton from './components/AppIconButton'
 import ProductList from './ProductList'
 import { alert } from "../utils";
-var Carousel = require('react-native-carousel');
-
-var RNCarousel = () => (
-    <Carousel width={200} >
-        <View style={styles.container}>
-            <Image source={{ uri: 'https://vidientuvtcpay.files.wordpress.com/2016/02/km.png?w=750' }} style={{ width: '100%', height: 200, resizeMode: 'stretch' }} />
-        </View>
-        <View style={styles.container}>
-            <Image source={{ uri: 'http://deton.chiliweb.org/wp-content/uploads/2015/12/khuyen-mai-bep.png' }} style={{ width: '100%', height: 200, resizeMode: 'stretch' }} />
-        </View>
-        <View style={styles.container}>
-            <Image source={{ uri: 'http://s2.webbnc.vn/uploadv2/web/52/5283/news/2016/12/27/09/10/1482829335_open.png' }} style={{ width: '100%', height: 200, resizeMode: 'stretch' }} />
-        </View>
-    </Carousel>
-)
-
-var styles = StyleSheet.create({
-    container: {
-        width: 375,
-        height: 100,
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-    },
-});
+import PromotionCarousel from './PromotionCarousel'
 
 const PickerItem = Picker.Item;
 class Home extends Component {
@@ -45,7 +20,7 @@ class Home extends Component {
 
         return {
 
-            headerLeft: <Image source={require('../resources/images/logoTitle.png')} style={{ width: 40, height: 40, resizeMode: 'stretch', marginLeft: 10 }} />,
+            headerLeft: <Image source={require('../resources/images/logo.png')} style={{ width: 40, height: 35, resizeMode: 'stretch', marginLeft: 10 }} />,
             headerTitle:
                 <SearchBar
                     onSubmitEditing={text => search(text.nativeEvent.text)}
@@ -146,9 +121,9 @@ class Home extends Component {
         return (
             <Container>
                 {
-                    !categoryMinimized && <RNCarousel />
+                    !categoryMinimized && <PromotionCarousel />
                 }
-                <View style={{ padding: 5, backgroundColor: '#1B7887' }}>
+                <View style={{ padding: 5, backgroundColor: 'black' }}>
                     {
                         <ScrollView style={{ width: '100%' }} horizontal={true} showsHorizontalScrollIndicator={false} >
                             <AppIconButton smallSize={categoryMinimized} name='md-aperture' buttonName='Latest' color='white' selected={selectedCategory === 'Latest'} onPress={() => selectedCategory !== 'Latest' && this.selectCategory('Latest')} />

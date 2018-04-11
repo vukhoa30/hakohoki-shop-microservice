@@ -27,6 +27,10 @@ import {
     REMOVE_FROM_CART,
     REMOVE_ALL,
 
+    PROMOTION_LOADING,
+    PROMOTION_LOADING_FAILED,
+    PROMOTION_LOADED,
+
     SAVE_TO_BUFFER,
 
     WATCH_LIST_LOADING
@@ -53,19 +57,26 @@ function connectToServer(accountId) {
                 dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'CONNECTED' }))
             }
 
-        }, (data) => {
-
-            console.log(data)
-            dispatch(getAction(APPEND_NOTIFICATION, { data }))
-
-
         }, () => {
-
-            console.log('Disconnected')
+            console.log('Connection timeout')
             dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'NOT_CONNECTED' }))
-            socket = null
+        }, () => {
+            console.log('Connection error')
+            dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'NOT_CONNECTED' }))
+        },
+            (data) => {
 
-        })
+                console.log(data)
+                dispatch(getAction(APPEND_NOTIFICATION, { data }))
+
+
+            }, () => {
+
+                console.log('Disconnected')
+                dispatch(getAction(CONNECTION_STATUS_SETTING, { connectionStatus: 'NOT_CONNECTED' }))
+                socket = null
+
+            })
 
 
     }
@@ -483,7 +494,7 @@ function sendReview(values) {
         let err = `Undefined error, try again later!`
         const content = values.review
         const reviewScore = this.state.starCount
-        const { productId, logOut, token, loadProductFeedback, reviewProduct } = this.props
+        const { productId, logOut, token, loadProductFeedback, loadProductInformation, reviewProduct } = this.props
         try {
 
             const response = await request('/comments', 'POST', { Authorization: 'JWT ' + token }, { productId, content, reviewScore })
@@ -492,6 +503,7 @@ function sendReview(values) {
             switch (status) {
                 case 200:
                     loadProductFeedback(productId)
+                    loadProductInformation(productId, token)
                     reviewProduct()
                     return resolve()
                 case 401:
@@ -791,7 +803,7 @@ function makeNotificationAsRead(token, notificationId) {
 
 }
 
-function viewAnswers(productId, commentId){
+function viewAnswers(productId, commentId) {
 
     return async dispatch => {
 
@@ -802,6 +814,30 @@ function viewAnswers(productId, commentId){
 
     }
 
+
+}
+
+function loadPromotion() {
+
+    return async dispatch => {
+
+        dispatch(getAction(PROMOTION_LOADING))
+
+        try {
+            const response = await request('/promotions', 'GET', {})
+            const { status, data } = response
+
+            if (status === 200)
+                return dispatch(getAction(PROMOTION_LOADED, { list: [{ ...data, mainPicture: data.products[0].mainPicture }] }))
+
+        } catch (error) {
+
+            console.log(error)
+
+        }
+
+        dispatch(getAction(PROMOTION_LOADING_FAILED))
+    }
 
 }
 
@@ -832,6 +868,7 @@ module.exports = {
     removeFromWatchlist,
     makeNotificationAsRead,
     loadNotifications,
-    viewAnswers
+    viewAnswers,
+    loadPromotion
 
 }

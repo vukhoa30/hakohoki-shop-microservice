@@ -7,6 +7,7 @@ import cart from './cart'
 import feedback from './feedback'
 import watchList from './watch-list'
 import notification from './notification'
+import promotion from './promotion'
 import { reducer as form } from 'redux-form';
 
 const appReducer = combineReducers({
@@ -18,7 +19,8 @@ const appReducer = combineReducers({
     cart,
     form,
     feedback,
-    watchList
+    watchList,
+    promotion
 });
 
 export default appReducer

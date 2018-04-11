@@ -43,7 +43,7 @@ const ProductDetail = TabNavigator(
             },
             inactiveTintColor: 'white',
             style: {
-                backgroundColor: '#1B7887'
+                backgroundColor: 'blue'
             }
         }
     }
@@ -136,7 +136,7 @@ const Account = TabNavigator(
             },
             inactiveTintColor: 'white',
             style: {
-                backgroundColor: '#1B7887'
+                backgroundColor: 'blue'
             }
         }
     }
@@ -148,7 +148,7 @@ const rootNavigator = StackNavigator({
         screen: mainNavigator,
         navigationOptions: {
             headerStyle: {
-                backgroundColor: '#1B7887',
+                backgroundColor: 'blue',
                 elevation: 0,
                 shadowOpacity: 0
             },
@@ -160,7 +160,7 @@ const rootNavigator = StackNavigator({
         navigationOptions: {
             title: 'Account',
             headerStyle: {
-                backgroundColor: '#1B7887',
+                backgroundColor: 'blue',
                 elevation: 0,
                 shadowOpacity: 0
             },
@@ -180,7 +180,7 @@ const rootNavigator = StackNavigator({
         navigationOptions: ({ navigation }) => ({
             title: 'Product detail',
             headerStyle: {
-                backgroundColor: '#1B7887',
+                backgroundColor: 'blue',
                 elevation: 0,
                 shadowOpacity: 0
             },
@@ -224,7 +224,7 @@ const rootNavigator = StackNavigator({
         navigationOptions: ({ navigation }) =>
             ({
                 headerStyle: {
-                    backgroundColor: '#1B7887',
+                    backgroundColor: 'blue',
                 },
                 headerTintColor: '#fff',
                 headerTitleStyle: {

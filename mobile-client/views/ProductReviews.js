@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { View } from 'react-native'
 import { Field, reduxForm } from "redux-form"
 import StarRating from 'react-native-star-rating'
-import { loadProductFeedback, sendReview, logOut, reviewProduct } from '../presenters'
+import { loadProductFeedback, sendReview, logOut, reviewProduct, loadProductInformation } from '../presenters'
 import { Container, Content, Spinner, Button, Card, CardItem, Icon, Grid, Col, Body, List, ListItem, Left, Right, Thumbnail, Form, Item, Input } from 'native-base'
 import ProgressBar from 'react-native-progress/Bar'
 import AppText from './components/AppText'
@@ -252,7 +252,8 @@ const mapDispatchToProps = (dispatch) => ({
 
     loadProductFeedback: (productId) => dispatch(loadProductFeedback(productId)),
     logOut: () => dispatch(logOut()),
-    reviewProduct: () => dispatch(reviewProduct())
+    reviewProduct: () => dispatch(reviewProduct()),
+    loadProductInformation: (productId, token) => dispatch(loadProductInformation(productId, token))
 
 })
 
