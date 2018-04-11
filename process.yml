@@ -32,3 +32,6 @@ apps:
   - name  : 'sms'
     script: ./sms-service/connection/server.js
     watch : true
+  - name  : 'cart'
+    script: ./cart-service/connection/server.js
+    watch : true

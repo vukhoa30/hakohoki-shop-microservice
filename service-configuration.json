@@ -90,5 +90,14 @@
       "address": {
         "local": "http://localhost:7009"
       }
+    },
+    "CART_SERVICE": {
+      "address": {
+        "local": "http://localhost:7010"
+      },
+      "databse": {
+        "type": "postgres",
+        "address": "postgres://wlgrkbrf:3L-Yr_EdlnwGEkVWcGgD4T5k0D-rfJz1@baasu.db.elephantsql.com:5432/wlgrkbrf"
+      }
     }
 }

@@ -33,5 +33,9 @@ module.exports = [{
     type: 'api',
     clientUrl: '/bills',
     serviceUrl: 'http://localhost:7008'
+  }, {
+    type: 'api',
+    clientUrl: '/carts',
+    serviceUrl: 'http://localhost:7010'
   }
 ]
