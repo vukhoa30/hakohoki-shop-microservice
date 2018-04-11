@@ -5,11 +5,13 @@ import AppText from "./AppText"
 class AppIconButton extends Component {
     state = {}
     render() {
-        const { buttonName } = this.props
+        const { buttonName, color, selected, smallSize } = this.props
         return (
-            <View style={{ flex: 1, padding: 20, justifyContent: 'center', alignItems: 'center' }}>
-                <Icon {...this.props} style={{ fontSize: 50 }} />
-                <AppText small>{buttonName}</AppText>
+            <View style={[{ flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center', marginRight: 10 }]} >
+                <Icon {...this.props} style={{ fontSize: smallSize ? 20 : 50, color: selected ? 'red' : color ? color : 'black' }} />
+                {
+                    !smallSize && <AppText small color={selected ? 'red' : color} >{buttonName}</AppText>
+                }
             </View>
         );
     }

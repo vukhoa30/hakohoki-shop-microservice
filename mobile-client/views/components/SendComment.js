@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import { View } from 'react-native'
-import { sendComment, logOut, loadProductFeedback } from '../../presenters'
+import { sendComment, logOut, loadProductFeedback } from '../../api'
 import { Container, Content, Button, Form, Spinner, Item, Input } from 'native-base'
 import AppText from './AppText'
 
@@ -37,8 +37,7 @@ class SendComment extends Component {
 
 const mapStateToProps = (state) => ({
 
-    token: state.user.token,
-    productId: state.product.productId
+    token: state.user.token
 
 })
 

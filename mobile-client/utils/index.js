@@ -3,18 +3,18 @@ import { stringify } from 'query-string'
 import { AlertAndroid, Alert, Platform } from 'react-native'
 import io from 'socket.io-client'
 
-function createSocketConnection(onConnect, onEvent, onDisconnect) {
+function createSocketConnection(onConnect, onTimeout, onError, onMessage, onDisconnect) {
 
-    const socket = io(gatewayAddress,{
+    const socket = io(gatewayAddress + '/notifications',{
         reconnection: false,
         timeout: 5000
 
     })
 
     socket.on('connect', onConnect)
-    socket.on('connect_timeout', () => console.log('Connection timeout'))
-    socket.on('connect_error', () => console.log('Connection error'))
-    socket.on('event', onEvent)
+    socket.on('connect_timeout', onTimeout)
+    socket.on('connect_error', onError)
+    socket.on('message', onMessage)
     socket.on('disconnect', onDisconnect)
 
     return socket
