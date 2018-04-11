@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import thunk from 'redux-thunk'
-import { reactNavigationReduxMiddleware } from './presenters/middleware'
-import AppNavigation from './views/AppNavigation'
-import Loading from './views/Loading'
-import appReducer from './models/states'
+import { reactNavigationReduxMiddleware } from './api/middleware'
+import AppNavigation from './views/screens/AppNavigation'
+import Loading from './views/screens/Loading'
+import appReducer from './reducers'
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux';
 import { createLogger } from 'redux-logger'

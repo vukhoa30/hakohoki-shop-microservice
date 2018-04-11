@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { View } from 'react-native'
-import { setCart, updateWatchList, logOut, loadWatchList, updateWatchListStateOfProduct } from '../../presenters'
+import { setCart, updateWatchList, logOut, loadWatchList, updateWatchListStateOfProduct } from '../../api'
 import { Container, Content, Button, Footer, FooterTab, Grid, Col, Icon, Spinner } from 'native-base'
 import AppText from './AppText'
 import { alert, confirm } from "../../utils";
