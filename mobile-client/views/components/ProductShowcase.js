@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Image, TouchableOpacity, View } from "react-native";
 import { Card, CardItem, Left, Body, Icon, Button, Right } from "native-base";
-import { currencyFormat } from "../../utils";
+import { currencyFormat, reduceString } from "../../utils";
 import AppText from './AppText'
 
 class ProductShowcase extends Component {
@@ -34,7 +34,7 @@ class ProductShowcase extends Component {
                     <CardItem>
                         <Left>
                             <Body>
-                                <AppText small style={{ fontWeight: 'bold', zIndex: 101 }}>{item.name}</AppText>
+                                <AppText small style={{ fontWeight: 'bold', zIndex: 101 }}>{reduceString(item.name)}</AppText>
                                 <AppText note small style={{ opacity: item.quantity > 0 ? 1 : 0 }}>Quantity: {item.quantity}</AppText>
                             </Body>
                         </Left>

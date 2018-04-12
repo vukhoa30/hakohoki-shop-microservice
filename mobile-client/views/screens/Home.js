@@ -1,176 +1,335 @@
 import React, { Component } from "react";
-import { Platform, ScrollView, View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Container, Header, Title, Content, Button, Icon, Right, Body, Left, Picker, Form, Item, Spinner, Input } from "native-base";
-import { connect } from 'react-redux'
-import { loadProductList, loadCategories } from '../../api'
+import {
+  Platform,
+  ScrollView,
+  View,
+  Image,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  Animated
+} from "react-native";
+import {
+  Container,
+  Header,
+  Title,
+  Content,
+  Button,
+  Icon,
+  Right,
+  Body,
+  Left,
+  Form,
+  Item,
+  Spinner,
+  Input,
+  List,
+  ListItem
+} from "native-base";
+import { connect } from "react-redux";
+import {
+  loadProductList,
+  loadCategories,
+  selectProduct,
+  loadPromotion
+} from "../../api";
 import { SearchBar } from "react-native-elements";
-import AppText from '../components/AppText'
-import AppIconButton from '../components/AppIconButton'
-import ProductList from '../components/ProductList'
+import AppText from "../components/AppText";
+import AppIconButton from "../components/AppIconButton";
+import ProductShowcase from "../components/ProductShowcase";
 import { alert } from "../../utils";
-import PromotionCarousel from '../components/PromotionCarousel'
+import PromotionCarousel from "../components/Carousel";
 
-const PickerItem = Picker.Item;
+const { width, height } = Dimensions.get("window");
+
 class Home extends Component {
+  static navigationOptions = ({ navigation }) => {
+    const params = navigation.state.params || {};
+    const { search, category } = params;
 
-    static navigationOptions = ({ navigation }) => {
+    return {
+      header: null
+    };
+  };
 
-        const params = navigation.state.params || {}
-        const { search, category } = params
+  constructor(props) {
+    super(props);
+    this.state = {
+      searchBarHeight: 0,
+      firstLoad: true,
+      categoryStatus: "LOADING",
+      categories: [],
+      latestProductStatus: "LOADING",
+      latestProductList: [],
+      fadingBanner: false,
+      fadingOffset: 150,
+      //opacity: new Animated.Value(0)
+    };
+  }
 
-        return {
-
-            headerLeft: <Image source={require('../../resources/images/logo.png')} style={{ width: 40, height: 35, resizeMode: 'stretch', marginLeft: 10 }} />,
-            headerTitle:
-                <SearchBar
-                    onSubmitEditing={text => search(text.nativeEvent.text)}
-                    containerStyle={{ width: '100%', backgroundColor: 'transparent' }}
-                    inputStyle={{ backgroundColor: 'white' }}
-                    lightTheme
-                    placeholder={category ? category : 'Search for product'} />
-
-        }
-
+  componentDidMount() {
+    if (this.state.firstLoad) {
+      this.setState({ firstLoad: false });
+      this.loadCategories();
+      this.loadLatestProducts();
     }
+  }
 
-    constructor(props) {
-        super(props)
-        this.state = {
-            firstLoad: true,
-            selectedCategory: 'none',
-            categories: [],
-            categoryStatus: 'LOADING',
-            productStatus: 'LOADING',
-            list: [],
-            categoryMinimized: false
-        }
+  async loadLatestProducts() {
+    let offset = 0,
+      limit = 10;
+    this.setState({ latestProductStatus: "LOADING" });
+    const result = await loadProductList({ category: "Latest" }, offset, limit);
+
+    if (result.ok)
+      this.setState({
+        latestProductStatus: "LOADED",
+        latestProductList: result.data
+      });
+    else this.setState({ latestProductStatus: "LOADING_FAILED" });
+  }
+
+  async selectCategory(category) {
+    this.props.navigation.navigate("Catalog", { category });
+  }
+
+  async loadCategories() {
+    this.setState({ categoryStatus: "LOADING" });
+    const result = await loadCategories();
+
+    if (result.ok) {
+      this.setState({
+        categoryStatus: "LOADED",
+        categories: result.list
+      });
+    } else {
+      this.setState({ categoryStatus: "LOADING_FAILED" });
     }
+  }
 
+  // changeCategoryPosition(isFixed = false) {
+  //   let initValue = isFixed ? 0 : 1,
+  //     finalValue = isFixed ? 1 : 0;
 
-    componentWillMount() {
-        this.props.navigation.setParams({ search: this.search.bind(this) })
-    }
+  //   this.state.opacity.setValue(initValue);
 
-    componentDidMount() {
+  //   Animated.timing(this.state.opacity, {
+  //     toValue: finalValue,
+  //     duration: 300
+  //   }).start();
+  // }
 
-        if (this.state.firstLoad) {
-            this.setState({ firstLoad: false })
-            this.loadCategories()
-            this.selectCategory('Latest')
-        }
+  render() {
+    const {
+      categoryStatus,
+      categories,
+      latestProductStatus,
+      latestProductList,
+      fadingBanner
+    } = this.state;
 
-    }
+    const {
+      selectProduct,
+      navigation,
+      promotionStatus,
+      promotionList,
+      loadPromotion
+    } = this.props;
 
-    async search(keyWords) {
-
-        if (this.state.selectedCategory === 'none') return alert('Error', 'Please select a category')
-        const { selectedCategory: category } = this.state
-        const q = keyWords === '' ? undefined : keyWords
-        this.setState({ productStatus: 'LOADING', list: [], q })
-        const result = await loadProductList({ q, category }, 0, 10)
-
-        if (result.ok)
-            this.setState({ productStatus: 'LOADED', list: this.state.list.concat(result.data) })
-        else
-            this.setState({ productStatus: 'LOADING_FAILED' })
-
-    }
-
-    async loadCategories() {
-
-        this.setState({ categoryStatus: 'LOADING' })
-        const result = await loadCategories()
-
-        if (result.ok) {
-            this.setState({
-                categoryStatus: 'LOADED', categories: result.list
-            })
-        } else {
-            this.setState({ categoryStatus: 'LOADING_FAILED' })
-        }
-
-    }
-
-    async selectCategory(category) {
-
-        let offset = 0, limit = 10
-        if (this.state.selectedCategory === category) {
-            offset = this.state.list.length
-            this.setState({ selectedCategory: category, productStatus: 'LOADING' })
-        }
-        else {
-
-            this.props.navigation.setParams({ category })
-            this.setState({ selectedCategory: category, productStatus: 'LOADING', list: [], q: undefined })
-
-        }
-
-        const result = await loadProductList({ category, q: this.state.q }, offset, limit)
-
-        if (result.ok)
-            this.setState({ productStatus: 'LOADED', list: this.state.list.concat(result.data) })
-        else
-            this.setState({ productStatus: 'LOADING_FAILED' })
-
-
-    }
-
-
-    render() {
-        const { categoryStatus, categories, productStatus, list, selectedCategory, categoryMinimized } = this.state
-
-        return (
-            <Container>
-                <PromotionCarousel isHide={categoryMinimized} />
-                <View style={{ padding: 5, backgroundColor: 'black' }}>
-                    {
-                        <ScrollView style={{ width: '100%' }} horizontal={true} showsHorizontalScrollIndicator={false} >
-                            <AppIconButton smallSize={categoryMinimized} name='md-aperture' buttonName='Latest' color='white' selected={selectedCategory === 'Latest'} onPress={() => selectedCategory !== 'Latest' && this.selectCategory('Latest')} />
-                            <AppIconButton smallSize={categoryMinimized} name='md-apps' buttonName='All' color='white' selected={selectedCategory === 'All'} onPress={() => selectedCategory !== 'All' && this.selectCategory('All')} />
-                            {
-                                categoryStatus === 'LOADING' &&
-                                <Spinner style={{ marginLeft: 100 }} />
-                            }
-                            {
-                                categoryStatus === 'LOADING_FAILED' &&
-                                <AppText color='yellow' center small onPress={() => this.selectCategory(selectedCategory)}>Could not load categories! Tap to try again</AppText>
-                            }
-                            {
-                                categoryStatus === 'LOADED' &&
-                                categories.map(category => <AppIconButton key={'category-' + category.name} smallSize={categoryMinimized} name={category.icon} buttonName={category.name} color='white' selected={selectedCategory === category.name} onPress={() => selectedCategory !== category.name && this.selectCategory(category.name)} />)
-                            }
-                        </ScrollView>
-                    }
-                </View>
-                <Content onScroll={({ nativeEvent }) => {
-
-                    const { contentOffset } = nativeEvent
-                    let categoryMinimized = true
-                    if (contentOffset.y === 0) categoryMinimized = false
-                    if (this.state.categoryMinimized !== categoryMinimized) this.setState({ categoryMinimized })
-
-                }} >
-                    {
-                        selectedCategory === 'none' ?
-                            <AppText center note style={{ marginVertical: 50 }} >SELECT A CATEGORY TO SEE PRODUCT LIST</AppText> :
-                            <ProductList status={productStatus} list={list} load={() => this.selectCategory(selectedCategory)} />
-                    }
-                </Content>
-            </Container>
-        );
-    }
+    return (
+      <Container>
+        {/* <Animated.View
+          style={{
+            backgroundColor: "black",
+            position: "absolute",
+            top: this.state.searchBarHeight,
+            width,
+            zIndex: 100,
+            opacity: this.state.opacity
+          }}
+        >
+          {
+            <ScrollView
+              style={{ width: "100%" }}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            >
+              <AppIconButton
+                name="md-apps"
+                buttonName="All"
+                color="white"
+                onPress={() => this.selectCategory("All")}
+              />
+              {categoryStatus === "LOADING" && (
+                <Spinner style={{ marginLeft: 100 }} />
+              )}
+              {categoryStatus === "LOADING_FAILED" && (
+                <AppText
+                  color="yellow"
+                  center
+                  small
+                  onPress={() => this.loadCategories()}
+                >
+                  Could not load categories! Tap to try again
+                </AppText>
+              )}
+              {categoryStatus === "LOADED" &&
+                categories.map(category => (
+                  <AppIconButton
+                    key={"mini-category-" + category.name}
+                    name={category.icon}
+                    buttonName={category.name}
+                    color="white"
+                    onPress={() => this.selectCategory(category.name)}
+                  />
+                ))}
+            </ScrollView>
+          }
+        </Animated.View> */}
+        <Content
+          onScroll={({ nativeEvent }) => {
+            const { contentOffset } = nativeEvent;
+            let fadingBanner = true;
+            if (contentOffset.y < this.state.fadingOffset) {
+              fadingBanner = false;
+            }
+            if (this.state.fadingBanner !== fadingBanner) {
+              this.setState({ fadingBanner });
+            }
+          }}
+        >
+          <SearchBar
+            onLayout={e =>
+              this.setState({
+                searchBarHeight: e.nativeEvent.layout.height + 13
+              })
+            }
+            containerStyle={{
+              position: "absolute",
+              paddingBottom: 0,
+              zIndex: 100,
+              top: 0,
+              backgroundColor: "transparent",
+              width: width,
+              borderBottomWidth: 0
+            }}
+            lightTheme
+            inputStyle={{ backgroundColor: "white" }}
+            placeholder="Searching for product"
+            onTouchStart={() => navigation.navigate("Search")}
+          />
+          <PromotionCarousel
+            navigation={navigation}
+            isHide={fadingBanner}
+            list={promotionList}
+            status={promotionStatus}
+            load={() => loadPromotion()}
+          />
+          <View
+            style={{
+              backgroundColor: "black"
+            }}
+          >
+            {
+              <ScrollView
+                style={{ width: "100%" }}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                <AppIconButton
+                  name="md-apps"
+                  buttonName="All"
+                  color="white"
+                  onPress={() => this.selectCategory("All")}
+                />
+                {categoryStatus === "LOADING" && (
+                  <Spinner style={{ marginLeft: 100 }} />
+                )}
+                {categoryStatus === "LOADING_FAILED" && (
+                  <AppText
+                    color="yellow"
+                    center
+                    small
+                    onPress={() => this.loadCategories()}
+                  >
+                    Could not load categories! Tap to try again
+                  </AppText>
+                )}
+                {categoryStatus === "LOADED" &&
+                  categories.map(category => (
+                    <AppIconButton
+                      key={"category-" + category.name}
+                      name={category.icon}
+                      buttonName={category.name}
+                      color="white"
+                      onPress={() => this.selectCategory(category.name)}
+                    />
+                  ))}
+              </ScrollView>
+            }
+          </View>
+          <View
+            style={{
+              width: "100%",
+              height: 500
+            }}
+          >
+            <List style={{ marginBottom: 5 }}>
+              <ListItem itemHeader first>
+                <Body>
+                  <AppText note>LATEST PRODUCT</AppText>
+                </Body>
+                <Right>
+                  <AppText
+                    note
+                    small
+                    onPress={() => this.selectCategory("Latest")}
+                  >
+                    See all ...
+                  </AppText>
+                </Right>
+              </ListItem>
+            </List>
+            {latestProductStatus === "LOADING" && (
+              <Spinner style={{ alignSelf: "center" }} />
+            )}
+            {latestProductStatus === "LOADING_FAILED" && (
+              <AppText
+                color="red"
+                center
+                onPress={() => this.loadLatestProducts()}
+              >
+                Tap to load again
+              </AppText>
+            )}
+            {latestProductStatus === "LOADED" && (
+              <ScrollView horizontal={true} style={{ width: "100%" }}>
+                {latestProductList.map(product => (
+                  <View key={product._id} style={{ width: width / 2 }}>
+                    <ProductShowcase
+                      onSelected={productId => selectProduct(productId)}
+                      item={product}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </Content>
+      </Container>
+    );
+  }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
+  promotionStatus: state.promotion.status,
+  promotionList: state.promotion.list
+});
 
+const mapDispatchToProps = dispatch => ({
+  selectProduct: productId => dispatch(selectProduct(productId)),
+  loadPromotion: () => dispatch(loadPromotion())
+});
 
-
-
-})
-
-const mapDispatchToProps = (dispatch) => ({
-
-
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Home)
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
