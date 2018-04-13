@@ -64,7 +64,11 @@ class Notification extends Component {
 
         return (
             <Body>
-                <TouchableOpacity onPress={() => callback() && !notification.read && makeNotificationAsRead(token, notification._id)} >
+                <TouchableOpacity onPress={() => {
+                    callback()
+                    if (!notification.read)
+                        makeNotificationAsRead(token,notification._id)
+                }}>
                     <View style={{ flexDirection: 'row' }} >
                         <Icon name='ios-notifications' style={{ color: 'orange' }} />
                         <AppText style={notification.read ? {} : { fontWeight: 'bold' }}>{title}</AppText>

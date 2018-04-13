@@ -22,7 +22,7 @@ import NumberPicker from "../components/NumberPicker";
 import { currencyFormat, confirm } from "../../utils";
 import { reduce } from "lodash";
 
-const { width, height } = Dimensions.get('window')
+const { width, height } = Dimensions.get("window");
 
 class Cart extends Component {
   constructor(props) {
@@ -47,7 +47,8 @@ class Cart extends Component {
                 alignItems: "center",
                 justifyContent: "center",
                 width,
-                height: height - 50
+                height: height - 50,
+                zIndex: 100,
               }}
             >
               <Spinner />
@@ -97,7 +98,7 @@ class Cart extends Component {
                           `Are you sure to remove product "${
                             product.name
                           }" from your cart?`,
-                          () => setCart(product, "REMOVE")
+                          () => setCart(token, product, "REMOVE")
                         );
                       }}
                     />

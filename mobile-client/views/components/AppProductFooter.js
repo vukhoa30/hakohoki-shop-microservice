@@ -20,6 +20,7 @@ import {
   Spinner
 } from "native-base";
 import AppText from "./AppText";
+import NumberPicker from "./NumberPicker";
 import { alert, confirm } from "../../utils";
 
 class AppProductFooter extends Component {
@@ -45,15 +46,21 @@ class AppProductFooter extends Component {
 
     return (
       <Footer>
+        <NumberPicker
+          product={product}
+          isVisible={this.state.showPickerDialog}
+          closeDialog={() => this.setState({ showPickerDialog: false })}
+          submit={number =>
+            setCart(
+              token,
+              product,
+              productQuantityInCart > 1 ? "UPDATE" : "ADD",
+              number + productQuantityInCart
+            )
+          }
+        />
         <FooterTab>
           <View style={{ width: "100%" }}>
-            <NumberPicker
-              initNumber={productQuantityInCart}
-              product={product}
-              isVisible={this.state.showPickerDialog}
-              closeDialog={() => this.setState({ showPickerDialog: false })}
-              submit={number => setCart(product, productQuantityInCart > 0 ? 'ADD': 'UPDATE',number)}
-            />
             <Grid>
               <Col>
                 <Button
@@ -64,7 +71,13 @@ class AppProductFooter extends Component {
                   iconLeft
                   style={{ flexDirection: "row" }}
                   onPress={() => {
-                    this.setState({ showPickerDialog: true })
+                    if (productQuantityInCart > 1)
+                      confirm(
+                        "Product existed",
+                        `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
+                        () => this.setState({ showPickerDialog: true })
+                      );
+                    else this.setState({ showPickerDialog: true });
                   }}
                 >
                   {cartStatus === "LOADING" ? <Spinner /> : <Icon name="add" />}

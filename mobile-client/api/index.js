@@ -142,6 +142,7 @@ function loadUserInfo() {
 function logIn(token, account) {
   return dispatch => {
     dispatch(connectToServer(account.accountId));
+    dispatch(loadNotifications(token))
     dispatch(getAction(USER_LOG_IN, { token, account }));
   };
 }
@@ -559,22 +560,19 @@ async function loadAnswers(productId, parentId) {
   this.setState({ status: "LOADED" });
 }
 
-function loadCart(token){
-
+function loadCart(token) {
   return async dispatch => {
-
     try {
-      dispatch(getAction(CART_LOADING))
-      const { status, data } = await request('/carts','GET',{ Authorization: 'JWT ' + token })
-      if (status === 200) return dispatch(getAction(FINISH_LOADING_CART, { list: data }))
-    } catch (error) {
-      
-    }
+      dispatch(getAction(CART_LOADING));
+      const { status, data } = await request("/carts", "GET", {
+        Authorization: "JWT " + token
+      });
+      if (status === 200)
+        return dispatch(getAction(FINISH_LOADING_CART, { list: data }));
+    } catch (error) {}
 
-    dispatch(getAction(FINISH_LOADING_CART))
-
-  }
-
+    dispatch(getAction(FINISH_LOADING_CART));
+  };
 }
 
 function setCart(token, product, type, amount) {
@@ -592,21 +590,31 @@ function setCart(token, product, type, amount) {
         amount
       };
       if (token === null)
-        return dispatch(
-          getAction(actionKey, { productId: product._id, number: amount })
+        dispatch(
+          getAction(actionKey, {
+            productId: product._id,
+            number: amount,
+            data: product
+          })
         );
-      const { status, data } = await request(
-        "/carts",
-        method,
-        { Authorization: "JWT " + token },
-        data
-      );
-      if (status === 200)
-        return dispatch(
-          getAction(actionKey, { productId: product._id, number: amount })
+      else {
+        const { status } = await request(
+          "/carts",
+          method,
+          { Authorization: "JWT " + token },
+          data
         );
+        if (status === 200)
+          dispatch(
+            getAction(actionKey, {
+              productId: product._id,
+              number: amount,
+              data: product
+            })
+          );
+      }
     } catch (error) {}
-    return dispatch(getAction(FINISH_LOADING_CART));
+    dispatch(getAction(FINISH_LOADING_CART));
   };
 }
 

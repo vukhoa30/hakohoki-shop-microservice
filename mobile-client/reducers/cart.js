@@ -9,13 +9,13 @@ import {
 import { remove } from "lodash";
 
 const initialState = {
-  status: "LOADING",
+  status: "LOADED",
   list: []
 };
 
 function reducer(state = initialState, action) {
   let nextState = state;
-  const { type, data, productId, number, list } = action;
+  const { type, data, productId, number, list, addMore } = action;
 
   switch (type) {
     case ADD_TO_CART:

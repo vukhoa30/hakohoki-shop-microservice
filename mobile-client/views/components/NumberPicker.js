@@ -9,15 +9,16 @@ class NumberPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      number: 0
+      number: 1
     };
   }
   componentWillReceiveProps(nextProps) {
+    if (!this.props.product) return
     if (
       this.props.product === null ||
       this.props.product._id !== nextProps.product._id
     ) {
-      this.setState({ number: this.props.initNumber ? this.props.initNumber : nextProps.product.amount });
+      this.setState({ number: nextProps.product.amount ? nextProps.product.amount : 1 });
     }
   }
 

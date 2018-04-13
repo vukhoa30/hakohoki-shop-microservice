@@ -139,63 +139,22 @@ class Home extends Component {
 
     return (
       <Container>
-        {/* <Animated.View
-          style={{
-            backgroundColor: "black",
-            position: "absolute",
-            top: this.state.searchBarHeight,
-            width,
-            zIndex: 100,
-            opacity: this.state.opacity
-          }}
-        >
-          {
-            <ScrollView
-              style={{ width: "100%" }}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            >
-              <AppIconButton
-                name="md-apps"
-                buttonName="All"
-                color="white"
-                onPress={() => this.selectCategory("All")}
-              />
-              {categoryStatus === "LOADING" && (
-                <Spinner style={{ marginLeft: 100 }} />
-              )}
-              {categoryStatus === "LOADING_FAILED" && (
-                <AppText
-                  color="yellow"
-                  center
-                  small
-                  onPress={() => this.loadCategories()}
-                >
-                  Could not load categories! Tap to try again
-                </AppText>
-              )}
-              {categoryStatus === "LOADED" &&
-                categories.map(category => (
-                  <AppIconButton
-                    key={"mini-category-" + category.name}
-                    name={category.icon}
-                    buttonName={category.name}
-                    color="white"
-                    onPress={() => this.selectCategory(category.name)}
-                  />
-                ))}
-            </ScrollView>
-          }
-        </Animated.View> */}
         <Content
           onScroll={({ nativeEvent }) => {
             const { contentOffset } = nativeEvent;
             let fadingBanner = true;
+            let categoryFixedMode = true
             if (contentOffset.y < this.state.fadingOffset) {
               fadingBanner = false;
             }
+            if (contentOffset.y < this.state.categoryOffset) {
+              categoryFixedMode = false;
+            }
             if (this.state.fadingBanner !== fadingBanner) {
               this.setState({ fadingBanner });
+            }
+            if (this.state.categoryFixedMode !== categoryFixedMode) {
+              this.setState({ categoryFixedMode });
             }
           }}
         >
