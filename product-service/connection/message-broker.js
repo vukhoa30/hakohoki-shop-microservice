@@ -113,5 +113,9 @@ module.exports = {
   },
   requestCheckReviewed: (accountAndProductId) => {
     return requestAmqp(accountAndProductId, 'checkReviewed')
+  },
+  responseGetPendingProducts: () => {
+    var core = require('../core')
+    responseAmqp(core.getPendingProducts, 'getPendingProducts')
   }
 }

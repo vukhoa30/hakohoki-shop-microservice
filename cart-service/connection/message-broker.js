@@ -62,5 +62,9 @@ module.exports = {
   },
   requestGetProducts: (productIds) => {
     return requestAmqp(productIds, 'getProducts')
+  },
+  responseClearCart: () => {
+    var core = require('../core')
+    responseAmqp(core.clearCart, 'clearCart')
   }
 }

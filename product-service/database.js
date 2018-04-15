@@ -368,5 +368,45 @@ module.exports = {
         resolve(months)
       } catch(e) {reject(e)}
     })
+  },
+  GetPendingProducts: (productIdsAndAmounts) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct.find({ 
+        productId: { $in: productIdsAndAmounts.map(
+          i => mongoose.Types.ObjectId(i.productId)) },
+        status: 'inStock'
+      })
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        var specifics = []
+        for (var i = 0; i < productIdsAndAmounts.length; i++) {
+          var matchedSpecifics = rslt.filter(r => 
+            r.productId.toString() == productIdsAndAmounts[i].productId.toString())
+          if (matchedSpecifics.length < productIdsAndAmounts[i].amount) {
+            return reject(false);
+          }
+          for (var j = 0; j < productIdsAndAmounts[i].amount; j++) {
+            specifics.push(matchedSpecifics[j])
+          }
+        }
+        models.SpecificProduct
+
+        .updateMany({ 
+          _id: {$in: specifics.map(s => s._id) }
+          }, { $set: {
+            status: 'pending'
+          } 
+        }, (err, rslt) => {
+          if (err) { return reject(err) }
+          else {
+            console.log('updated: ' + rslt.n + ' ' + rslt.nModified)
+            resolve(specifics.map(s => { return {
+              productId: s.productId,
+              specificId: s._id
+            }}))
+          }
+        })
+      })
+    })
   }
 }

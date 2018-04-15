@@ -17,7 +17,10 @@ app.use(morgan('combined'));
 //REST API ------------------------------------------------------------------
 app.get('/buyer', core.getBillsByBuyer)
 app.get('/time', core.getBillsByTime)
+app.get('/:billId', core.getBillById)
 app.post('/', core.createBill)
+app.post('/order', core.createPendingBill)
+app.put('/order', core.completeBill)
 //Running server-------------------------------------------------------------
 server.listen(port, function () {
     console.log('Bill service is listening at port %d', port);

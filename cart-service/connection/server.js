@@ -23,6 +23,7 @@ app.put('/', core.authenticateCustomer, core.updateAmount)
 app.delete('/', core.authenticateCustomer, core.removeFromCart)
 
 //response Amqp
+responseAmqp.responseClearCart()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

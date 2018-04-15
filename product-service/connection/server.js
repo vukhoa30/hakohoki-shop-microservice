@@ -44,6 +44,7 @@ app.put('/product', core.alterProduct)
 responseAmqp.responseGetProducts()
 responseAmqp.responseGetSpecificProducts()
 responseAmqp.responseUpdateSpecificsStatus()
+responseAmqp.responseGetPendingProducts()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {
