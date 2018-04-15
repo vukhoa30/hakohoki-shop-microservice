@@ -250,7 +250,7 @@ module.exports = {
       if (!authentication) { return catchUnauthorized(res) }
 
       var bills = await db.GetBillsByTime(
-        req.query.begin, req.query.end)
+        req.query.begin, req.query.end, req.query.status)
       var employeeIds = bills.map(b => b.seller)
       var employees = await msgBroker.requestGetEmployees(employeeIds)
       bills.forEach(b => { 

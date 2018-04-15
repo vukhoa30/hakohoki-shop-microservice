@@ -59,12 +59,14 @@ module.exports = {
       })
     })
   },
-  GetBillsByTime: (begin, end) => {
+  GetBillsByTime: (begin, end, status) => {
+    query = {}
+    if (begin && !end) { query.createdAt = {$gt: begin} }
+    if (!begin && end) { query.createdAt = {$lt: end} }
+    if (status) { query.status = status }
     return new Promise((resolve, reject) => {
       models.Bill
-      .find({
-        createdAt: {$lt: end, $gt: begin}
-      })
+      .find(query)
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else { resolve(parseRslt(rslt)) }
