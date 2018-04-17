@@ -45,6 +45,7 @@ responseAmqp.responseGetProducts()
 responseAmqp.responseGetSpecificProducts()
 responseAmqp.responseUpdateSpecificsStatus()
 responseAmqp.responseGetPendingProducts()
+responseAmqp.responseGetSpecificInfos()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

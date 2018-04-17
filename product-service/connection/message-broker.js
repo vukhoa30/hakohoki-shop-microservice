@@ -117,5 +117,9 @@ module.exports = {
   responseGetPendingProducts: () => {
     var core = require('../core')
     responseAmqp(core.getPendingProducts, 'getPendingProducts')
+  },
+  responseGetSpecificInfos: () => {
+    var core = require('../core')
+    responseAmqp(core.getSpecificInfos, 'getSpecificInfos')
   }
 }

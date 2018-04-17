@@ -8,6 +8,7 @@ var models =  require('./models')(mongoose);
 var parseRslt = (rslts) => { 
   return rslts.map(rslt => { 
     return {
+      _id: rslt._id,
       createdAt: rslt.createdAt,
       paymentMethod: rslt.paymentMethod,
       seller: rslt.seller,
@@ -45,15 +46,23 @@ module.exports = {
       })
     })
   },
-  GetBillsByBuyer: (buyer) => { // [ conditions ]
+  GetBills: (queryInput) => {
+    var limit = queryInput ? 0 : 100
     var query = {}
-    Object.keys(buyer).map(k => {
-      query[`buyer.${k}`] = buyer[`${k}`]
-    })
+    if (queryInput.billId) { query._id = queryInput.billId }
+    else {
+      if (queryInput.begin || queryInput.end) { query.createdAt = {} }
+      Object.keys(queryInput).map(k => {
+        if (k === 'begin') { query.createdAt.$gt = new Date(queryInput.begin) }
+        else if (k === 'end') { query.createdAt.$lt = new Date(queryInput.end) }
+        else if (k === 'status') { query.status = queryInput.status }
+        else { query[`buyer.${k}`] = queryInput[`${k}`] }
+      })
+    }
     return new Promise((resolve, reject) => {
       models.Bill
       .find(query)
-      .sort({ createdAt: -1 })
+      .limit(limit)
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else { resolve(parseRslt(rslt)) }
@@ -61,15 +70,16 @@ module.exports = {
     })
   },
   GetBillsByTime: (begin, end, status) => {
-    query = {}
-    if (begin && !end) { query.createdAt = {$gt: begin} }
-    if (!begin && end) { query.createdAt = {$lt: end} }
+    var query = { createdAt: {} }
+    if (begin) { query.createdAt.$gt = new Date(begin) }
+    if (end) { query.createdAt.$lt = new Date(end) }
     if (status) { query.status = status }
     return new Promise((resolve, reject) => {
       models.Bill
       .find(query)
       .sort({ createdAt: -1 })
       .exec((err, rslt) => {
+        console.log(rslt)
         if (err) { reject(err) }
         else { resolve(parseRslt(rslt)) }
       })

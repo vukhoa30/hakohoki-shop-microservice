@@ -408,5 +408,26 @@ module.exports = {
         })
       })
     })
+  },
+  GetSpecificProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct
+      .find({ _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))} })
+      .then(rslt => { resolve(rslt.map(r => { return {
+        specificId: r._id,
+        productId: r.productId,
+        status: r.status,
+        addedAt: r.addedAt
+      }})) })
+      .catch(err => { reject(err) })
+    })
+  },
+  GetProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.Product
+      .find({ _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))} })
+      .then(rslt => { resolve(parseRslt(rslt)) })
+      .catch(err => { reject(err) })
+    })
   }
 }

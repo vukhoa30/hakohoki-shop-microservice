@@ -217,7 +217,7 @@ module.exports = {
       }))
     } catch(e) { catchError(res, e) }
   },
-  getBillsByBuyer: async (req, res) => {
+  getBills: async (req, res) => {
     try {
       var token;
       if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
@@ -226,52 +226,44 @@ module.exports = {
       var authentication = await msgBroker.requestAuthenticateEmployee(token)
       if (!authentication) { return catchUnauthorized(res) }
 
-      var bills = await db.GetBillsByTime(
-        req.query.begin, req.query.end)
+      var bills
+      if (req.params.billId) {
+        bills = await db.GetBills(req.params)
+      } else {
+        bills = await db.GetBills(req.query)
+      }
+      if (bills.length < 1) {
+        throw 'data not found'
+      }
       var employeeIds = bills.map(b => b.seller)
       var employees = await msgBroker.requestGetEmployees(employeeIds)
-      var bills = await db.GetBillsByBuyer(req.query)
       var employeeIds = bills.map(b => b.seller)
       var employees = await msgBroker.requestGetEmployees(employeeIds)
+
+      var specificIds = [];
+      bills.forEach(b => {
+        specificIds = specificIds.concat(b.specificProducts.map(p => p.id))
+      })
+      var specificInfos = await msgBroker.requestGetSpecificInfos(specificIds)
+
       bills.forEach(b => { 
         var employee = employees.find(e => e.accountId === b.seller)
         b.seller = employee
-      })
-      res.json(bills)
-    } catch(e) { catchError(res, e) }
-  },
-  getBillsByTime: async (req, res) => {
-    try {
-      var token;
-      if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-        token = req.headers.authorization.split(' ')[1]
-      } else { return catchUnauthorized(res) }
-      var authentication = await msgBroker.requestAuthenticateEmployee(token)
-      if (!authentication) { return catchUnauthorized(res) }
 
-      var bills = await db.GetBillsByTime(
-        req.query.begin, req.query.end, req.query.status)
-      var employeeIds = bills.map(b => b.seller)
-      var employees = await msgBroker.requestGetEmployees(employeeIds)
-      bills.forEach(b => { 
-        var employee = employees.find(e => e.accountId === b.seller)
-        b.seller = employee
+        b.specificProducts.map(p => {
+          var finder = specificInfos.find(s => 
+            s.specificId.toString() == p.id.toString())
+          if (finder) {
+            p.productName = finder.productName
+            p.mainPicture = finder.mainPicture
+          }
+        })
       })
-      res.json(bills)
-    } catch(e) { catchError(res, e) }
-  },
-  getBillById: async (req, res) => {
-    try {
-      var token;
-      if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-        token = req.headers.authorization.split(' ')[1]
-      } else { return catchUnauthorized(res) }
-      var authentication = await msgBroker.requestAuthenticateEmployee(token)
-      if (!authentication) { return catchUnauthorized(res) }
 
-      var bill = await db.GetBillById(req.params.billId)
-      if (!bill) { catchError(res, 'data not found') }
-      res.json(bill)
+      if (req.params.billId) {
+        bills = bills[0]
+      }
+      res.json(bills)
     } catch(e) { catchError(res, e) }
   }
 }

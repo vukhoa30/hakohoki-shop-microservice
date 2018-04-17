@@ -381,5 +381,19 @@ module.exports = {
 
       return specifics
     } catch(e) { console.log(e); return false }
+  },
+  getSpecificInfos: async (specificIds) => {
+    try {
+      var specifics = await db.GetSpecificProductsByIds(specificIds)
+      var products = await db.GetProductsByIds(specifics.map(s => s.productId))
+      specifics.map(s => {
+        var finder = products.find(p => 
+          p._id.toString() == s.productId.toString())
+        s.productName = finder.name
+        s.mainPicture = finder.mainPicture
+        console.log(s)
+      })
+      return specifics
+    } catch(e) { console.log(e); return false }
   }
 }

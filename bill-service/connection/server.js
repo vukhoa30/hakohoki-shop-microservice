@@ -15,9 +15,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/buyer', core.getBillsByBuyer)
-app.get('/time', core.getBillsByTime)
-app.get('/:billId', core.getBillById)
+app.get('/', core.getBills)
+app.get('/:billId', core.getBills)
 app.post('/', core.createBill)
 app.post('/order', core.createPendingBill)
 app.put('/order', core.completeBill)

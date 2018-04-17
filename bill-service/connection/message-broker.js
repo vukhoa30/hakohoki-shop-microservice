@@ -82,5 +82,8 @@ module.exports = {
   },
   requestClearCart: (accountId) => {
     return requestAmqp(accountId, 'clearCart')
+  },
+  requestGetSpecificInfos: (specificIds) => {
+    return requestAmqp(specificIds, 'getSpecificInfos')
   }
 }
