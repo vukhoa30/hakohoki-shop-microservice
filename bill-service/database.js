@@ -53,6 +53,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       models.Bill
       .find(query)
+      .sort({ createdAt: -1 })
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else { resolve(parseRslt(rslt)) }
@@ -67,6 +68,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       models.Bill
       .find(query)
+      .sort({ createdAt: -1 })
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else { resolve(parseRslt(rslt)) }
@@ -87,16 +89,6 @@ module.exports = {
     return new Promise((resolve, reject) => {
       models.Bill
       .findOne({ specificProducts: {$elemMatch:{productId: id}} })
-      .exec((err, rslt) => {
-        if (err) { reject(err) }
-        else ( resolve(rslt) )
-      })
-    })
-  },
-  GetBillById: (billId) => {
-    return new Promise((resolve, reject) => {
-      models.Bill
-      .findOne({ _id: billId })
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else ( resolve(rslt) )
