@@ -1,10 +1,20 @@
 import { combineReducers } from "redux";
 import product from "./product"
 import { reducer as form } from 'redux-form'
+import toast from './toast'
+import app from './app'
+import user from './user'
+import bill from './bill'
+import { routerReducer as router } from 'react-router-redux'
 
 export default combineReducers({
 
     product,
-    form
+    form,
+    router,
+    toast,
+    app,
+    user,
+    bill
 
 })

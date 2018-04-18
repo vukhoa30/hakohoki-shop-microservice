@@ -1,93 +1,242 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import ProductShowcase from "../../components/ProductShowcase";
+import { loadProductList, fetchProductData, selectProduct, toast } from "../../../api";
+import { parseToQueryString, parseToObject } from "../../../utils";
+
 class ProductList extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      firstLoad: true,
+      searchingForProduct: false
+    };
+    const { loadProductList, location } = props;
+    loadProductList(location.search, 0, 10);
+  }
+  async componentDidMount() {
+    if (this.state.firstLoad) {
+      const { search } = this.props.location;
+      const searchObj = await parseToObject(search);
+      this.setState({
+        firstLoad: false,
+        category: searchObj.category ? searchObj.category : "All"
+      });
+      if (searchObj.q) {
+        this.q.value = searchObj.q;
+      }
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    if (this.props.location !== nextProps.location) {
+      const { loadProductList, location } = nextProps;
+      loadProductList(location.search, 0, 10);
+    }
   }
   render() {
+    const {
+      isLoading,
+      err,
+      history,
+      data: list,
+      loadProductList,
+      location,
+      selectProduct,
+      toast
+    } = this.props;
+    const categories = [
+      {
+        name: "All",
+        icon: "fa fa-list"
+      },
+      {
+        name: "Phone",
+        icon: "fa fa-phone"
+      },
+      {
+        name: "Tablet",
+        icon: "fa fa-tablet"
+      },
+      {
+        name: "Accessory",
+        icon: "fa fa-headphones"
+      },
+      {
+        name: "SIM",
+        icon: "fa fa-file-o"
+      },
+      {
+        name: "Card",
+        icon: "fa fa-credit-card-alt"
+      }
+    ];
+
     return (
       <div className="container-fluid">
-        <div className="bg-primary card" style={{ padding: 10 }}>
+        <form
+          onSubmit={async e => {
+            e.preventDefault();
+            if (this.state.searchingForProduct) return;
+            this.setState({ searchingForProduct: true });
+            const result = await fetchProductData(this.productId.value);
+            if (result.ok) {
+              selectProduct(result.data, "detail");
+            } else {
+              toast(`INTERNAL SERVER ERROR OR PRODUCT NOT EXISTED`, "error");
+            }
+            this.setState({ searchingForProduct: false });
+          }}
+        >
+          <div className="input-group mt-1 mb-3">
+            <input
+              ref={ref => (this.productId = ref)}
+              type="text"
+              className="form-control"
+              placeholder="Enter product Id"
+              required
+            />
+            <div className="input-group-append">
+              <button
+                className="btn btn-outline-secondary"
+                type="submit"
+                disabled={this.state.searchingForProduct}
+              >
+                {this.state.searchingForProduct ? (
+                  <i className="fa fa-spinner fa-spin" />
+                ) : (
+                  <i className="fa fa-search" />
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
+        <div className="card" style={{ padding: 10 }}>
           <div className="card-body">
-            <form>
-              <div className="form-group">
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                history.push({
+                  ...location,
+                  search: parseToQueryString({
+                    category:
+                      this.state.category === "All"
+                        ? undefined
+                        : this.state.category,
+                    q: this.q.value === "" ? undefined : this.q.value
+                  })
+                });
+              }}
+            >
+              <div className="input-group mb-3">
                 <input
-                  style={{ padding: 10, margin: 5 }}
+                  ref={ref => (this.q = ref)}
                   type="text"
                   className="form-control"
-                  id="formGroupExampleInput"
                   placeholder="Search for product"
+                  required
                 />
+                <div className="input-group-append">
+                  <button className="btn btn-outline-secondary" type="submit">
+                    <i className="fa fa-search" />
+                  </button>
+                </div>
               </div>
             </form>
             <ul className="list-inline">
-              <li className="list-inline-item" style={{ marginRight: 20 }}>
-                <i
-                  className="fa fa-mobile text-light"
-                  style={{ fontSize: 20, marginRight: 10 }}
-                />
-                <small className="text-light" style={{ fontSize: 20 }}>
-                  Phone
-                </small>
-              </li>
-              <li className="list-inline-item" style={{ marginRight: 20 }}>
-                <i
-                  className="fa fa-tablet text-light"
-                  style={{ fontSize: 20, marginRight: 10 }}
-                />
-                <small className="text-light" style={{ fontSize: 20 }}>
-                  Tablet
-                </small>
-              </li>
-              <li className="list-inline-item" style={{ marginRight: 20 }}>
-                <i
-                  className="fa fa-headphones text-light"
-                  style={{ fontSize: 20, marginRight: 10 }}
-                />
-                <small className="text-light" style={{ fontSize: 20 }}>
-                  Accessory
-                </small>
-              </li>
-              <li className="list-inline-item" style={{ marginRight: 20 }}>
-                <i
-                  className="fa fa-file-o text-light"
-                  style={{ fontSize: 20, marginRight: 10 }}
-                />
-                <small className="text-light" style={{ fontSize: 20 }}>
-                  SIM
-                </small>
-              </li>
-              <li className="list-inline-item" style={{ marginRight: 20 }}>
-                <i
-                  className="fa fa-credit-card-alt text-light"
-                  style={{ fontSize: 20, marginRight: 10 }}
-                />
-                <small className="text-light" style={{ fontSize: 20 }}>
-                  Card
-                </small>
-              </li>
+              {categories.map(category => (
+                <li
+                  key={"Category-" + category.name}
+                  className="list-inline-item clickable"
+                  style={{
+                    marginRight: 20,
+                    color:
+                      category.name === this.state.category ? "blue" : "black"
+                  }}
+                  onClick={() => {
+                    this.setState({ category: category.name });
+                    history.push({
+                      ...location,
+                      search: parseToQueryString({
+                        category:
+                          category.name === "All" ? undefined : category.name
+                      })
+                    });
+                  }}
+                >
+                  <i
+                    className={category.icon}
+                    style={{ fontSize: 20, marginRight: 10 }}
+                  />
+                  <small style={{ fontSize: 20 }}>{category.name}</small>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
-        {/* <p style={{ color: "gray" }} className="mt-5" >NO PRODUCT FOUND</p> */}
-        <div className="row mt-5">
-          <div className="col-sm-4 col-lg-3">
-            <ProductShowcase product={null} />
+        {list.length > 0 ? (
+          <div className="row mt-5">
+            {list.map((product, index) => (
+              <div className="col-sm-4 col-lg-3" key={"product-" + product._id}>
+                <ProductShowcase product={product} showButton nameReduce />
+              </div>
+            ))}
           </div>
-          <div className="col-sm-4 col-lg-3">
-            <ProductShowcase product={null} />
-          </div>
-          <div className="col-sm-4 col-lg-3">
-            <ProductShowcase product={null} />
-          </div>
-          <div className="col-sm-4 col-lg-3">
-            <ProductShowcase product={null} />
-          </div>
-          <div className="col-sm-4 col-lg-3">
-            <ProductShowcase product={null} />
-          </div>
+        ) : (
+          !isLoading && (
+            <div className="d-flex justify-content-center">
+              <p style={{ color: "gray" }} className="mt-5">
+                NO PRODUCT FOUND
+              </p>
+            </div>
+          )
+        )}
+        <div className="row d-flex justify-content-center mt-3">
+          {err !== null && (
+            <div
+              className="alert alert-danger clickable"
+              role="alert"
+              onClick={e =>
+                loadProductList(
+                  parseToQueryString({
+                    category:
+                      this.state.category === "All"
+                        ? undefined
+                        : this.state.category,
+                    q: this.q.value === "" ? undefined : this.q.value
+                  }),
+                  list.length,
+                  10
+                )
+              }
+            >
+              Could not load data from server. Click to load again!
+            </div>
+          )}
+          {isLoading ? (
+            <i className="fa fa-spinner fa-spin fa-3x" />
+          ) : (
+            list.length > 0 &&
+            err === null && (
+              <button
+                className="mt-5 btn btn-light"
+                onClick={e =>
+                  loadProductList(
+                    parseToQueryString({
+                      category:
+                        this.state.category === "All"
+                          ? undefined
+                          : this.state.category,
+                      q: this.q.value === "" ? undefined : this.q.value
+                    }),
+                    list.length,
+                    10
+                  )
+                }
+              >
+                LOAD MORE PRODUCT ...
+              </button>
+            )
+          )}
         </div>
       </div>
     );
@@ -96,5 +245,10 @@ class ProductList extends Component {
 const mapStateToProps = state => ({
   ...state.product.list
 });
-const mapDispatchToProps = dispatch => ({});
+const mapDispatchToProps = dispatch => ({
+  loadProductList: (query, offset, limit) =>
+    dispatch(loadProductList(query, offset, limit)),
+  selectProduct: (productId,viewType) => dispatch(selectProduct(productId,viewType)),
+  toast: (message, level) => dispatch(toast(message, level))
+});
 export default connect(mapStateToProps, mapDispatchToProps)(ProductList);

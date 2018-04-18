@@ -1,41 +1,65 @@
 import { keys } from "../actions";
 
-const { LOADING_PRODUCT, LOADING_PRODUCT_LIST } = keys
+const {
+  LOADING_PRODUCT,
+  LOADING_PRODUCT_LIST,
+  LOADING_PRODUCT_FEEDBACK
+} = keys;
 
 const initialState = {
   list: {
     isLoading: false,
-    data: []
+    data: [],
+    err: null
   },
   detail: {
     isLoading: false,
+    _id: null,
     name: null,
-    category: null,
+    category: 'All',
     description: null,
     price: 0,
     guarantee: 6,
     mainPicture: null,
     additionPicture: [],
-    specifications: []
+    specifications: [],
+    reviewScore: 0,
+    reviewCount: 0,
+    err: null
+  },
+  feedback: {
+    isLoading: false,
+    err: null,
+    comments: [],
+    reviews: []
   }
 };
 
-const detailReducer = (prevState, action) => {
-  const { isLoading } = action;
+const productDetailReducer = (prevState, action) => {
+  const { isLoading, err, data } = action;
   if (isLoading) return { ...initialState.detail, isLoading };
-  return { ...action, type: undefined };
+  return err
+    ? { ...prevState, isLoading, err }
+    : { ...prevState, isLoading, ...data };
 };
 
-const listReducer = (prevState, action) => {
-  const { isLoading, needRefreshing, data } = action;
+const productListReducer = (prevState, action) => {
+  const { isLoading, needRefreshing, data, err } = action;
   if (isLoading)
     return needRefreshing
-      ? { ...prevState, isLoading, data: [] }
-      : { ...prevState, isLoading };
-  return {
-    isLoading,
-    list: prevState.data.concat(data)
-  };
+      ? { ...prevState, isLoading, data: [], err: null }
+      : { ...prevState, isLoading, err: null };
+  return err
+    ? { ...prevState, isLoading, err }
+    : { ...prevState, isLoading, data: prevState.data.concat(data) };
+};
+
+const feedbackReducer = (prevState, action) => {
+  const { isLoading, err, comments, reviews } = action;
+  if (isLoading) return { ...initialState.feedback, isLoading };
+  return err
+    ? { ...prevState, isLoading, err }
+    : { ...prevState, isLoading, reviews, comments };
 };
 
 const reducer = (state = initialState, action) => {
@@ -46,13 +70,19 @@ const reducer = (state = initialState, action) => {
     case LOADING_PRODUCT:
       nextState = {
         ...state,
-        detail: detailReducer(state.detail, action)
+        detail: productDetailReducer(state.detail, action)
       };
       break;
     case LOADING_PRODUCT_LIST:
       nextState = {
         ...state,
-        list: listReducer(state.list, action)
+        list: productListReducer(state.list, action)
+      };
+      break;
+    case LOADING_PRODUCT_FEEDBACK:
+      nextState = {
+        ...state,
+        feedback: feedbackReducer(state.feedback, action)
       };
       break;
   }

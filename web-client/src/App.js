@@ -1,22 +1,31 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
-import Main from "./views/pages/Main";
+import Container from "./views/pages/Container";
 import "./App.css";
 import reducer from "./reducers";
 import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
-import { HashRouter as Router, Route } from "react-router-dom";
+import { routerMiddleware } from "react-router-redux";
+import { createHashHistory } from "history";
 import thunk from "redux-thunk";
+import { createLogger } from "redux-logger";
 
-const store = createStore(reducer,applyMiddleware(thunk));
+const history = createHashHistory();
+
+const store = createStore(
+  reducer,
+  applyMiddleware(
+    routerMiddleware(history),
+    thunk,
+    //createLogger({ stateTransformer: state => state.bill.upcoming })
+  )
+);
 
 class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Router>
-          <Route path="/" component={Main} />
-        </Router>
+       <Container history={history} />
       </Provider>
     );
   }

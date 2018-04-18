@@ -1,6 +1,7 @@
 import { gatewayAddress } from "../config";
 import { stringify } from "query-string";
 import io from "socket.io-client";
+import { chain, transform } from "lodash";
 
 export const request = (url, method, header, data) => {
   const fullUrl = gatewayAddress + url;
@@ -50,6 +51,28 @@ export const formatTime = time => {
 
 export const parseToQueryString = obj => {
   return stringify(obj);
+};
+
+export const parseToObject = queryString => {
+  if (queryString === "") return {};
+  const query = queryString.substring(1);
+  return chain(query.split("&"))
+    .map(function(params) {
+      var p = params.split("=");
+      return [p[0], decodeURIComponent(p[1])];
+    })
+    .fromPairs()
+    .value();
+};
+
+export const convertObjectToArray = obj => {
+  return transform(
+    obj,
+    (result, value, key) => {
+      result.push({ name: key, value });
+    },
+    []
+  );
 };
 
 export const reduceString = string => {
