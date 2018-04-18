@@ -4,7 +4,12 @@ import { formatTime, parseToObject } from "../../../utils";
 import ProductShowcase from "../../components/ProductShowcase";
 import Input from "../../components/Input";
 import { Field, reduxForm } from "redux-form";
-import { loadProductFeedback, loadProductData } from "../../../api";
+import {
+  loadProductFeedback,
+  loadProductData,
+  giveAnswer,
+  toast
+} from "../../../api";
 class ProductFeedback extends Component {
   constructor(props) {
     super(props);
@@ -53,7 +58,16 @@ class ProductFeedback extends Component {
     return stars;
   }
   render() {
-    const { history, product, viewDetail, feedback, id } = this.props;
+    const {
+      history,
+      product,
+      viewDetail,
+      feedback,
+      id,
+      token,
+      loadProductFeedback,
+      toast
+    } = this.props;
     const { isLoading: isFeedbackLoading, reviews, comments } = feedback;
     const { isLoading: productLoading } = product;
     return (
@@ -181,10 +195,18 @@ class ProductFeedback extends Component {
                             <i className="fa fa-spinner fa-spin" />
                           </div> */}
                           <form
-                            onSubmit={e => {
+                            onSubmit={async e => {
                               e.preventDefault();
-                              console.log(e.target.content.value);
+                              const content = e.target.content.value;
                               e.target.content.value = "";
+                              const result = await giveAnswer(
+                                id,
+                                content,
+                                feedback.id,
+                                token
+                              );
+                              if (result.ok) loadProductFeedback(id);
+                              else toast(result._error, "error");
                             }}
                           >
                             <div className="form-group mt-3">
@@ -220,15 +242,18 @@ const mapStateToProps = (state, props) => {
   const { match } = props;
   const { detail: product, feedback } = state.product;
   const { id } = match.params;
+  const { token } = state.user;
 
   return {
     product,
     feedback,
-    id
+    id,
+    token
   };
 };
 const mapDispatchToProps = dispatch => ({
   loadProductFeedback: productId => dispatch(loadProductFeedback(productId)),
-  loadProductData: productId => dispatch(loadProductData(productId))
+  loadProductData: productId => dispatch(loadProductData(productId)),
+  toast: (message, level) => dispatch(toast(message, level))
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProductFeedback);
