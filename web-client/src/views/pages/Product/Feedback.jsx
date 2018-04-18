@@ -68,7 +68,12 @@ class ProductFeedback extends Component {
       loadProductFeedback,
       toast
     } = this.props;
-    const { isLoading: isFeedbackLoading, reviews, comments } = feedback;
+    const {
+      isLoading: isFeedbackLoading,
+      reviews,
+      comments,
+      err: feedbackErr
+    } = feedback;
     const { isLoading: productLoading } = product;
     return (
       <div className="container-fluid">
@@ -128,109 +133,124 @@ class ProductFeedback extends Component {
               className="list-group"
               style={{ overflowY: "auto", height: 800 }}
             >
-              {isFeedbackLoading ? (
-                <div className="d-flex justify-content-center">
+              {isFeedbackLoading && (
+                <div
+                  className="d-flex justify-content-center"
+                  style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    width: "100%",
+                    backgroundColor: "transparent"
+                  }}
+                >
                   <i className="fa fa-spinner fa-spin fa-3x" />
                 </div>
-              ) : this.state.feedback.length > 0 ? (
-                this.state.feedback.map((feedback, index) => (
-                  <a
-                    key={"feedback-" + index}
-                    href="javascript:;"
-                    className="list-group-item list-group-item-action flex-column align-items-start"
-                  >
-                    <div className="d-flex w-100 justify-content-between">
-                      <h5 className="mb-1" style={{ fontWeight: "bold" }}>
-                        {feedback.userName}
-                      </h5>
-                      <small>{formatTime(feedback.createdAt)}</small>
-                    </div>
-                    {feedback.reviewScore &&
-                      this.renderStars(feedback.reviewScore)}
-                    <p
-                      className="mb-1"
-                      data-toggle="collapse"
-                      data-target={"#feedback-" + index}
+              )}
+              {this.state.feedback.length > 0
+                ? this.state.feedback.map((feedback, index) => (
+                    <a
+                      key={"feedback-" + index}
+                      href="javascript:;"
+                      className="list-group-item list-group-item-action flex-column align-items-start"
                     >
-                      {feedback.content}
-                    </p>
-                    {!feedback.reviewScore && (
-                      <div className="d-flex flex-row-reverse">
-                        <small style={{ color: "gray" }}>3 comments</small>
+                      <div className="d-flex w-100 justify-content-between">
+                        <h5 className="mb-1" style={{ fontWeight: "bold" }}>
+                          {feedback.userName}
+                        </h5>
+                        <small>{formatTime(feedback.createdAt)}</small>
                       </div>
-                    )}
-                    {!feedback.reviewScore && (
-                      <div className="collapse" id={"feedback-" + index}>
-                        <hr className="my-4" />
-                        <div className="card card-body list-group border-0">
-                          {comments
-                            .filter(comment => comment.parentId === feedback.id)
-                            .map(comment => (
-                              <li
-                                key={"comment-" + comment.id}
-                                className="list-group-item list-group-item-action flex-column align-items-start"
-                                style={{
-                                  borderRadius: 0,
-                                  borderWidth: 0,
-                                  borderLeftWidth: 2,
-                                  borderColor:
-                                    comment.userRole === "customer"
-                                      ? "blue"
-                                      : "green"
-                                }}
-                              >
-                                <div className="d-flex w-100 justify-content-between">
-                                  <h5
-                                    className="mb-1"
-                                    style={{ fontWeight: "bold" }}
-                                  >
-                                    {comment.userName}
-                                  </h5>
-                                  <small>{formatTime(comment.createdAt)}</small>
-                                </div>
-                                <p className="mb-1">{comment.content}</p>
-                              </li>
-                            ))}
-                          {/* <div className="d-flex justify-content-center">
+                      {feedback.reviewScore &&
+                        this.renderStars(feedback.reviewScore)}
+                      <p
+                        className="mb-1"
+                        data-toggle="collapse"
+                        data-target={"#feedback-" + index}
+                      >
+                        {feedback.content}
+                      </p>
+                      {!feedback.reviewScore && (
+                        <div className="d-flex flex-row-reverse">
+                          <small style={{ color: "gray" }}>3 comments</small>
+                        </div>
+                      )}
+                      {!feedback.reviewScore && (
+                        <div className="collapse" id={"feedback-" + index}>
+                          <hr className="m-0" />
+                          <div className="card card-body list-group border-0 pt-0">
+                            {comments
+                              .filter(
+                                comment => comment.parentId === feedback.id
+                              )
+                              .map(comment => (
+                                <li
+                                  key={"comment-" + comment.id}
+                                  className="list-group-item list-group-item-action flex-column align-items-start"
+                                  style={{
+                                    borderRadius: 0,
+                                    borderWidth: 0,
+                                    borderLeftWidth: 2,
+                                    borderColor:
+                                      comment.userRole === "customer"
+                                        ? "blue"
+                                        : "green"
+                                  }}
+                                >
+                                  <div className="d-flex w-100 justify-content-between">
+                                    <h5
+                                      className="mb-1"
+                                      style={{ fontWeight: "bold" }}
+                                    >
+                                      {comment.userName}
+                                    </h5>
+                                    <small>
+                                      {formatTime(comment.createdAt)}
+                                    </small>
+                                  </div>
+                                  <p className="mb-1">{comment.content}</p>
+                                </li>
+                              ))}
+                            {/* <div className="d-flex justify-content-center">
                             <i className="fa fa-spinner fa-spin" />
                           </div> */}
-                          <form
-                            onSubmit={async e => {
-                              e.preventDefault();
-                              const content = e.target.content.value;
-                              e.target.content.value = "";
-                              const result = await giveAnswer(
-                                id,
-                                content,
-                                feedback.id,
-                                token
-                              );
-                              if (result.ok) loadProductFeedback(id);
-                              else toast(result._error, "error");
-                            }}
-                          >
-                            <div className="form-group mt-3">
-                              <input
-                                className="form-control"
-                                placeholder="Write your message"
-                                name="content"
-                                required
-                              />
-                            </div>
-                          </form>
+                            <form
+                              onSubmit={async e => {
+                                e.preventDefault();
+                                const content = e.target.content.value;
+                                e.target.content.value = "";
+                                const result = await giveAnswer(
+                                  id,
+                                  content,
+                                  feedback.id,
+                                  token
+                                );
+                                if (result.ok) loadProductFeedback(id);
+                                else toast(result._error, "error");
+                              }}
+                            >
+                              <div className="form-group mt-3">
+                                <input
+                                  className="form-control"
+                                  placeholder="Write your message"
+                                  name="content"
+                                  required
+                                />
+                              </div>
+                            </form>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </a>
-                ))
-              ) : (
-                <div className="d-flex justify-content-center">
-                  <p style={{ color: "gray" }} className="mt-5">
-                    NO {this.state.mode === "reviews" ? "REVIEWS" : "COMMENTS"}{" "}
-                    FOUND
-                  </p>
-                </div>
-              )}
+                      )}
+                    </a>
+                  ))
+                : !isFeedbackLoading &&
+                  feedbackErr === null && (
+                    <div className="d-flex justify-content-center mt-5">
+                      <p style={{ color: "gray" }} className="mt-5">
+                        NO{" "}
+                        {this.state.mode === "reviews" ? "REVIEWS" : "COMMENTS"}{" "}
+                        FOUND
+                      </p>
+                    </div>
+                  )}
             </div>
           </div>
         </div>

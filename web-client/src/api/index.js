@@ -274,26 +274,47 @@ export const getBill = async (billId, token) => {
   return Promise.resolve({ ok: false, status: 500 });
 };
 
+export const confirmBill = async (billId, token) => {
+  try {
+    const { status, data } = await request(
+      "/bills/order",
+      "POST",
+      {
+        Authorization: "JWT " + token
+      },
+      { billId }
+    );
+    if (status === 200)
+      return Promise.resolve({
+        ok: true
+      });
+    return Promise.resolve({ ok: false, status });
+  } catch (error) {}
+  return Promise.resolve({ ok: false, status: 500 });
+};
+
 export const giveAnswer = async (productId, content, parentId, token) => {
   let _error = "Undefined error. Try again later!";
   try {
     const { status, data } = await request(
       "/comments",
       "POST",
-      { Authorization: 'JWT ' + token },
+      { Authorization: "JWT " + token },
       {
-        productId, content, parentId
+        productId,
+        content,
+        parentId
       }
     );
     if (status === 200) {
-      return Promise.resolve({ ok: true })
-    } else if (status === 401){
-      _error = 'You are not authorized to comment'
-    }else {
+      return Promise.resolve({ ok: true });
+    } else if (status === 401) {
+      _error = "You are not authorized to comment";
+    } else {
       _error = "Internal server error";
     }
   } catch (error) {
     if (error === "CONNECTION_ERROR") _error = "Connection error";
   }
   return Promise.resolve({ ok: false, _error });
-}
+};

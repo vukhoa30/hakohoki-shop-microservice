@@ -56,7 +56,7 @@ const productListReducer = (prevState, action) => {
 
 const feedbackReducer = (prevState, action) => {
   const { isLoading, err, comments, reviews } = action;
-  if (isLoading) return { ...initialState.feedback, isLoading };
+  if (isLoading) return { ...prevState, isLoading, err: null };
   return err
     ? { ...prevState, isLoading, err }
     : { ...prevState, isLoading, reviews, comments };

@@ -6,7 +6,7 @@ import {
   parseToObject,
   parseToQueryString
 } from "../../../utils";
-import { searchForBills, getBill, toast } from "../../../api";
+import { searchForBills, getBill, toast, confirmBill } from "../../../api";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
@@ -22,7 +22,8 @@ class BillList extends Component {
       begin: null,
       end: moment(),
       selectedBill: null,
-      searchingForBill: false
+      searchingForBill: false,
+      confirmingBill: false
     };
     const { token, searchForBills } = props;
     searchForBills("?status=pending", "pending", token);
@@ -87,7 +88,7 @@ class BillList extends Component {
       history,
       toast
     } = this.props;
-    const { selectedBill } = this.state;
+    const { selectedBill, confirmingBill } = this.state;
     return (
       <div className="container-fluid">
         <button className="btn btn-success mb-3">
@@ -95,7 +96,12 @@ class BillList extends Component {
           CREATE A BILL
         </button>
         <div>
-          <button ref={ref => this.toggleModel = ref} style={{ visibility: 'hidden', position: 'absolute' }} data-target="#bill" data-toggle="modal" />
+          <button
+            ref={ref => (this.toggleModel = ref)}
+            style={{ visibility: "hidden", position: "absolute" }}
+            data-target="#bill"
+            data-toggle="modal"
+          />
           {/* Button trigger modal */}
           <div
             className="modal fade"
@@ -207,9 +213,42 @@ class BillList extends Component {
                   >
                     Close
                   </button>
-                  <button type="button" className="btn btn-primary">
-                    Check out
-                  </button>
+                  {selectedBill !== null &&
+                    selectedBill.status === "pending" && (
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={confirmingBill}
+                        onClick={async () => {
+                          const billId = selectedBill._id;
+                          this.setState({ confirmingBill: true });
+                          const result = await confirmBill(billId, token);
+                          if (result.ok) {
+                            searchForBills("?status=pending", "pending", token);
+                            searchForBills(
+                              "?status=completed",
+                              "pending",
+                              token
+                            );
+                            this.toggleModel.click();
+                          } else {
+                            if (result.status === 401)
+                              toast(
+                                `YOU ARE NOT AUTHORIZED TO CONFIRM BILL`,
+                                "error"
+                              );
+                            else toast(`INTERNAL SERVER ERROR`, "error");
+                          }
+                          this.setState({ confirmingBill: false });
+                        }}
+                      >
+                        {confirmingBill ? (
+                          <i className="fa fa-spinner fa-spin" />
+                        ) : (
+                          "Check out"
+                        )}
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -223,7 +262,7 @@ class BillList extends Component {
             const result = await getBill(this.billId.value, token);
             if (result.ok) {
               this.setState({ selectedBill: result.data });
-              this.toggleModel.click()
+              this.toggleModel.click();
             } else {
               if (result.status === 401)
                 toast(`YOU ARE NOT AUTHORIZED TO SEE BILL DATA`, "error");
