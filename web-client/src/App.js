@@ -17,7 +17,7 @@ const store = createStore(
   applyMiddleware(
     routerMiddleware(history),
     thunk,
-    //createLogger({ stateTransformer: state => state.bill.upcoming })
+    createLogger({ stateTransformer: state => state.bill })
   )
 );
 

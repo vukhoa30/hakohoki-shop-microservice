@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { formatTime, parseToObject } from "../../../utils";
 import ProductShowcase from "../../components/ProductShowcase";
 import Input from "../../components/Input";
+import Loader from "../../components/Loader";
 import { Field, reduxForm } from "redux-form";
 import {
   loadProductFeedback,
@@ -15,27 +16,14 @@ class ProductFeedback extends Component {
     super(props);
     this.state = {
       mode: "reviews",
-      feedback: []
+      selectedCommentId: null,
+      submittingAnswer: false
     };
     const { product, loadProductFeedback, loadProductData, id } = props;
     loadProductFeedback(id);
     if (id !== product._id) loadProductData(id);
   }
-  componentWillReceiveProps(nextProps) {
-    if (
-      this.props.feedback.isLoading !== nextProps.feedback.isLoading &&
-      !nextProps.feedback.isLoading
-    ) {
-      console.log(nextProps.product);
-      const { reviews, comments } = nextProps.feedback;
-      this.setState({
-        feedback:
-          this.state.mode === "reviews"
-            ? reviews
-            : comments.filter(comment => !comment.parentId)
-      });
-    }
-  }
+
   renderStars(starCount) {
     const stars = [];
     let i = 0;
@@ -77,6 +65,133 @@ class ProductFeedback extends Component {
     const { isLoading: productLoading } = product;
     return (
       <div className="container-fluid">
+        <div
+          className="modal fade"
+          id="comment-answers"
+          tabIndex={-1}
+          role="dialog"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">
+                  ANSWERS
+                </h5>
+                <button
+                  type="button"
+                  className="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                {(isFeedbackLoading || this.state.submittingAnswer) && (
+                  <Loader
+                    style={{
+                      position: "absolute",
+                      top: 200,
+                      left: "50%",
+                      zIndex: 100
+                    }}
+                  />
+                )}
+                {this.state.selectedCommentId !== null && (
+                  <div>
+                    <hr className="m-0" />
+                    <div className="card card-body list-group border-0 pt-0">
+                      <div
+                        style={{
+                          height: 500,
+                          overflowY: "auto",
+                          opacity:
+                            isFeedbackLoading || this.state.submittingAnswer
+                              ? 0.5
+                              : 1
+                        }}
+                      >
+                        {comments
+                          .filter(
+                            comment =>
+                              comment.parentId === this.state.selectedCommentId
+                          )
+                          .reverse()
+                          .map(comment => (
+                            <li
+                              key={"comment-" + comment.id}
+                              className="list-group-item list-group-item-action flex-column align-items-start"
+                              style={{
+                                borderRadius: 0,
+                                borderWidth: 0,
+                                borderLeftWidth: 2,
+                                borderColor:
+                                  comment.userRole === "customer"
+                                    ? "blue"
+                                    : "green"
+                              }}
+                            >
+                              <div className="d-flex w-100 justify-content-between">
+                                <h5
+                                  className="mb-1"
+                                  style={{ fontWeight: "bold" }}
+                                >
+                                  {comment.userName}
+                                </h5>
+                                <small>{formatTime(comment.createdAt)}</small>
+                              </div>
+                              <p className="mb-1">{comment.content}</p>
+                            </li>
+                          ))}
+                        {/* <div className="d-flex justify-content-center">
+                            <i className="fa fa-spinner fa-spin" />
+                          </div> */}
+                      </div>
+                      <form
+                        onSubmit={async e => {
+                          e.preventDefault();
+                          this.setState({ submittingAnswer: true });
+                          const content = e.target.content.value;
+                          e.target.content.value = "";
+                          const result = await giveAnswer(
+                            id,
+                            content,
+                            this.state.selectedCommentId,
+                            token
+                          );
+                          if (result.ok) loadProductFeedback(id);
+                          else toast(result._error, "error");
+                          this.setState({ submittingAnswer: false });
+                        }}
+                      >
+                        <div className="form-group mt-3">
+                          <input
+                            className="form-control"
+                            placeholder="Write your message"
+                            name="content"
+                            required
+                            disabled={this.state.submittingAnswer}
+                          />
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button
           className="btn btn-primary mb-3"
           onClick={() =>
@@ -89,16 +204,157 @@ class ProductFeedback extends Component {
         </button>
         <div className="row">
           <div className="col-md-5 col-xs-12">
-            {productLoading ? (
-              <div className="d-flex justify-content-center">
-                <i className="fa fa-spinner fa-spin fa-3x" />
+            <h3 className="mt-2 mb-2">COMMENTS</h3>
+            <div className="list-group">
+              <div
+                className="d-flex justify-content-center"
+                style={{
+                  position: "absolute",
+                  top: 200,
+                  width: "100%"
+                }}
+              >
+                {isFeedbackLoading ? (
+                  <Loader />
+                ) : (
+                  <p style={{ color: "gray" }}>NO COMMENT FOUND</p>
+                )}
               </div>
-            ) : (
-              <ProductShowcase product={product} autoHeight />
-            )}
+              {comments.length > 0 && (
+                <div
+                  className="card"
+                  style={{ overflowY: "auto", height: 600 }}
+                >
+                  {comments
+                    .filter(comment => !comment.parentId)
+                    .map((comment, index) => (
+                      <a
+                        key={"comment-" + index}
+                        href="javascript:;"
+                        className={`list-group-item list-group-item-action flex-column align-items-start ${
+                          this.state.selectedCommentId === comment.id
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          this.setState({ selectedCommentId: comment.id })
+                        }
+                      >
+                        <div className="d-flex w-100 justify-content-between">
+                          <h5 className="mb-1" style={{ fontWeight: "bold" }}>
+                            {comment.userName}
+                          </h5>
+                          <small>{formatTime(comment.createdAt)}</small>
+                        </div>
+                        <p className="mb-1">{comment.content}</p>
+                      </a>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="col-md-7 col-xs-12">
-            <div className="btn-group mb-3" role="group">
+            <div>
+              <h3 className="mt-2 mb-2">ANSWERS</h3>
+              <div
+                className="d-flex justify-content-center"
+                style={{
+                  position: "absolute",
+                  top: 200,
+                  width: "100%"
+                }}
+              >
+                {isFeedbackLoading || this.state.submittingAnswer ? (
+                  <Loader />
+                ) : (
+                  <p style={{ color: "gray" }}>NO COMMENT SELECTED</p>
+                )}
+              </div>
+              {this.state.selectedCommentId !== null && (
+                <div>
+                  <div
+                    className="card card-body border-0"
+                    style={{
+                      height: 550,
+                      overflowY: "auto",
+                      opacity:
+                        isFeedbackLoading || this.state.submittingAnswer
+                          ? 0.5
+                          : 1
+                    }}
+                  >
+                    <div>
+                      {comments
+                        .filter(
+                          comment =>
+                            comment.parentId === this.state.selectedCommentId
+                        )
+                        .map(comment => (
+                          <li
+                            key={"comment-" + comment.id}
+                            className="list-group-item list-group-item-action flex-column align-items-start"
+                            style={{
+                              borderRadius: 0,
+                              borderWidth: 0,
+                              borderLeftWidth: 2,
+                              borderColor:
+                                comment.userRole === "customer"
+                                  ? "blue"
+                                  : "green"
+                            }}
+                          >
+                            <div className="d-flex w-100 justify-content-between">
+                              <h5
+                                className="mb-1"
+                                style={{ fontWeight: "bold" }}
+                              >
+                                {comment.userName}
+                              </h5>
+                              <small>{formatTime(comment.createdAt)}</small>
+                            </div>
+                            <p className="mb-1">{comment.content}</p>
+                          </li>
+                        ))}
+                      {/* <div className="d-flex justify-content-center">
+                            <i className="fa fa-spinner fa-spin" />
+                          </div> */}
+                    </div>
+                  </div>
+                  <form
+                    onSubmit={async e => {
+                      e.preventDefault();
+                      this.setState({ submittingAnswer: true });
+                      const content = e.target.content.value;
+                      e.target.content.value = "";
+                      const result = await giveAnswer(
+                        id,
+                        content,
+                        this.state.selectedCommentId,
+                        token
+                      );
+                      if (result.ok) loadProductFeedback(id);
+                      else toast(result._error, "error");
+                      this.setState({ submittingAnswer: false });
+                    }}
+                  >
+                    <div className="form-group mt-3">
+                      <input
+                        className="form-control"
+                        placeholder="Write your message"
+                        name="content"
+                        required
+                        disabled={this.state.submittingAnswer}
+                      />
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+            {/* <div
+              className="btn-group mb-3"
+              role="group"
+              style={{ display: "inline-block" }}
+            >
               <button
                 type="button"
                 className={`btn ${
@@ -129,29 +385,26 @@ class ProductFeedback extends Component {
                 Comments
               </button>
             </div>
+            {isFeedbackLoading && (
+              <i className="fa fa-circle-o-notch fa-spin fa-2x ml-3" />
+            )}
             <div
               className="list-group"
               style={{ overflowY: "auto", height: 800 }}
             >
-              {isFeedbackLoading && (
-                <div
-                  className="d-flex justify-content-center"
-                  style={{
-                    position: "absolute",
-                    zIndex: 100,
-                    width: "100%",
-                    backgroundColor: "transparent"
-                  }}
-                >
-                  <i className="fa fa-spinner fa-spin fa-3x" />
-                </div>
-              )}
               {this.state.feedback.length > 0
                 ? this.state.feedback.map((feedback, index) => (
                     <a
                       key={"feedback-" + index}
                       href="javascript:;"
+                      data-target="#comment-answers"
+                      data-toggle={
+                        this.state.mode === "comments" ? "modal" : ""
+                      }
                       className="list-group-item list-group-item-action flex-column align-items-start"
+                      onClick={() =>
+                        this.setState({ selectedCommentId: feedback.id })
+                      }
                     >
                       <div className="d-flex w-100 justify-content-between">
                         <h5 className="mb-1" style={{ fontWeight: "bold" }}>
@@ -161,82 +414,10 @@ class ProductFeedback extends Component {
                       </div>
                       {feedback.reviewScore &&
                         this.renderStars(feedback.reviewScore)}
-                      <p
-                        className="mb-1"
-                        data-toggle="collapse"
-                        data-target={"#feedback-" + index}
-                      >
-                        {feedback.content}
-                      </p>
+                      <p className="mb-1">{feedback.content}</p>
                       {!feedback.reviewScore && (
                         <div className="d-flex flex-row-reverse">
                           <small style={{ color: "gray" }}>3 comments</small>
-                        </div>
-                      )}
-                      {!feedback.reviewScore && (
-                        <div className="collapse" id={"feedback-" + index}>
-                          <hr className="m-0" />
-                          <div className="card card-body list-group border-0 pt-0">
-                            {comments
-                              .filter(
-                                comment => comment.parentId === feedback.id
-                              )
-                              .map(comment => (
-                                <li
-                                  key={"comment-" + comment.id}
-                                  className="list-group-item list-group-item-action flex-column align-items-start"
-                                  style={{
-                                    borderRadius: 0,
-                                    borderWidth: 0,
-                                    borderLeftWidth: 2,
-                                    borderColor:
-                                      comment.userRole === "customer"
-                                        ? "blue"
-                                        : "green"
-                                  }}
-                                >
-                                  <div className="d-flex w-100 justify-content-between">
-                                    <h5
-                                      className="mb-1"
-                                      style={{ fontWeight: "bold" }}
-                                    >
-                                      {comment.userName}
-                                    </h5>
-                                    <small>
-                                      {formatTime(comment.createdAt)}
-                                    </small>
-                                  </div>
-                                  <p className="mb-1">{comment.content}</p>
-                                </li>
-                              ))}
-                            {/* <div className="d-flex justify-content-center">
-                            <i className="fa fa-spinner fa-spin" />
-                          </div> */}
-                            <form
-                              onSubmit={async e => {
-                                e.preventDefault();
-                                const content = e.target.content.value;
-                                e.target.content.value = "";
-                                const result = await giveAnswer(
-                                  id,
-                                  content,
-                                  feedback.id,
-                                  token
-                                );
-                                if (result.ok) loadProductFeedback(id);
-                                else toast(result._error, "error");
-                              }}
-                            >
-                              <div className="form-group mt-3">
-                                <input
-                                  className="form-control"
-                                  placeholder="Write your message"
-                                  name="content"
-                                  required
-                                />
-                              </div>
-                            </form>
-                          </div>
                         </div>
                       )}
                     </a>
@@ -251,7 +432,7 @@ class ProductFeedback extends Component {
                       </p>
                     </div>
                   )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

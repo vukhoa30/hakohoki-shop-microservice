@@ -1,408 +1,267 @@
 import React, { Component } from "react";
-import { Field, reduxForm, FieldArray } from "redux-form";
 import { connect } from "react-redux";
-import Input from "../../components/Input";
-import Notification from "../../components/Notification";
-import { addProduct, toast, loadProductData } from "../../../api";
-import { parseToObject } from "../../../utils";
-
-const renderSpecifications = ({
-  isProductDetailMode,
-  fields,
-  meta: { error, submitFailed }
-}) => (
-  <div className="card mt-5">
-    <h3 className="card-header">Specifications</h3>
-    <div className="card-body">
-      {fields.map((specification, index) => (
-        <div className="row mb-2" key={index}>
-          <div className="col-4">
-            <Field
-              name={`${specification}.name`}
-              type="text"
-              placeholder="Enter specification name"
-              component={Input}
-            />
-          </div>
-          <div className="col-7">
-            <Field
-              name={`${specification}.value`}
-              type="text"
-              placeholder="Enter specification value"
-              component={Input}
-            />
-          </div>
-          {!isProductDetailMode && (
-            <div className="col-1">
-              <i
-                className="fa fa-remove text-danger"
-                onClick={() => fields.remove(index)}
-              />
-            </div>
-          )}
-        </div>
-      ))}
-      {!isProductDetailMode && (
-        <button
-          type="button"
-          className="btn btn-light mt-3"
-          onClick={() => fields.push({})}
-        >
-          <i className="fa fa-plus" /> Add specification
-        </button>
-      )}
-    </div>
-  </div>
-);
-
+import { loadProductData, loadProductFeedback } from "../../../api";
+import { currencyFormat, formatTime } from "../../../utils";
+import { transform } from "lodash";
+import Loader from "../../components/Loader";
 class ProductDetail extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      mainPicture: this.props.initialValues.mainPicture,
-      additionalPictures: this.props.initialValues.additionPicture,
-      picturePickMode: "main"
-    };
-    const { initialValues: product, id, isProductDetailMode } = props
-    if (isProductDetailMode && id !== product._id) this.loadData()
+    this.state = {};
+    this.loadData(this.props);
   }
-
-  loadData() {
-    const { id, loadProductData } = this.props;
+  loadData(props) {
+    const { match, product, loadProductData, loadProductFeedback } = props;
+    const { id } = match.params;
+    if (id === product._id) return;
     loadProductData(id);
+    loadProductFeedback(id);
   }
-
+  renderStars(starCount) {
+    const stars = [];
+    let i = 0;
+    for (; i < starCount; i++)
+      stars.push(
+        <i
+          key={"star-" + i}
+          className="fa fa-star fa-3x"
+          style={{ color: "orange" }}
+        />
+      );
+    for (; i < 5; i++)
+      stars.push(
+        <i
+          key={"star-" + i}
+          className="fa fa-star-o fa-3x"
+          style={{ color: "orange" }}
+        />
+      );
+    return stars;
+  }
   render() {
-    const {
-      history,
-      handleSubmit,
-      submitting,
-      invalid,
-      error,
-      isProductDetailMode,
-      viewFeedback,
-      initialValues,
-      toast,
-      isLoading,
-      isError,
-      id
-    } = this.props;
+    const { product, history, feedback } = this.props;
+    const statistic = transform(
+      feedback.reviews,
+      (result, review) => {
+        result[review.reviewScore]++;
+        return result;
+      },
+      {
+        "5": 0,
+        "4": 0,
+        "3": 0,
+        "2": 0,
+        "1": 0
+      }
+    );
     return (
       <div className="container-fluid">
-        {isLoading && (
-          <i
-            className="fa fa-spinner fa-spin fa-3x"
-            style={{ zIndex: 100, position: "absolute", top: 100, left: "50%" }}
-          />
-        )}
-        {isProductDetailMode && (
-          <button
-            className="btn btn-success mb-3"
-            onClick={() =>
-              history.push({
-                pathname: "/main/product/feedback/" + id
-              })
-            }
-          >
-            View feedback
-          </button>
-        )}
-        {isError && (
-          <div
-            class="alert alert-danger"
-            role="alert"
-            onClick={() => this.loadData()}
-          >
-            COULD NOT LOAD DATA. CLICK TO TRY AGAIN!
+        {product.isLoading ? (
+          <div className="d-flex justify-content-center">
+            <Loader style={{ marginTop: 50 }} />
           </div>
-        )}
-        <form onSubmit={handleSubmit(addProduct.bind(this))}>
-          <div
-            className="modal fade"
-            tabIndex={-1}
-            role="dialog"
-            id="mainPictureDialog"
-          >
-            <div className="modal-dialog" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Add product picture</h5>
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="form-group">
-                    <input
-                      className="form-control"
-                      ref={ref => (this._mainPictureUri = ref)}
-                    />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    data-dismiss="modal"
-                    onClick={() =>
-                      this.state.picturePickMode === "main"
-                        ? this.setState({
-                            mainPicture: this._mainPictureUri.value
-                          })
-                        : this.setState({
-                            additionalPictures: this.state.additionalPictures.concat(
-                              this._mainPictureUri.value
-                            )
-                          })
-                    }
-                  >
-                    Save changes
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+        ) : (
+          <div>
+            <div className="d-flex flex-row-reverse">
+              <i className="fa fa-cog fa-3x clickable" aria-hidden="true" onClick={() =>
+                  history.push("/main/product/update-product/" + product._id)
+                } />
+              <button
+                className="btn btn-success mr-3"
+                onClick={() =>
+                  history.push("/main/product/feedback/" + product._id)
+                }
+              >
+                View comments
+              </button>
             </div>
-          </div>
-          <div style={{ opacity: isLoading ? 0.3 : 1 }}>
-            <div className="card">
-              <h3 className="card-header">Basic information</h3>
+            <div className="card mt-3 pt-2 pb-2">
               <div className="card-body">
                 <div className="row">
                   <div className="col-md-5 col-xs-12">
-                    {this.state.mainPicture !== null ? (
-                      <div>
-                        <img
-                          src={this.state.mainPicture}
-                          className="img-fluid"
-                          style={{ width: "100%", height: "auto" }}
-                          alt="Main picture"
-                          onError={() => {
-                            if (!isProductDetailMode) {
-                              toast("INVALID PICTURE URI", "error");
-                              this.setState({ mainPicture: null });
-                            }
-                          }}
-                        />
-                        <div>
-                          {!isProductDetailMode && (
-                            <button
-                              type="button"
-                              className="btn btn-light mt-3"
-                              data-toggle="modal"
-                              data-target="#mainPictureDialog"
-                            >
-                              Change picture
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="jumbotron">
-                          <p className="lead">
-                            Main picture not available. Please select one!
-                          </p>
-                          <hr className="my-4" />
-                          <p className="lead">
-                            <button
-                              className="btn btn-primary btn-lg"
-                              data-toggle="modal"
-                              data-target="#mainPictureDialog"
-                              onClick={() =>
-                                this.setState({ picturePickMode: "main" })
-                              }
-                            >
-                              Add picture
-                            </button>
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    <img
+                      style={{ width: "100%", height: "auto" }}
+                      src={product.mainPicture}
+                    />
                   </div>
                   <div className="col-md-7 col-xs-12">
-                    <Field
-                      name="name"
-                      label="Product name"
-                      type="text"
-                      placeholder="Enter product name"
-                      component={Input}
-                    />
-                    <div className="form-group">
-                      <label>Category</label>
-                      <Field
-                        name="category"
-                        component="select"
-                        className="form-control"
+                    <h1 className="display-4" style={{ color: "red" }}>
+                      {product.name}
+                    </h1>
+                    <h1>
+                      {currencyFormat(
+                        product.promotionPrice
+                          ? product.promotionPrice
+                          : product.price
+                      )}
+                    </h1>
+                    <p
+                      style={{
+                        textDecorationLine: "line-through",
+                        color: "gray"
+                      }}
+                    >
+                      {product.promotionPrice
+                        ? currencyFormat(product.price)
+                        : ""}
+                    </p>
+                    <hr className="my-4" />
+                    <div className="form-group row">
+                      <label
+                        htmlFor="staticEmail"
+                        className="col-sm-2 col-form-label font-weight-bold"
                       >
-                        <option>Phone</option>
-                        <option>Tablet</option>
-                        <option>Accessory</option>
-                        <option>SIM</option>
-                        <option>Card</option>
-                      </Field>
-                    </div>
-                    <div className="form-group">
-                      <label>Guarantee</label>
-                      <div className="row">
-                        <div className="col-3">
-                          <Field
-                            name="guarantee"
-                            component="input"
-                            className="form-control"
-                            placeholde="Enter number of months for guarantee"
-                            type="number"
-                          />
-                        </div>
-                        <div className="col-3">
-                          <p style={{ fontSize: 20 }}>months</p>
-                        </div>
+                        Guarantee
+                      </label>
+                      <div className="col-sm-10">
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control-plaintext"
+                          defaultValue={product.guarantee + " months"}
+                        />
                       </div>
                     </div>
-                    <Field
-                      name="price"
-                      label="Price"
-                      type="number"
-                      placeholder="Enter price"
-                      component={Input}
-                    />
-                    <Field
-                      name="description"
-                      label="Description"
-                      type="textarea"
-                      placeholder="Enter product name"
-                      component={Input}
-                    />
+                    <div className="form-group row">
+                      <label
+                        htmlFor="staticEmail"
+                        className="col-sm-2 col-form-label font-weight-bold"
+                      >
+                        Added at
+                      </label>
+                      <div className="col-sm-10">
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control-plaintext"
+                          defaultValue={formatTime(product.addedAt)}
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group row">
+                      <label
+                        htmlFor="staticEmail"
+                        className="col-sm-2 col-form-label font-weight-bold"
+                      >
+                        Description
+                      </label>
+                      <div className="col-sm-10">
+                        <textarea
+                          type="text"
+                          readOnly
+                          className="form-control-plaintext"
+                          defaultValue={product.description}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="card mt-5">
-              <h3 className="card-header">Additional pictures</h3>
-              <div className="card-body">
-                {!isProductDetailMode && (
-                  <button
-                    type="button"
-                    className="btn btn-light"
-                    data-toggle="modal"
-                    data-target="#mainPictureDialog"
-                    onClick={() =>
-                      this.setState({ picturePickMode: "addition" })
-                    }
-                  >
-                    <i className="fa fa-plus" /> Add pictures
-                  </button>
-                )}
-                <div className="row">
-                  {this.state.additionalPictures.map((pictureUri, index) => (
-                    <div
-                      key={"additionalPicture-" + index}
-                      style={{ marginRight: 20 }}
-                    >
-                      <img
-                        src={pictureUri}
-                        alt="Additional image"
-                        style={{ height: 300, width: 300 }}
-                        onError={() => {
-                          const newArray = this.state.additionalPictures;
-                          newArray.splice(index, 1);
-                          this.setState({ additionalPictures: newArray });
-                          toast("INVALID PICTURE URI", "error");
-                        }}
-                      />
-                      {!isProductDetailMode && (
-                        <button
-                          type="button"
-                          class="btn btn-danger btn-lg btn-block mt-3"
-                          onClick={() => {
-                            const newArray = this.state.additionalPictures;
-                            newArray.splice(index, 1);
-                            this.setState({ additionalPictures: newArray });
-                          }}
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
+            {product.additionPicture.length > 0 && (
+              <div>
+                <h3 className="mt-5">ADDITIONAL PICTURES</h3>
+                <div
+                  className="pt-5 pb-5"
+                  style={{
+                    overflowX: "auto",
+                    width: "100%",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  {product.additionPicture.map(picture => (
+                    <img
+                      key={"addition-picture-" + picture}
+                      className="mr-3"
+                      style={{ width: 300, height: 300 }}
+                      src={picture}
+                    />
                   ))}
                 </div>
               </div>
-            </div>
-            <FieldArray
-              isProductDetailMode={isProductDetailMode}
-              name="specifications"
-              component={renderSpecifications}
-            />
-            {!isProductDetailMode && (
-              <div className="row">
-                <div className="col" />
-                <div className="col">
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-block mt-5 btn-lg"
-                    disabled={submitting || invalid || error}
-                  >
-                    {submitting && <i className="fa fa-spinner fa-spin" />}
-                    Add new product
-                  </button>
+            )}
+            <div className="card mt-5 pt-2 pb-2">
+              <div className="card-body">
+                <div className="row">
+                  <div className="col-md-6 col-xs-12 d-flex align-items-center flex-column">
+                    <div style={{ marginTop: 100 }}>
+                      {this.renderStars(product.reviewScore)}
+                    </div>
+                    <h4 className="mt-2">{product.reviewScore}/5</h4>
+                  </div>
+                  <div className="col-md-6 col-xs-12 pt-5">
+                    {feedback.isLoading ? (
+                      <div className="d-flex justify-content-center">
+                        <Loader style={{ marginTop: 100 }} />
+                      </div>
+                    ) : (
+                      <div>
+                        {Object.keys(statistic).reverse().map(star => (
+                          <div key={'statistic-' + star} className="d-flex flex-direction-row">
+                            <h4 className="mr-3">{star}</h4>
+                            <div className="progress" style={{ width: "60%" }}>
+                              <div
+                                className="progress-bar"
+                                style={{
+                                  width: product.reviewCount
+                                    ? statistic[star] /
+                                      product.reviewCount *
+                                      100
+                                    : 0 + "%"
+                                }}
+                              />
+                            </div>
+                            <h4 className="mr-3">{statistic[star]}</h4>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="col" />
+              </div>
+            </div>
+            {product.specifications.length > 0 && (
+              <div>
+                <h3 className="mt-5">SPECIFICATIONS</h3>
+                <div className="card">
+                  <div className="card-body p-5">
+                    <form>
+                      {product.specifications.map(specification => (
+                        <div key={'specification-' + specification} className="form-group row">
+                          <label
+                            htmlFor="staticEmail"
+                            className="col-sm-2 col-form-label font-weight-bold"
+                          >
+                            {specification.name}
+                          </label>
+                          <div className="col-sm-10">
+                            <input
+                              type="text"
+                              readOnly
+                              className="form-control-plaintext"
+                              id="staticEmail"
+                              defaultValue={specification.value}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </form>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        </form>
+        )}
       </div>
     );
   }
 }
-const mapStateToProps = (state, props) => {
-  const { match } = props;
-  const { detail: product } = state.product;
-  const { id } = match.params;
-  const isProductDetailMode = match.path.includes("detail");
-
-  return {
-    isProductDetailMode,
-    id,
-    isLoading: product.isLoading,
-    isError: product.err !== null,
-    initialValues: !isProductDetailMode
-      ? {
-          price: 0,
-          guarantee: 6,
-          category: "Phone",
-          specifications: [],
-          additionPicture: [],
-          mainPicture: null
-        }
-      : { ...product, isLoading: undefined, err: undefined }
-  };
-};
-
-const mapDispatchToProps = dispatch => ({
-  toast: (message, level) => dispatch(toast(message, level)),
-  loadProductData: productId => dispatch(loadProductData(productId))
+const mapStateToProps = state => ({
+  product: state.product.detail,
+  feedback: state.product.feedback
 });
-const ReduxForm = reduxForm({
-  form: "add_product_form",
-  touchOnBlur: false,
-  enableReinitialize: true,
-  onSubmitFail: () => {},
-  validate: values => {
-    const errors = {};
-    return errors;
-  },
-  shouldValidate: params => params.props.submitting
-})(ProductDetail);
-
-export default connect(mapStateToProps, mapDispatchToProps)(ReduxForm);
+const mapDispatchToProps = dispatch => ({
+  loadProductData: productId => dispatch(loadProductData(productId)),
+  loadProductFeedback: productId => dispatch(loadProductFeedback(productId))
+});
+export default connect(mapStateToProps, mapDispatchToProps)(ProductDetail);

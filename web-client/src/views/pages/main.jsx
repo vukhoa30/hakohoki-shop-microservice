@@ -5,8 +5,11 @@ import { Link, Redirect, Switch, withRouter } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import ProductList from "./Product/List";
 import ProductDetail from "./Product/Detail";
+import AddProduct from "./Product/AddProduct";
 import Notification from "./Notification";
 import ProductFeedback from "./Product/Feedback";
+import CreateAccount from "./Account/CreateAccount";
+import BillDetail from "./Bill/Detail";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { parseToQueryString } from "../../utils";
@@ -19,7 +22,7 @@ class Main extends React.Component {
     super(props);
   }
   render() {
-    const { match, logOut } = this.props;
+    const { match, logOut, role } = this.props;
     return (
       <div>
         {/* Navigation*/}
@@ -57,16 +60,50 @@ class Main extends React.Component {
                   <span className="nav-link-text text-light">Dashboard</span>
                 </Link>
               </li>
+              {role === "manager" && (
+                <li
+                  className="nav-item"
+                  data-toggle="tooltip"
+                  data-placement="right"
+                  title="Accounts"
+                >
+                  <a
+                    className="nav-link nav-link-collapse collapsed"
+                    data-toggle="collapse"
+                    href="#collapseAccounts"
+                    data-parent="#exampleAccordion"
+                  >
+                    <i
+                      className="fa fa-fw fa-wrench"
+                      style={{ marginRight: 10 }}
+                    />
+                    <span className="nav-link-text text-light">Account</span>
+                  </a>
+                  <ul
+                    className="sidenav-second-level collapse"
+                    id="collapseAccounts"
+                  >
+                    <li>
+                      <Link
+                        to={`${match.url}/account/create-account`}
+                        className="text-light"
+                      >
+                        Create account
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+              )}
               <li
                 className="nav-item"
                 data-toggle="tooltip"
                 data-placement="right"
-                title="Components"
+                title="Products"
               >
                 <a
                   className="nav-link nav-link-collapse collapsed"
                   data-toggle="collapse"
-                  href="#collapseComponents"
+                  href="#collapseProducts"
                   data-parent="#exampleAccordion"
                 >
                   <i
@@ -77,7 +114,7 @@ class Main extends React.Component {
                 </a>
                 <ul
                   className="sidenav-second-level collapse"
-                  id="collapseComponents"
+                  id="collapseProducts"
                 >
                   <li>
                     <Link
@@ -101,12 +138,12 @@ class Main extends React.Component {
                 className="nav-item"
                 data-toggle="tooltip"
                 data-placement="right"
-                title="Example Pages"
+                title="Bills"
               >
                 <a
                   className="nav-link nav-link-collapse collapsed"
                   data-toggle="collapse"
-                  href="#collapseExamplePages"
+                  href="#collapseBills"
                   data-parent="#exampleAccordion"
                 >
                   <i className="fa fa-fw fa-file" style={{ marginRight: 10 }} />
@@ -114,7 +151,7 @@ class Main extends React.Component {
                 </a>
                 <ul
                   className="sidenav-second-level collapse"
-                  id="collapseExamplePages"
+                  id="collapseBills"
                 >
                   <li>
                     <Link to={`${match.url}/bill/list`} className="text-light">
@@ -135,12 +172,12 @@ class Main extends React.Component {
                 className="nav-item"
                 data-toggle="tooltip"
                 data-placement="right"
-                title="Menu Levels"
+                title="Promotion"
               >
                 <a
                   className="nav-link nav-link-collapse collapsed"
                   data-toggle="collapse"
-                  href="#collapseMulti"
+                  href="#collapsePromotion"
                   data-parent="#exampleAccordion"
                 >
                   <i
@@ -151,7 +188,7 @@ class Main extends React.Component {
                 </a>
                 <ul
                   className="sidenav-second-level collapse"
-                  id="collapseMulti"
+                  id="collapsePromotion"
                 >
                   <li>
                     <Link
@@ -295,6 +332,10 @@ class Main extends React.Component {
                     component={Dashboard}
                   />
                   <Route
+                    path={`${match.url}/account/create-account`}
+                    component={CreateAccount}
+                  />
+                  <Route
                     path={`${match.url}/product/feedback/:id`}
                     component={ProductFeedback}
                   />
@@ -304,13 +345,21 @@ class Main extends React.Component {
                   />
                   <Route
                     path={`${match.url}/product/add-product`}
-                    component={ProductDetail}
+                    component={AddProduct}
+                  />
+                  <Route
+                    path={`${match.url}/product/update-product/:id`}
+                    component={AddProduct}
                   />
                   <Route
                     path={`${match.url}/product/detail/:id`}
                     component={ProductDetail}
                   />
                   <Route path={`${match.url}/bill/list`} component={BillList} />
+                  <Route
+                    path={`${match.url}/bill/detail/:id`}
+                    component={BillDetail}
+                  />
                   {/* <Route
                     path={`${match.url}/product`}
                     component={({ match }) => (
@@ -371,8 +420,7 @@ class Main extends React.Component {
                   </button>
                 </div>
                 <div className="modal-body">
-                  Select "Logout" below if you are ready to end your current
-                  session.
+                  Are you sure to log out?
                 </div>
                 <div className="modal-footer">
                   <button
@@ -382,7 +430,12 @@ class Main extends React.Component {
                   >
                     Cancel
                   </button>
-                  <a className="btn btn-primary" data-dismiss="modal" onClick={() => logOut()} href="javascript:;" >
+                  <a
+                    className="btn btn-primary"
+                    data-dismiss="modal"
+                    onClick={() => logOut()}
+                    href="javascript:;"
+                  >
                     Log out
                   </a>
                 </div>
@@ -400,7 +453,8 @@ class Main extends React.Component {
 
 const mapStateToProps = state => ({
   product: state.product.detail,
-  router: state.router
+  router: state.router,
+  role: state.user.role
 });
 const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut())

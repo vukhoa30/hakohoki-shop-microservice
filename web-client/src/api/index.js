@@ -4,7 +4,7 @@ import { reduce, transform } from "lodash";
 import { push } from "react-router-redux";
 import { resolve } from "url";
 import { SubmissionError } from "redux-form";
-
+import { code as errCode } from "./err-code";
 const {
   FINISH_LOADING_APP,
   LOADING_PRODUCT,
@@ -15,8 +15,17 @@ const {
   LOG_OUT,
   LOADING_UPCOMING_BILL,
   LOADING_COMPLETED_BILL,
-  SEARCHING_BILL
+  SEARCHING_BILL,
+  SELECT_BILL
 } = keys;
+
+const {
+  UNKNOWN_ERROR,
+  CONNECTION_ERROR,
+  FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
+  DATA_NOT_FOUND
+} = errCode;
 
 /* PRODUCT */
 export const fetchProductData = async productId => {
@@ -168,6 +177,25 @@ export const authenticate = async (values, onSubmitSuccess) => {
   return Promise.reject(new SubmissionError({ _error }));
 };
 
+export const createAccount = async (values, token, onSubmitSuccess) => {
+  let err = "Undefined error! Try again later";
+  try {
+    console.log(values)
+    const { status } = await request(
+      "/employees/",
+      "POST",
+      { Authorization: "JWT " + token },
+      { ...values, retypePassword: undefined }
+    );
+    if (status === 200) return Promise.resolve(onSubmitSuccess());
+    else if (status === 401) err = "Only manager can create employee account";
+    else if (status === 500) err = "Internal server error! Try again later";
+  } catch (error) {
+    if (error === "CONNECTION_ERROR") err = "Connection error! Try again later";
+  }
+  return Promise.reject(new SubmissionError({ _error: err }));
+};
+
 export const logIn = (account, token) => {
   return dispatch => {
     localStorage.setItem("@User:info", JSON.stringify({ account, token }));
@@ -198,11 +226,11 @@ export const loadUserInfo = () => {
     if (infoString !== null) {
       try {
         const { account, token } = JSON.parse(infoString);
-        console.log(token);
+        console.log(account);
         dispatch(getAction(LOG_IN, { account, token }));
       } catch (error) {}
     }
-    setTimeout(() => dispatch(getAction(FINISH_LOADING_APP)), 2000);
+    setTimeout(() => dispatch(getAction(FINISH_LOADING_APP)), 50);
   };
 };
 
@@ -253,6 +281,43 @@ export const searchForBills = (query, billType, token) => {
   };
 };
 
+export const selectBill = (bill, token) => {
+  return async dispatch => {
+    if (!token) {
+      dispatch(getAction(SELECT_BILL, { isLoading: true, data: bill }));
+      return dispatch(push("/main/bill/detail/" + bill._id));
+    }
+    dispatch(getAction(SELECT_BILL, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+    try {
+      const { status, data } = await request("/bills/" + bill._id, "GET", {
+        Authorization: "JWT " + token
+      });
+      if (status === 200)
+        return dispatch(
+          getAction(SELECT_BILL, {
+            isLoading: false,
+            data: {
+              ...data,
+              totalPrice: data.specificProducts.reduce(
+                (total, product) => total + product.price,
+                0
+              )
+            }
+          })
+        );
+      else if (status === 401) err = FORBIDDEN;
+      else if (status === 500) {
+        if (data.err === "data not found") err = DATA_NOT_FOUND;
+        else err = INTERNAL_SERVER_ERROR;
+      }
+    } catch (error) {
+      err = error;
+    }
+    dispatch(getAction(SELECT_BILL, { isLoading: false, err }));
+  };
+};
+
 export const getBill = async (billId, token) => {
   try {
     const { status, data } = await request("/bills/" + billId, "GET", {
@@ -278,7 +343,7 @@ export const confirmBill = async (billId, token) => {
   try {
     const { status, data } = await request(
       "/bills/order",
-      "POST",
+      "PUT",
       {
         Authorization: "JWT " + token
       },
@@ -289,8 +354,12 @@ export const confirmBill = async (billId, token) => {
         ok: true
       });
     return Promise.resolve({ ok: false, status });
-  } catch (error) {}
-  return Promise.resolve({ ok: false, status: 500 });
+  } catch (error) {
+    return Promise.resolve({
+      ok: false,
+      status: error === "CONNECTION_ERROR" ? 0 : -1
+    });
+  }
 };
 
 export const giveAnswer = async (productId, content, parentId, token) => {

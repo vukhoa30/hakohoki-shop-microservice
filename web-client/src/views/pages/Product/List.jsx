@@ -1,8 +1,14 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import ProductShowcase from "../../components/ProductShowcase";
-import { loadProductList, fetchProductData, selectProduct, toast } from "../../../api";
+import {
+  loadProductList,
+  fetchProductData,
+  selectProduct,
+  toast
+} from "../../../api";
 import { parseToQueryString, parseToObject } from "../../../utils";
+import Loader from "../../components/Loader";
 
 class ProductList extends Component {
   constructor(props) {
@@ -197,13 +203,14 @@ class ProductList extends Component {
               role="alert"
               onClick={e =>
                 loadProductList(
-                  parseToQueryString({
-                    category:
-                      this.state.category === "All"
-                        ? undefined
-                        : this.state.category,
-                    q: this.q.value === "" ? undefined : this.q.value
-                  }),
+                  "?" +
+                    parseToQueryString({
+                      category:
+                        this.state.category === "All"
+                          ? undefined
+                          : this.state.category,
+                      q: this.q.value === "" ? undefined : this.q.value
+                    }),
                   list.length,
                   10
                 )
@@ -213,7 +220,7 @@ class ProductList extends Component {
             </div>
           )}
           {isLoading ? (
-            <i className="fa fa-spinner fa-spin fa-3x" />
+            <Loader />
           ) : (
             list.length > 0 &&
             err === null && (
@@ -221,13 +228,14 @@ class ProductList extends Component {
                 className="mt-5 btn btn-light"
                 onClick={e =>
                   loadProductList(
-                    parseToQueryString({
-                      category:
-                        this.state.category === "All"
-                          ? undefined
-                          : this.state.category,
-                      q: this.q.value === "" ? undefined : this.q.value
-                    }),
+                    "?" +
+                      parseToQueryString({
+                        category:
+                          this.state.category === "All"
+                            ? undefined
+                            : this.state.category,
+                        q: this.q.value === "" ? undefined : this.q.value
+                      }),
                     list.length,
                     10
                   )
@@ -248,7 +256,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   loadProductList: (query, offset, limit) =>
     dispatch(loadProductList(query, offset, limit)),
-  selectProduct: (productId,viewType) => dispatch(selectProduct(productId,viewType)),
+  selectProduct: (productId, viewType) =>
+    dispatch(selectProduct(productId, viewType)),
   toast: (message, level) => dispatch(toast(message, level))
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProductList);

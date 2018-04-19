@@ -1,6 +1,11 @@
 import { keys } from "../actions";
 
-const { LOADING_UPCOMING_BILL, SEARCHING_BILL, LOADING_COMPLETED_BILL } = keys;
+const {
+  LOADING_UPCOMING_BILL,
+  SEARCHING_BILL,
+  LOADING_COMPLETED_BILL,
+  SELECT_BILL
+} = keys;
 
 const initialState = {
   upcoming: {
@@ -17,6 +22,11 @@ const initialState = {
     isLoading: false,
     data: [],
     err: null
+  },
+  selected: {
+    isLoading: true,
+    _id: null,
+    err: null
   }
 };
 
@@ -25,6 +35,13 @@ const handleData = (prevState, action) => {
   if (isLoading) return { isLoading, data: [], err: null };
   else if (err) return { ...prevState, isLoading, err };
   else return { ...prevState, isLoading, data };
+};
+
+const selectBill = (prevState, action) => {
+  const { isLoading, data, err } = action;
+  if (isLoading) return { ...prevState, isLoading, err: null };
+  else if (err) return { ...prevState, isLoading, err };
+  else return { ...prevState, isLoading, ...data };
 };
 
 const reducer = (state = initialState, action) => {
@@ -39,6 +56,9 @@ const reducer = (state = initialState, action) => {
       break;
     case SEARCHING_BILL:
       nextState = { ...state, search: handleData(state.search, action) };
+      break;
+    case SELECT_BILL:
+      nextState = { ...state, selected: selectBill(state.selected, action) };
       break;
   }
   return nextState;

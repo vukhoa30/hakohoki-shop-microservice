@@ -47,7 +47,10 @@ const mapStateToProps = state => {
         name: product.category,
         link: `/main/product/list?category=${product.category}`
       },
-      { name: product.name }
+      { name: product.name },
+      {
+        name: pathname.includes("detail") ? "Detail" : "Feedback"
+      }
     ];
   } else if (pathname.includes("product/add-product")) {
     routes = [{ name: "Product" }, { name: "Add new product" }];
@@ -55,6 +58,10 @@ const mapStateToProps = state => {
     routes = [{ name: "Notification" }];
   } else if (pathname.includes("bill/list")) {
     routes = [{ name: "Bill" }, { name: "List" }];
+  } else if (pathname.includes("account/create-account")) {
+    routes = [{ name: "Account" }, { name: "Create account" }];
+  } else if (pathname.includes("bill/detail")) {
+    routes = [{ name: "Bill" }, { name: "Detail" }];
   } else {
     routes = [{ name: "Unknown" }];
   }

@@ -6,11 +6,18 @@ import {
   parseToObject,
   parseToQueryString
 } from "../../../utils";
-import { searchForBills, getBill, toast, confirmBill } from "../../../api";
+import {
+  searchForBills,
+  getBill,
+  toast,
+  confirmBill,
+  selectBill
+} from "../../../api";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 import Bill from "../../components/Bill";
+import Loader from "../../components/Loader";
 import $ from "jquery";
 import { findDOMNode } from "react-dom";
 
@@ -36,7 +43,7 @@ class BillList extends Component {
       const { location, searchForBills, token } = this.props;
       const { search } = location;
       if (search === "") return;
-      searchForBills(search, token);
+      searchForBills(search, "search", token);
       const searchObj = parseToObject(search);
       Object.keys(searchObj).map(key => {
         if (
@@ -59,20 +66,7 @@ class BillList extends Component {
     if (this.props.location !== nextProps.location) {
       const { token, location, searchForBills } = nextProps;
       const { search } = location;
-      searchForBills(search, token);
-    }
-  }
-
-  getInfoName(infoKey) {
-    switch (infoKey) {
-      case "accountId":
-        return "User Id";
-      case "fullName":
-        return "Name";
-      case "email":
-        return "Email";
-      default:
-        return "Phone number";
+      searchForBills(search, "search", token);
     }
   }
 
@@ -86,7 +80,8 @@ class BillList extends Component {
       location,
       handleSubmit,
       history,
-      toast
+      toast,
+      selectBill
     } = this.props;
     const { selectedBill, confirmingBill } = this.state;
     return (
@@ -95,165 +90,6 @@ class BillList extends Component {
           <i className="fa fa-plus mr-3" />
           CREATE A BILL
         </button>
-        <div>
-          <button
-            ref={ref => (this.toggleModel = ref)}
-            style={{ visibility: "hidden", position: "absolute" }}
-            data-target="#bill"
-            data-toggle="modal"
-          />
-          {/* Button trigger modal */}
-          <div
-            className="modal fade"
-            id="bill"
-            tabIndex={-1}
-            role="dialog"
-            aria-labelledby="bill"
-            aria-hidden="true"
-            ref={ref => (this.modalDialog = ref)}
-          >
-            <div
-              className="modal-dialog modal-dialog-centered"
-              role="document"
-              style={{ minWidth: "80%" }}
-            >
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h1 className="modal-title" id="exampleModalLabel">
-                    BILL DETAIL
-                  </h1>
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  {selectedBill !== null && (
-                    <div>
-                      <div className="d-flex w-100 justify-content-between">
-                        <h3>User information</h3>
-                        <p className="float-right" style={{ color: "gray" }}>
-                          {formatTime(selectedBill.createdAt)}
-                        </p>
-                      </div>
-                      <div className="mt-3 card">
-                        <div className="card-body">
-                          {Object.keys(selectedBill.buyer).map(
-                            (infoKey, index) => (
-                              <div
-                                key={"user-info" + index}
-                                className="form-group row"
-                              >
-                                <label
-                                  htmlFor="staticEmail"
-                                  className="col-sm-4 col-form-label font-weight-bold"
-                                >
-                                  {this.getInfoName(infoKey)}
-                                </label>
-                                <div className="col-sm-6">
-                                  <input
-                                    type="text"
-                                    readOnly
-                                    className="form-control-plaintext"
-                                    id="staticEmail"
-                                    defaultValue={selectedBill.buyer[infoKey]}
-                                  />
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </div>
-                      <h3 className="mt-3">Products</h3>
-                      <table className="table mt-3">
-                        <thead className="thead-dark">
-                          <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Price</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedBill.specificProducts.map(
-                            specificProduct => (
-                              <tr
-                                key={"specific-product-" + specificProduct.id}
-                              >
-                                <td>{specificProduct.id}</td>
-                                <td>{specificProduct.productName}</td>
-                                <td>{currencyFormat(specificProduct.price)}</td>
-                              </tr>
-                            )
-                          )}
-                        </tbody>
-                      </table>
-                      <div className="d-flex flex-row-reverse">
-                        <p className="mt-5 font-weight-bold">
-                          TOTAL:{" "}
-                          {currencyFormat(
-                            selectedBill.specificProducts.reduce(
-                              (total, product) => total + product.price,
-                              0
-                            )
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                  {selectedBill !== null &&
-                    selectedBill.status === "pending" && (
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        disabled={confirmingBill}
-                        onClick={async () => {
-                          const billId = selectedBill._id;
-                          this.setState({ confirmingBill: true });
-                          const result = await confirmBill(billId, token);
-                          if (result.ok) {
-                            searchForBills("?status=pending", "pending", token);
-                            searchForBills(
-                              "?status=completed",
-                              "pending",
-                              token
-                            );
-                            this.toggleModel.click();
-                          } else {
-                            if (result.status === 401)
-                              toast(
-                                `YOU ARE NOT AUTHORIZED TO CONFIRM BILL`,
-                                "error"
-                              );
-                            else toast(`INTERNAL SERVER ERROR`, "error");
-                          }
-                          this.setState({ confirmingBill: false });
-                        }}
-                      >
-                        {confirmingBill ? (
-                          <i className="fa fa-spinner fa-spin" />
-                        ) : (
-                          "Check out"
-                        )}
-                      </button>
-                    )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         <form
           onSubmit={async e => {
             e.preventDefault();
@@ -261,8 +97,7 @@ class BillList extends Component {
             this.setState({ searchingForBill: true });
             const result = await getBill(this.billId.value, token);
             if (result.ok) {
-              this.setState({ selectedBill: result.data });
-              this.toggleModel.click();
+              selectBill(result.data);
             } else {
               if (result.status === 401)
                 toast(`YOU ARE NOT AUTHORIZED TO SEE BILL DATA`, "error");
@@ -298,7 +133,7 @@ class BillList extends Component {
         <div className="row mt-3">
           <div
             className="col-md-6 col-xs-12"
-            style={{ height: 500, overflowY: "auto" }}
+            style={{ height: 600, overflowY: "auto" }}
           >
             <h3>UPCOMING</h3>
             {upcoming.err !== null && (
@@ -314,19 +149,12 @@ class BillList extends Component {
             )}
             {upcoming.isLoading ? (
               <div className="d-flex justify-content-center mt-5">
-                <i className="fa fa-spinner fa-spin fa-3x" />
+                <Loader />
               </div>
             ) : upcoming.data.length > 0 ? (
               <div className="list-group mt-3">
                 {upcoming.data.map(bill => (
-                  <Bill
-                    dialogId="#bill"
-                    key={"upcoming-bill-" + bill._id}
-                    bill={bill}
-                    select={bill => {
-                      this.setState({ selectedBill: bill });
-                    }}
-                  />
+                  <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
                 ))}
               </div>
             ) : (
@@ -339,7 +167,7 @@ class BillList extends Component {
           </div>
           <div
             className="col-md-6 col-xs-12"
-            style={{ height: 500, overflowY: "auto" }}
+            style={{ height: 600, overflowY: "auto" }}
           >
             <h3>COMPLETED</h3>
             {completed.err !== null && (
@@ -355,19 +183,12 @@ class BillList extends Component {
             )}
             {completed.isLoading ? (
               <div className="d-flex justify-content-center mt-5">
-                <i className="fa fa-spinner fa-spin fa-3x" />
+                <Loader />
               </div>
             ) : completed.data.length > 0 ? (
               <div className="list-group mt-3">
                 {completed.data.map(bill => (
-                  <Bill
-                    dialogId="#bill"
-                    key={"upcoming-bill-" + bill._id}
-                    bill={bill}
-                    select={bill => {
-                      this.setState({ selectedBill: bill });
-                    }}
-                  />
+                  <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
                 ))}
               </div>
             ) : (
@@ -485,27 +306,21 @@ class BillList extends Component {
                 <div
                   className="alert alert-danger clickable d-flex justify-content-center"
                   role="alert"
-                  onClick={() => searchForBills(location.search, token)}
+                  onClick={() =>
+                    searchForBills(location.search, "search", token)
+                  }
                 >
                   COULD NOT LOAD DATA. CLICK TO TRY AGAIN
                 </div>
               )}
               {search.isLoading ? (
                 <div className="d-flex justify-content-center mt-5">
-                  <i className="fa fa-spinner fa-spin fa-3x" />
+                  <Loader />
                 </div>
               ) : search.data.length > 0 ? (
                 <div className="list-group mt-3">
                   {search.data.map(bill => (
-                    <Bill
-                      dialogId="#bill"
-                      key={"search-bill-" + bill._id}
-                      bill={bill}
-                      select={bill => {
-                        this.setState({ selectedBill: bill });
-                        $("#bill").modal("show");
-                      }}
-                    />
+                    <Bill key={"search-bill-" + bill._id} bill={bill} />
                   ))}
                 </div>
               ) : (
@@ -536,7 +351,8 @@ const mapStateToProps = (state, props) => {
 const mapDispatchToProps = dispatch => ({
   searchForBills: (query, billType, token) =>
     dispatch(searchForBills(query, billType, token)),
-  toast: (message, level) => dispatch(toast(message, level))
+  toast: (message, level) => dispatch(toast(message, level)),
+  selectBill: bill => dispatch(selectBill(bill))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BillList);

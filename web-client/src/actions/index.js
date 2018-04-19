@@ -12,7 +12,8 @@ export const keys = {
 
   LOADING_UPCOMING_BILL: "LOADING_UPCOMING_BILL",
   LOADING_COMPLETED_BILL: 'LOADING_COMPLETED_BILL',
-  SEARCHING_BILL: "SEARCHING_BILL"
+  SEARCHING_BILL: "SEARCHING_BILL",
+  SELECT_BILL: "SELECT_BILL",
 };
 
 export const getAction = (type, data) => ({ type, ...data });
