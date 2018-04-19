@@ -83,18 +83,6 @@ module.exports = {
     })
     .catch(e => catchError(res, e))
   },
-  authenticate: (req, res) => {
-    helper.verifyjwt(req.body.token)
-    .then(decode => {
-      if (decode.email && decode.email === req.body.email && 
-        Date.now() < decode.expireTime) {
-        res.json({ ok: true, decodeToken })
-      } else {
-        res.json({ ok: false })
-      }
-    })
-    .catch(e => catchError(res, e))
-  },
   authenticateEmployee: (token) => {
     return new Promise((resolve, reject) => {
       helper.verifyjwt(token)
@@ -135,26 +123,17 @@ module.exports = {
     })
     .catch(e => catchError(res, e))
   },
-  checkReceptionist: (req, res, next) => {
-    if (req.account && req.account.role == 'receptionist') {
-      next()
-    } else {
-      res.status(403);
-      res.json({ msg: 'No receptionist privilege!' });
+  getAllEmployees: async (req, res) => {
+    if (!(await checkManager(req))) {
+      return catchUnauthorized(res)
     }
-  },
-  checkManager: (req, res, next) => {
-    if (req.account && req.account.role == 'manager') {
-      next()
-    } else {
-      res.status(403);
-      res.json({ msg: 'No manager privilege!' });
-    }
-  },
-
-
-  /*
-  getProduct: (req, res) => {
-    typicalResponse(res, db.GetProduct(req.params.id));
-  },*/
+    let employees = await db.GetAllEmployees()
+    res.json(employees.map(e => { return {
+      phoneNumber: e.phone_number,
+      fullName: e.full_name,
+      email: e.email,
+      role: e.role,
+      active: e.active
+    }}))
+  }
 }

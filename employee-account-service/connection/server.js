@@ -17,7 +17,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-//app.post('/authenticate', core.authenticate)
+app.get('/', core.getAllEmployees)
+
 app.post('/', core.createAccount)
 app.post('/login', core.logIn)
 
