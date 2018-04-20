@@ -5,6 +5,7 @@ import toast from './toast'
 import app from './app'
 import user from './user'
 import bill from './bill'
+import account from './account'
 import { routerReducer as router } from 'react-router-redux'
 
 export default combineReducers({
@@ -15,6 +16,7 @@ export default combineReducers({
     toast,
     app,
     user,
-    bill
+    bill,
+    account
 
 })

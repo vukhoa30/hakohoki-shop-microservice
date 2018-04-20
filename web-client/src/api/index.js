@@ -16,7 +16,8 @@ const {
   LOADING_UPCOMING_BILL,
   LOADING_COMPLETED_BILL,
   SEARCHING_BILL,
-  SELECT_BILL
+  SELECT_BILL,
+  LOADING_ACCOUNTS
 } = keys;
 
 const {
@@ -91,7 +92,8 @@ export const loadProductFeedback = productId => {
           getAction(LOADING_PRODUCT_FEEDBACK, {
             isLoading: false,
             reviews,
-            comments
+            comments,
+            _id: productId
           })
         );
       }
@@ -131,16 +133,12 @@ export const loadProductList = (query, offset, limit) => {
     dispatch(getAction(LOADING_PRODUCT_LIST, { isLoading: false, err }));
   };
 };
-export const selectProduct = (product, viewType) => {
+export const selectProduct = product => {
   return dispatch => {
     product.specifications = convertObjectToArray(product.specifications);
     if (product !== null)
       dispatch(getAction(LOADING_PRODUCT, { isLoading: false, data: product }));
-    dispatch(
-      push({
-        pathname: "/main/product/" + viewType + `/${product._id}`
-      })
-    );
+    dispatch(push("/main/product/detail/" + product._id));
   };
 };
 /* */
@@ -180,7 +178,7 @@ export const authenticate = async (values, onSubmitSuccess) => {
 export const createAccount = async (values, token, onSubmitSuccess) => {
   let err = "Undefined error! Try again later";
   try {
-    console.log(values)
+    console.log(values);
     const { status } = await request(
       "/employees/",
       "POST",
@@ -384,6 +382,70 @@ export const giveAnswer = async (productId, content, parentId, token) => {
     }
   } catch (error) {
     if (error === "CONNECTION_ERROR") _error = "Connection error";
+  }
+  return Promise.resolve({ ok: false, _error });
+};
+
+export const loadAccounts = token => {
+  return async dispatch => {
+    dispatch(getAction(LOADING_ACCOUNTS, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+    try {
+      const { status, data } = await request("/employees", "GET", {
+        Authorization: "JWT " + token
+      });
+      if (status === 200) {
+        console.log(data);
+        const { managers, employees, receptionists } = transform(
+          data,
+          (result, account) => {
+            if (account.role === "manager") result["managers"].push(account);
+            else if (account.role === "receptionist")
+              result["receptionists"].push(account);
+            else result["employees"].push(account);
+            return result;
+          },
+          {
+            employees: [],
+            receptionists: [],
+            managers: []
+          }
+        );
+        return dispatch(
+          getAction(LOADING_ACCOUNTS, {
+            isLoading: false,
+            managers,
+            employees,
+            receptionists
+          })
+        );
+      } else if (status === 401) err = FORBIDDEN;
+      else err = INTERNAL_SERVER_ERROR;
+    } catch (error) {
+      err = error;
+    }
+    dispatch(getAction(LOADING_ACCOUNTS, { isLoading: false, err }));
+  };
+};
+
+export const setAccountStatus = async (accountStatus, email, token) => {
+  let _error = UNKNOWN_ERROR;
+  try {
+    const { status } = await request(
+      "/employees/" + accountStatus,
+      "PUT",
+      { Authorization: "JWT " + token },
+      { email }
+    );
+    if (status === 200) {
+      return Promise.resolve({ ok: true });
+    } else if (status === 401) {
+      _error = FORBIDDEN;
+    } else {
+      _error = INTERNAL_SERVER_ERROR;
+    }
+  } catch (error) {
+    _error = error;
   }
   return Promise.resolve({ ok: false, _error });
 };

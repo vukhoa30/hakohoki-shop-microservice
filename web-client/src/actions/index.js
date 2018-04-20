@@ -14,6 +14,8 @@ export const keys = {
   LOADING_COMPLETED_BILL: 'LOADING_COMPLETED_BILL',
   SEARCHING_BILL: "SEARCHING_BILL",
   SELECT_BILL: "SELECT_BILL",
+
+  LOADING_ACCOUNTS: 'LOADING_ACCOUNTS'
 };
 
 export const getAction = (type, data) => ({ type, ...data });

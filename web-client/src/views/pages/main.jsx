@@ -8,7 +8,7 @@ import ProductDetail from "./Product/Detail";
 import AddProduct from "./Product/AddProduct";
 import Notification from "./Notification";
 import ProductFeedback from "./Product/Feedback";
-import CreateAccount from "./Account/CreateAccount";
+import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
@@ -65,33 +65,18 @@ class Main extends React.Component {
                   className="nav-item"
                   data-toggle="tooltip"
                   data-placement="right"
-                  title="Accounts"
+                  title="Account"
                 >
-                  <a
-                    className="nav-link nav-link-collapse collapsed"
-                    data-toggle="collapse"
-                    href="#collapseAccounts"
-                    data-parent="#exampleAccordion"
+                  <Link
+                    to={`${match.url}/account/management`}
+                    className="nav-link"
                   >
                     <i
-                      className="fa fa-fw fa-wrench"
+                      className="fa fa-fw fa-user"
                       style={{ marginRight: 10 }}
                     />
                     <span className="nav-link-text text-light">Account</span>
-                  </a>
-                  <ul
-                    className="sidenav-second-level collapse"
-                    id="collapseAccounts"
-                  >
-                    <li>
-                      <Link
-                        to={`${match.url}/account/create-account`}
-                        className="text-light"
-                      >
-                        Create account
-                      </Link>
-                    </li>
-                  </ul>
+                  </Link>
                 </li>
               )}
               <li
@@ -107,7 +92,7 @@ class Main extends React.Component {
                   data-parent="#exampleAccordion"
                 >
                   <i
-                    className="fa fa-fw fa-wrench"
+                    className="fa fa-fw fa-product-hunt"
                     style={{ marginRight: 10 }}
                   />
                   <span className="nav-link-text text-light">Product</span>
@@ -181,7 +166,7 @@ class Main extends React.Component {
                   data-parent="#exampleAccordion"
                 >
                   <i
-                    className="fa fa-fw fa-sitemap"
+                    className="fa fa-fw fa-bomb"
                     style={{ marginRight: 10 }}
                   />
                   <span className="nav-link-text text-light">Promotion</span>
@@ -332,8 +317,8 @@ class Main extends React.Component {
                     component={Dashboard}
                   />
                   <Route
-                    path={`${match.url}/account/create-account`}
-                    component={CreateAccount}
+                    path={`${match.url}/account/management`}
+                    component={AccountManager}
                   />
                   <Route
                     path={`${match.url}/product/feedback/:id`}
@@ -419,9 +404,7 @@ class Main extends React.Component {
                     <span aria-hidden="true">×</span>
                   </button>
                 </div>
-                <div className="modal-body">
-                  Are you sure to log out?
-                </div>
+                <div className="modal-body">Are you sure to log out?</div>
                 <div className="modal-footer">
                   <button
                     className="btn btn-secondary"

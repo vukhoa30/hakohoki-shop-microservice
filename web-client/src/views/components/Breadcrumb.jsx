@@ -41,6 +41,28 @@ const mapStateToProps = state => {
     pathname.includes("product/detail") ||
     pathname.includes("product/feedback")
   ) {
+    routes =
+      product._id === null
+        ? [
+            { name: "Product" },
+            {
+              name: pathname.includes("detail") ? "Detail" : "Feedback"
+            }
+          ]
+        : [
+            { name: "Product" },
+            {
+              name: product.category,
+              link: `/main/product/list?category=${product.category}`
+            },
+            { name: product.name },
+            {
+              name: pathname.includes("detail") ? "Detail" : "Feedback"
+            }
+          ];
+  } else if (pathname.includes("product/add-product")) {
+    routes = [{ name: "Product" }, { name: "Add new product" }];
+  } else if (pathname.includes("product/update-product")) {
     routes = [
       { name: "Product" },
       {
@@ -48,18 +70,14 @@ const mapStateToProps = state => {
         link: `/main/product/list?category=${product.category}`
       },
       { name: product.name },
-      {
-        name: pathname.includes("detail") ? "Detail" : "Feedback"
-      }
+      { name: "Update information" }
     ];
-  } else if (pathname.includes("product/add-product")) {
-    routes = [{ name: "Product" }, { name: "Add new product" }];
   } else if (pathname.includes("notification")) {
     routes = [{ name: "Notification" }];
   } else if (pathname.includes("bill/list")) {
     routes = [{ name: "Bill" }, { name: "List" }];
-  } else if (pathname.includes("account/create-account")) {
-    routes = [{ name: "Account" }, { name: "Create account" }];
+  } else if (pathname.includes("account/management")) {
+    routes = [{ name: "Account" }, { name: "Management" }];
   } else if (pathname.includes("bill/detail")) {
     routes = [{ name: "Bill" }, { name: "Detail" }];
   } else {

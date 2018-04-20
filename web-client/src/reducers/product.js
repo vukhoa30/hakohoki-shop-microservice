@@ -30,6 +30,7 @@ const initialState = {
   feedback: {
     isLoading: false,
     err: null,
+    _id: null,
     comments: [],
     reviews: []
   }
@@ -55,11 +56,11 @@ const productListReducer = (prevState, action) => {
 };
 
 const feedbackReducer = (prevState, action) => {
-  const { isLoading, err, comments, reviews } = action;
-  if (isLoading) return { ...prevState, isLoading, err: null };
+  const { isLoading, err, comments, reviews, _id } = action;
+  if (isLoading) return { ...initialState.feedback, isLoading };
   return err
     ? { ...prevState, isLoading, err }
-    : { ...prevState, isLoading, reviews, comments };
+    : { ...prevState, isLoading, reviews, comments, _id };
 };
 
 const reducer = (state = initialState, action) => {

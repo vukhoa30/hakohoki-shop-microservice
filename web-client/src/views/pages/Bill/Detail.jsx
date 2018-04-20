@@ -50,10 +50,7 @@ class BillDetail extends Component {
           {selectedBill.isLoading && <Loader style={{ marginLeft: 30 }} />}
         </div>
         {!selectedBill.isLoading && (
-          <div
-            className="container p-5"
-            style={{ height: 700, overflowY: "auto" }}
-          >
+          <div className="container p-5">
             {selectedBill.status === "pending" && (
               <div
                 className="d-flex flex-row-reverse"
@@ -102,97 +99,104 @@ class BillDetail extends Component {
                 </button>
               </div>
             )}
-            <div className="d-flex w-100 justify-content-between">
-              <h3>User information</h3>
-              <p className="float-right" style={{ color: "gray" }}>
-                {formatTime(selectedBill.createdAt)}
-              </p>
-            </div>
-            <div className="mt-3 card">
-              <div className="card-body">
-                {Object.keys(selectedBill.buyer).map((infoKey, index) => (
-                  <div key={"user-info" + index} className="form-group row">
-                    <label
-                      htmlFor="staticEmail"
-                      className="col-sm-4 col-form-label font-weight-bold"
-                    >
-                      {this.getInfoName(infoKey)}
-                    </label>
-                    <div className="col-sm-6">
-                      <input
-                        type="text"
-                        readOnly
-                        className="form-control-plaintext"
-                        id="staticEmail"
-                        defaultValue={selectedBill.buyer[infoKey]}
-                      />
+            <div style={{ height: 700, overflowY: "auto" }}>
+              <div className="d-flex w-100 justify-content-between">
+                <h3>User information</h3>
+                <p className="float-right" style={{ color: "gray" }}>
+                  {formatTime(selectedBill.createdAt)}
+                </p>
+              </div>
+              <div className="mt-3 card">
+                <div className="card-body">
+                  {Object.keys(selectedBill.buyer).map((infoKey, index) => (
+                    <div key={"user-info" + index} className="form-group row">
+                      <label
+                        htmlFor="staticEmail"
+                        className="col-sm-4 col-form-label font-weight-bold"
+                      >
+                        {this.getInfoName(infoKey)}
+                      </label>
+                      <div className="col-sm-6">
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control-plaintext"
+                          id="staticEmail"
+                          defaultValue={selectedBill.buyer[infoKey]}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {selectedBill.seller && (
+                <div className="mt-3">
+                  <div className="d-flex w-100 justify-content-between">
+                    <h3>Seller information</h3>
+                    <p className="float-right" style={{ color: "gray" }}>
+                      confirmed at: {formatTime(selectedBill.completedAt)}
+                    </p>
+                  </div>
+                  <div className="mt-3 card">
+                    <div className="card-body">
+                      {Object.keys(selectedBill.seller).map(
+                        (infoKey, index) => (
+                          <div
+                            key={"user-info" + index}
+                            className="form-group row"
+                          >
+                            <label
+                              htmlFor="staticEmail"
+                              className="col-sm-4 col-form-label font-weight-bold"
+                            >
+                              {this.getInfoName(infoKey)}
+                            </label>
+                            <div className="col-sm-6">
+                              <input
+                                type="text"
+                                readOnly
+                                className="form-control-plaintext"
+                                id="staticEmail"
+                                defaultValue={selectedBill.seller[infoKey]}
+                              />
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            {selectedBill.seller && (
-              <div className="mt-3">
-                <div className="d-flex w-100 justify-content-between">
-                  <h3>Seller information</h3>
-                  <p className="float-right" style={{ color: "gray" }}>
-                    confirmed at: {formatTime(selectedBill.completedAt)}
-                  </p>
                 </div>
-                <div className="mt-3 card">
-                  <div className="card-body">
-                    {Object.keys(selectedBill.seller).map((infoKey, index) => (
-                      <div key={"user-info" + index} className="form-group row">
-                        <label
-                          htmlFor="staticEmail"
-                          className="col-sm-4 col-form-label font-weight-bold"
-                        >
-                          {this.getInfoName(infoKey)}
-                        </label>
-                        <div className="col-sm-6">
-                          <input
-                            type="text"
-                            readOnly
-                            className="form-control-plaintext"
-                            id="staticEmail"
-                            defaultValue={selectedBill.seller[infoKey]}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-            <h3 className="mt-3">Products</h3>
-            <table className="table mt-3">
-              <thead className="thead-dark">
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Name</th>
-                  <th scope="col">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedBill.specificProducts.map(specificProduct => (
-                  <tr key={"specific-product-" + specificProduct.id}>
-                    <td>{specificProduct.id}</td>
-                    <td>{specificProduct.productName}</td>
-                    <td>{currencyFormat(specificProduct.price)}</td>
+              )}
+              <h3 className="mt-3">Products</h3>
+              <table className="table mt-3">
+                <thead className="thead-dark">
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="d-flex flex-row-reverse">
-              <p className="mt-5 font-weight-bold">
-                TOTAL:{" "}
-                {currencyFormat(
-                  selectedBill.specificProducts.reduce(
-                    (total, product) => total + product.price,
-                    0
-                  )
-                )}
-              </p>
+                </thead>
+                <tbody>
+                  {selectedBill.specificProducts.map(specificProduct => (
+                    <tr key={"specific-product-" + specificProduct.id}>
+                      <td>{specificProduct.id}</td>
+                      <td>{specificProduct.productName}</td>
+                      <td>{currencyFormat(specificProduct.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="d-flex flex-row-reverse">
+                <p className="mt-5 font-weight-bold">
+                  TOTAL:{" "}
+                  {currencyFormat(
+                    selectedBill.specificProducts.reduce(
+                      (total, product) => total + product.price,
+                      0
+                    )
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         )}

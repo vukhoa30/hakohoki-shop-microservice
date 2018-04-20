@@ -5,12 +5,7 @@ import ProductShowcase from "../../components/ProductShowcase";
 import Input from "../../components/Input";
 import Loader from "../../components/Loader";
 import { Field, reduxForm } from "redux-form";
-import {
-  loadProductFeedback,
-  loadProductData,
-  giveAnswer,
-  toast
-} from "../../../api";
+import { loadProductFeedback, giveAnswer, toast } from "../../../api";
 class ProductFeedback extends Component {
   constructor(props) {
     super(props);
@@ -19,11 +14,15 @@ class ProductFeedback extends Component {
       selectedCommentId: null,
       submittingAnswer: false
     };
-    const { product, loadProductFeedback, loadProductData, id } = props;
-    loadProductFeedback(id);
-    if (id !== product._id) loadProductData(id);
+    const { feedback, loadProductFeedback, id } = props;
+    if (id !== feedback._id) loadProductFeedback(id);
   }
-
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      const { feedback, loadProductFeedback, id } = nextProps;
+      loadProductFeedback(id);
+    }
+  }
   renderStars(starCount) {
     const stars = [];
     let i = 0;
@@ -454,7 +453,6 @@ const mapStateToProps = (state, props) => {
 };
 const mapDispatchToProps = dispatch => ({
   loadProductFeedback: productId => dispatch(loadProductFeedback(productId)),
-  loadProductData: productId => dispatch(loadProductData(productId)),
   toast: (message, level) => dispatch(toast(message, level))
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProductFeedback);

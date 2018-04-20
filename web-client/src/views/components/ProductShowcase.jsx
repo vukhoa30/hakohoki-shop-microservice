@@ -35,7 +35,8 @@ class ProducShowcase extends Component {
       showButton,
       product,
       selectProduct,
-      nameReduce
+      nameReduce,
+      history
     } = this.props;
     return (
       <div className="card clickable mb-3" style={{ width: "100%" }}>
@@ -70,13 +71,15 @@ class ProducShowcase extends Component {
             <div>
               <button
                 className="btn btn-block btn-secondary"
-                onClick={() => selectProduct(product, "detail")}
+                onClick={() => selectProduct(product)}
               >
                 View details
               </button>
               <button
                 className="btn btn-block btn-warning mt-3"
-                onClick={() => selectProduct(product, "feedback")}
+                onClick={() =>
+                  history.push("/main/product/feedback/" + product._id)
+                }
               >
                 View feedback
               </button>
@@ -89,7 +92,8 @@ class ProducShowcase extends Component {
 }
 const mapStateToProps = state => ({});
 const mapDispatchToProps = dispatch => ({
-  selectProduct: (product, viewType) =>
-    dispatch(selectProduct(product, viewType))
+  selectProduct: product => dispatch(selectProduct(product))
 });
-export default connect(mapStateToProps, mapDispatchToProps)(ProducShowcase);
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(ProducShowcase)
+);
