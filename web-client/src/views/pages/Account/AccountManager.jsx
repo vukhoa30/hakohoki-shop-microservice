@@ -101,14 +101,14 @@ class AccountManager extends Component {
                 MANAGER
               </button>
             </div>
-            <div>
+            <div style={{ marginTop: 20 }}>
               {isLoading ? (
-                <div className="d-flex justify-content-center pt-5">
+                <div className="text-center">
                   <Loader />
                 </div>
               ) : err ? (
                 <div
-                  class="alert alert-danger mt-5"
+                  class="alert alert-danger clickable"
                   role="alert"
                   onClick={() => loadAccounts(token)}
                 >
@@ -116,6 +116,12 @@ class AccountManager extends Component {
                 </div>
               ) : (
                 <div>
+                  <div
+                    className="text-center"
+                    style={{ width: "100%", position: "absolute" }}
+                  >
+                    <p style={{ color: "gray" }}>NO EMPLOYEES</p>
+                  </div>
                   <div
                     style={{ width: "100%", height: 600, overflowY: "auto" }}
                   >
@@ -133,22 +139,25 @@ class AccountManager extends Component {
                         }
                         className="list-group-item list-group-item-action flex-column align-items-start pt-3 pb-5 mt-2"
                       >
-                        <div className="d-flex justify-content-between">
-                          {account.active ? (
-                            <p style={{ color: "green" }}>ACTIVE</p>
-                          ) : (
-                            <p style={{ color: "gray" }}>DEACTIVE</p>
-                          )}
-                          {this.state.selectedAccount !== null &&
-                            this.state.selectedAccount.email ==
-                              account.email && (
-                              <i
-                                className="fa fa-circle"
-                                style={{ color: "red" }}
-                              />
+                        <div className="row">
+                          <div className="col-xs-6">
+                            {account.active ? (
+                              <p style={{ color: "green" }}>ACTIVE</p>
+                            ) : (
+                              <p style={{ color: "gray" }}>DEACTIVE</p>
                             )}
+                          </div>
+                          <div className="col-xs-6 text-right">
+                            {this.state.selectedAccount !== null &&
+                              this.state.selectedAccount.email ==
+                                account.email && (
+                                <i
+                                  className="fa fa-circle"
+                                  style={{ color: "red" }}
+                                />
+                              )}
+                          </div>
                         </div>
-
                         <div className="form-group row clickable">
                           <label
                             htmlFor="staticEmail"
@@ -273,83 +282,88 @@ class AccountManager extends Component {
               )}
             </div>
           </div>
-          <div className="col-md-7 col-xs-12">
-            <h3>CREATE EMPLOYEE ACCOUNT</h3>
+          <div className="col-md-1 col-xs-12" />
+          <div className="col-md-6 col-xs-12">
             <div className="card">
-              <form
-                className="card-body p-5"
-                onSubmit={handleSubmit(values =>
-                  createAccount(values, token, () => {
-                    toast("ACCOUNT CREATED!", "success");
-                    loadAccounts(token)
-                  })
-                )}
-              >
-                <Field
-                  name="full_name"
-                  type="text"
-                  placeholder="Enter full name"
-                  label="Employee full name"
-                  component={Input}
-                />
-                <Field
-                  name="email"
-                  type="email"
-                  placeholder="Enter email"
-                  label="Email"
-                  component={Input}
-                />
-                <Field
-                  name="password"
-                  type="password"
-                  placeholder="Enter password"
-                  label="Password"
-                  component={Input}
-                />
-                <Field
-                  name="retypePassword"
-                  type="password"
-                  placeholder="Re-enter password"
-                  label="Re-enter password"
-                  component={Input}
-                  showError
-                  showErrorIf={error => error !== "Required"}
-                />
-                <Field
-                  name="phone_number"
-                  type="number"
-                  placeholder="Enter phone number"
-                  label="Phone number"
-                  component={Input}
-                />
-                <div className="form-group">
-                  <label>Role</label>
+              <div className="header">
+                <h3>CREATE EMPLOYEE ACCOUNT</h3>
+              </div>
+              <div className="content" style={{ padding: 20 }}>
+                <form
+                  className="card-body p-5"
+                  onSubmit={handleSubmit(values =>
+                    createAccount(values, token, () => {
+                      toast("ACCOUNT CREATED!", "success");
+                      loadAccounts(token);
+                    })
+                  )}
+                >
                   <Field
-                    name="role"
-                    label="Role"
-                    component="select"
-                    className="form-control"
-                  >
-                    <option defaultValue value="employee">
-                      Employee
-                    </option>
-                    <option value="receptionist">Receiptionist</option>
-                    <option value="manager">Manager</option>
-                  </Field>
-                </div>
-                <div className="d-flex justify-content-center mt-3">
-                  <button
-                    className="btn btn-success"
-                    disabled={invalid || submitting}
-                  >
-                    {submitting ? (
-                      <i className="fa fa-spinner fa-spin" />
-                    ) : (
-                      "ENROLL"
-                    )}
-                  </button>
-                </div>
-              </form>
+                    name="full_name"
+                    type="text"
+                    placeholder="Enter full name"
+                    label="Employee full name"
+                    component={Input}
+                  />
+                  <Field
+                    name="email"
+                    type="email"
+                    placeholder="Enter email"
+                    label="Email"
+                    component={Input}
+                  />
+                  <Field
+                    name="password"
+                    type="password"
+                    placeholder="Enter password"
+                    label="Password"
+                    component={Input}
+                  />
+                  <Field
+                    name="retypePassword"
+                    type="password"
+                    placeholder="Re-enter password"
+                    label="Re-enter password"
+                    component={Input}
+                    showError
+                    showErrorIf={error => error !== "Required"}
+                  />
+                  <Field
+                    name="phone_number"
+                    type="number"
+                    placeholder="Enter phone number"
+                    label="Phone number"
+                    component={Input}
+                  />
+                  <div className="form-group">
+                    <label>Role</label>
+                    <Field
+                      name="role"
+                      label="Role"
+                      component="select"
+                      className="form-control border-input"
+                    >
+                      <option defaultValue value="employee">
+                        Employee
+                      </option>
+                      <option value="receptionist">Receiptionist</option>
+                      <option value="manager">Manager</option>
+                    </Field>
+                  </div>
+                  <div className="text-center">
+                    <button
+                      className="btn btn-success"
+                      disabled={invalid || submitting}
+                    >
+                      {submitting ? (
+                        <i className="fa fa-spinner fa-spin" />
+                      ) : (
+                        "ENROLL"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>

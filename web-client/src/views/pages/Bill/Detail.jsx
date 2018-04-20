@@ -52,10 +52,7 @@ class BillDetail extends Component {
         {!selectedBill.isLoading && (
           <div className="container p-5">
             {selectedBill.status === "pending" && (
-              <div
-                className="d-flex flex-row-reverse"
-                style={{ width: "100%" }}
-              >
+              <div className="text-right" style={{ width: "100%" }}>
                 <button
                   className="btn btn-info mb-3"
                   disabled={this.state.confirming}
@@ -103,11 +100,11 @@ class BillDetail extends Component {
               <div className="d-flex w-100 justify-content-between">
                 <h3>User information</h3>
                 <p className="float-right" style={{ color: "gray" }}>
-                  {formatTime(selectedBill.createdAt)}
+                  order at {formatTime(selectedBill.createdAt)}
                 </p>
               </div>
               <div className="mt-3 card">
-                <div className="card-body">
+                <div className="content">
                   {Object.keys(selectedBill.buyer).map((infoKey, index) => (
                     <div key={"user-info" + index} className="form-group row">
                       <label
@@ -134,11 +131,11 @@ class BillDetail extends Component {
                   <div className="d-flex w-100 justify-content-between">
                     <h3>Seller information</h3>
                     <p className="float-right" style={{ color: "gray" }}>
-                      confirmed at: {formatTime(selectedBill.completedAt)}
+                      confirm at: {formatTime(selectedBill.completedAt)}
                     </p>
                   </div>
                   <div className="mt-3 card">
-                    <div className="card-body">
+                    <div className="content">
                       {Object.keys(selectedBill.seller).map(
                         (infoKey, index) => (
                           <div
@@ -186,8 +183,8 @@ class BillDetail extends Component {
                   ))}
                 </tbody>
               </table>
-              <div className="d-flex flex-row-reverse">
-                <p className="mt-5 font-weight-bold">
+              <div className="text-right" style={{ marginTop: 10, width: '100%' }}>
+                <b>
                   TOTAL:{" "}
                   {currencyFormat(
                     selectedBill.specificProducts.reduce(
@@ -195,7 +192,7 @@ class BillDetail extends Component {
                       0
                     )
                   )}
-                </p>
+                </b>
               </div>
             </div>
           </div>

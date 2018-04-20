@@ -206,7 +206,7 @@ class ProductFeedback extends Component {
             <h3 className="mt-2 mb-2">COMMENTS</h3>
             <div className="list-group">
               <div
-                className="d-flex justify-content-center"
+                className="text-center"
                 style={{
                   position: "absolute",
                   top: 200,
@@ -256,7 +256,7 @@ class ProductFeedback extends Component {
             <div>
               <h3 className="mt-2 mb-2">ANSWERS</h3>
               <div
-                className="d-flex justify-content-center"
+                className="text-center"
                 style={{
                   position: "absolute",
                   top: 200,

@@ -42,11 +42,15 @@ class ProducShowcase extends Component {
       <div className="card clickable mb-3" style={{ width: "100%" }}>
         <img
           className="card-img-top"
-          src={product.mainPicture}
+          src={
+            product.mainPicture
+              ? product.mainPicture
+              : "https://cdn.browshot.com/static/images/not-found.png"
+          }
           alt="Product image"
           style={{ width: "100%", height: autoHeight ? "auto" : 300 }}
         />
-        <div className="card-body">
+        <div className="content">
           <h5 className="card-title">
             {nameReduce ? reduceString(product.name) : product.name}
           </h5>
@@ -68,7 +72,7 @@ class ProducShowcase extends Component {
             <small style={{ color: "gray" }}>({product.reviewCount})</small>
           </div>
           {showButton && (
-            <div>
+            <div style={{ marginTop: 20 }}>
               <button
                 className="btn btn-block btn-secondary"
                 onClick={() => selectProduct(product)}

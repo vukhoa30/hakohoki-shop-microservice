@@ -4,10 +4,13 @@ import { loadProductData, loadProductFeedback } from "../../../api";
 import { currencyFormat, formatTime } from "../../../utils";
 import { transform } from "lodash";
 import Loader from "../../components/Loader";
+import { Modal } from "react-bootstrap";
 class ProductDetail extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      showReview: false
+    };
     this.loadData(this.props);
   }
   loadData(props) {
@@ -34,7 +37,7 @@ class ProductDetail extends Component {
         <i
           key={"star-" + i}
           className={`fa fa-star ${small ? "" : "fa-3x"}`}
-          style={{ color: "orange" }}
+          style={{ color: "orange", margin: 10 }}
         />
       );
     for (; i < 5; i++)
@@ -42,7 +45,7 @@ class ProductDetail extends Component {
         <i
           key={"star-" + i}
           className={`fa fa-star-o ${small ? "" : "fa-3x"}`}
-          style={{ color: "orange" }}
+          style={{ color: "orange", margin: 10 }}
         />
       );
     return stars;
@@ -66,88 +69,68 @@ class ProductDetail extends Component {
     );
     return (
       <div className="container-fluid">
-        <div
-          className="modal fade"
-          id="reviews"
-          tabIndex={-1}
-          role="dialog"
-          aria-labelledby="reviews"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">
-                  REVIEWS
-                </h5>
-                <button
-                  type="button"
-                  className="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div
-                className="modal-body"
-                style={{ height: 600, overflowY: "auto" }}
-              >
-                {!feedback.isLoading &&
-                  reviews.map(review => (
-                    <li
-                      key={"review-" + review.id}
-                      className="list-group-item list-group-item-action flex-column align-items-start"
-                    >
-                      <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1" style={{ fontWeight: "bold" }}>
-                          {review.userName}
-                        </h5>
-                        <small>{formatTime(review.createdAt)}</small>
-                      </div>
-                      <div>{this.renderStars(review.reviewScore, true)}</div>
-                      <p className="mb-1">{review.content}</p>
-                    </li>
-                  ))}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  data-dismiss="modal"
-                >
-                  Close
-                </button>
-              </div>
+        <Modal show={this.state.showReview}>
+          <Modal.Header>
+            <Modal.Title>ANSWERS</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div style={{ height: 600, overflowY: "auto" }}>
+              {!feedback.isLoading &&
+                reviews.map(review => (
+                  <li
+                    key={"review-" + review.id}
+                    className="list-group-item list-group-item-action flex-column align-items-start"
+                  >
+                    <div className="d-flex w-100 justify-content-between">
+                      <h5 className="mb-1" style={{ fontWeight: "bold" }}>
+                        {review.userName}
+                      </h5>
+                      <small>{formatTime(review.createdAt)}</small>
+                    </div>
+                    <div>{this.renderStars(review.reviewScore, true)}</div>
+                    <p className="mb-1">{review.content}</p>
+                  </li>
+                ))}
             </div>
-          </div>
-        </div>
-
+          </Modal.Body>
+          <Modal.Footer>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => this.setState({ showReview: false })}
+            >
+              Close
+            </button>
+          </Modal.Footer>
+        </Modal>
         {product.isLoading ? (
           <div className="d-flex justify-content-center">
             <Loader style={{ marginTop: 50 }} />
           </div>
         ) : (
           <div>
-            <div className="d-flex flex-row-reverse">
-              <i
-                className="fa fa-cog fa-3x clickable"
-                aria-hidden="true"
-                onClick={() =>
-                  history.push("/main/product/update-product/" + product._id)
-                }
-              />
+            <div className="text-right">
               <button
-                className="btn btn-success mr-3"
+                className="btn btn-success"
                 onClick={() =>
                   history.push("/main/product/feedback/" + product._id)
                 }
+                style={{ marginRight: 10 }}
               >
                 View comments
               </button>
+              <button
+                className="btn btn-primary"
+                onClick={() =>
+                  history.push("/main/product/update-product/" + product._id)
+                }
+                style={{ marginRight: 10 }}
+              >
+                Update product
+              </button>
             </div>
-            <div className="card mt-3 pt-2 pb-2">
-              <div className="card-body">
+            <div className="card" style={{ marginTop: 20 }}>
+              <div className="content">
                 <div className="row">
                   <div className="col-md-5 col-xs-12">
                     <img
@@ -222,6 +205,7 @@ class ProductDetail extends Component {
                           readOnly
                           className="form-control-plaintext"
                           defaultValue={product.description}
+                          rows={5}
                         />
                       </div>
                     </div>
@@ -252,9 +236,9 @@ class ProductDetail extends Component {
               </div>
             )}
             <div className="card mt-5 pt-2 pb-2">
-              <div className="card-body">
+              <div className="content">
                 <div className="row">
-                  <div className="col-md-6 col-xs-12 d-flex align-items-center flex-column">
+                  <div className="col-md-6 col-xs-12 text-center">
                     <div style={{ marginTop: 100 }}>
                       {this.renderStars(
                         product.reviewScore
@@ -269,43 +253,53 @@ class ProductDetail extends Component {
                     </h4>
                     <a
                       href="javascript:;"
-                      data-target="#reviews"
-                      data-toggle="modal"
+                      onClick={() => this.setState({ showReview: true })}
                     >
                       See all reviews
                     </a>
                   </div>
                   <div className="col-md-6 col-xs-12 pt-5">
                     {feedback.isLoading ? (
-                      <div className="d-flex justify-content-center">
+                      <div className="text-center">
                         <Loader style={{ marginTop: 50 }} />
                       </div>
                     ) : (
-                      <div>
+                      <div style={{ marginTop: 50, marginBottom: 50 }}>
                         {Object.keys(statistic)
                           .reverse()
                           .map(star => (
-                            <div
-                              key={"statistic-" + star}
-                              className="d-flex flex-direction-row"
-                            >
-                              <h4 className="mr-3">{star}</h4>
-                              <div
-                                className="progress"
-                                style={{ width: "60%" }}
-                              >
-                                <div
-                                  className="progress-bar"
-                                  style={{
-                                    width: product.reviewCount
-                                      ? statistic[star] /
-                                        product.reviewCount *
-                                        100
-                                      : 0 + "%"
-                                  }}
-                                />
+                            <div key={"statistic-" + star} className="row">
+                              <div className="col-xs-2">
+                                <p className="mr-3">
+                                  {star}{" "}
+                                  <i
+                                    className="fa fa-star"
+                                    style={{ marginLeft: 5, color: "orange" }}
+                                  />
+                                </p>
                               </div>
-                              <h4 className="mr-3">{statistic[star]}</h4>
+                              <div className="col-xs-8">
+                                <div
+                                  className="progress"
+                                  style={{ width: "100%" }}
+                                >
+                                  <div
+                                    className="progress-bar"
+                                    style={{
+                                      width:
+                                        (reviews.length
+                                          ? statistic[star] /
+                                            reviews.length *
+                                            100
+                                          : 0
+                                        ).toString() + "%"
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-xs-2">
+                                <p className="mr-3">{statistic[star]}</p>
+                              </div>
                             </div>
                           ))}
                       </div>
@@ -318,7 +312,7 @@ class ProductDetail extends Component {
               <div>
                 <h3 className="mt-5">SPECIFICATIONS</h3>
                 <div className="card">
-                  <div className="card-body p-5">
+                  <div className="content">
                     <form>
                       {product.specifications.map((specification, index) => (
                         <div

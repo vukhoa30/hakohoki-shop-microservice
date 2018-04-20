@@ -106,27 +106,14 @@ class BillList extends Component {
             this.setState({ searchingForBill: false });
           }}
         >
-          <div className="input-group mt-1">
+          <div className="form-group" style={{ marginTop: 20 }}>
             <input
               ref={ref => (this.billId = ref)}
               type="text"
-              className="form-control"
+              className="form-control border-input"
               placeholder="Enter bill Id"
               required
             />
-            <div className="input-group-append">
-              <button
-                className="btn btn-outline-secondary"
-                type="submit"
-                disabled={this.state.searchingForBill}
-              >
-                {this.state.searchingForBill ? (
-                  <i className="fa fa-spinner fa-spin" />
-                ) : (
-                  <i className="fa fa-search" />
-                )}
-              </button>
-            </div>
           </div>
         </form>
 
@@ -203,10 +190,10 @@ class BillList extends Component {
         <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
-              <div className="card-header">
-                <b>Filter box</b>
+              <div className="header">
+                <h3>Filter box</h3>
               </div>
-              <div className="card-body bg-light">
+              <div className="content">
                 <form
                   id="filter-box"
                   onSubmit={e => {
@@ -230,36 +217,23 @@ class BillList extends Component {
                   }}
                 >
                   <div className="row">
-                    <div className="col-8">
-                      <label>Buyer</label>
-                      <div className="input-group mb-3">
+                    <div className="col-md-8">
+                      <div className="form-group">
+                        <label>Buyer</label>
                         <input
                           ref={ref => (this.buyer = ref)}
                           name="buyer"
                           type="text"
                           placeholder="Search for buyer"
-                          className="form-control"
+                          className="form-control border-input"
                         />
-                        <div className="input-group-append">
-                          <select
-                            className="form-control"
-                            ref={ref => (this.buyerInfoKey = ref)}
-                          >
-                            <option defaultValue value="accountId">
-                              ID
-                            </option>
-                            <option value="email">Email</option>
-                            <option value="phoneNumber">Phone number</option>
-                            <option value="fullName">User name</option>
-                          </select>
-                        </div>
                       </div>
                     </div>
-                    <div className="col-4">
+                    <div className="col-md-4">
                       <div className="form-group">
                         <label>Status</label>
                         <select
-                          className="form-control"
+                          className="form-control border-input"
                           ref={ref => (this.status = ref)}
                         >
                           <option defaultValue value="all">
@@ -272,29 +246,32 @@ class BillList extends Component {
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col">
+                    <div className="col-md-6">
                       <div className="form-group">
                         <label>Start date</label>
                         <DatePicker
                           selected={this.state.begin}
                           onChange={date => this.setState({ begin: date })}
-                          className="form-control"
+                          className="form-control border-input"
                         />
                       </div>
                     </div>
-                    <div className="col">
+                    <div className="col-md-6">
                       <div className="form-group">
                         <label>End date</label>
                         <DatePicker
                           selected={this.state.end}
                           onChange={date => this.setState({ end: date })}
-                          className="form-control"
+                          className="form-control border-input"
                         />
                       </div>
                     </div>
                   </div>
-                  <div className="d-flex flex-row-reverse mt-3">
-                    <button className="btn btn-secondary" type="submit">
+                  <div className="text-right">
+                    <button
+                      className="btn btn-info btn-fill btn-wd"
+                      type="submit"
+                    >
                       Search
                     </button>
                   </div>
@@ -314,7 +291,7 @@ class BillList extends Component {
                 </div>
               )}
               {search.isLoading ? (
-                <div className="d-flex justify-content-center mt-5">
+                <div className="text-center">
                   <Loader />
                 </div>
               ) : search.data.length > 0 ? (
@@ -325,7 +302,7 @@ class BillList extends Component {
                 </div>
               ) : (
                 search.err === null && (
-                  <div className="d-flex justify-content-center mt-5">
+                  <div className="text-center">
                     <p style={{ color: "gray" }}>NO BILL FOUND</p>
                   </div>
                 )

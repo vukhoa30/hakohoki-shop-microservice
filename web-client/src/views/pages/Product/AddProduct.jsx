@@ -6,14 +6,15 @@ import Notification from "../../components/Notification";
 import { addProduct, toast, loadProductData } from "../../../api";
 import { parseToObject } from "../../../utils";
 import Loader from "../../components/Loader";
+import { Modal } from "react-bootstrap";
 
 const renderSpecifications = ({ fields, meta: { error, submitFailed } }) => (
-  <div className="card mt-5">
-    <h3 className="card-header">Specifications</h3>
-    <div className="card-body">
+  <div className="card">
+    <h3 className="header">Specifications</h3>
+    <div className="content">
       {fields.map((specification, index) => (
         <div className="row mb-2" key={index}>
-          <div className="col-4">
+          <div className="col-xs-4">
             <Field
               name={`${specification}.name`}
               type="text"
@@ -21,7 +22,7 @@ const renderSpecifications = ({ fields, meta: { error, submitFailed } }) => (
               component={Input}
             />
           </div>
-          <div className="col-7">
+          <div className="col-xs-7">
             <Field
               name={`${specification}.value`}
               type="text"
@@ -29,7 +30,7 @@ const renderSpecifications = ({ fields, meta: { error, submitFailed } }) => (
               component={Input}
             />
           </div>
-          <div className="col-1">
+          <div className="col-xs-1">
             <i
               className="fa fa-remove text-danger"
               onClick={() => fields.remove(index)}
@@ -54,7 +55,8 @@ class ProductDetail extends Component {
     this.state = {
       mainPicture: this.props.initialValues.mainPicture,
       additionalPictures: this.props.initialValues.additionPicture,
-      picturePickMode: "main"
+      picturePickMode: "main",
+      showPictureDialog: false
     };
     const { initialValues: product, id } = props;
     if (id !== product._id) this.loadData();
@@ -105,63 +107,60 @@ class ProductDetail extends Component {
           </div>
         )}
         <form onSubmit={handleSubmit(addProduct.bind(this))}>
-          <div
-            className="modal fade"
-            tabIndex={-1}
-            role="dialog"
-            id="mainPictureDialog"
-          >
-            <div className="modal-dialog" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Add product picture</h5>
-                  <button
-                    type="button"
-                    className="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="form-group">
-                    <input
-                      className="form-control"
-                      ref={ref => (this._mainPictureUri = ref)}
-                    />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    data-dismiss="modal"
-                    onClick={() =>
-                      this.state.picturePickMode === "main"
-                        ? this.setState({
-                            mainPicture: this._mainPictureUri.value
-                          })
-                        : this.setState({
-                            additionalPictures: this.state.additionalPictures.concat(
-                              this._mainPictureUri.value
-                            )
-                          })
-                    }
-                  >
-                    Save changes
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                </div>
+          <Modal show={this.state.showPictureDialog}>
+            <Modal.Header>
+              <Modal.Title>Add product picture</Modal.Title>
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </Modal.Header>
+            <Modal.Body>
+              <div className="form-group">
+                <input
+                  className="form-control border-input"
+                  ref={ref => (this._mainPictureUri = ref)}
+                />
               </div>
-            </div>
-          </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <button
+                type="button"
+                className="btn btn-primary"
+                data-dismiss="modal"
+                onClick={() =>
+                  this.state.picturePickMode === "main"
+                    ? this.setState({
+                        mainPicture: this._mainPictureUri.value,
+                        showPictureDialog: false
+                      })
+                    : this.setState({
+                        additionalPictures: this.state.additionalPictures.concat(
+                          this._mainPictureUri.value
+                        ),
+                        showPictureDialog: false
+                      })
+                }
+              >
+                Save changes
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() =>
+                  this.setState({
+                    showPictureDialog: false
+                  })
+                }
+              >
+                Close
+              </button>
+            </Modal.Footer>
+          </Modal>
           <div style={{ opacity: isLoading ? 0.3 : 1 }}>
             {id && (
               <button
@@ -173,8 +172,8 @@ class ProductDetail extends Component {
               </button>
             )}
             <div className="card">
-              <h3 className="card-header">Basic information</h3>
-              <div className="card-body">
+              <h3 className="header">Basic information</h3>
+              <div className="content">
                 <div className="row">
                   <div className="col-md-5 col-xs-12">
                     {this.state.mainPicture !== null ? (
@@ -193,8 +192,12 @@ class ProductDetail extends Component {
                           <button
                             type="button"
                             className="btn btn-light mt-3"
-                            data-toggle="modal"
-                            data-target="#mainPictureDialog"
+                            onClick={() =>
+                              this.setState({
+                                picturePickMode: "main",
+                                showPictureDialog: true
+                              })
+                            }
                           >
                             Change picture
                           </button>
@@ -210,10 +213,11 @@ class ProductDetail extends Component {
                           <p className="lead">
                             <button
                               className="btn btn-primary btn-lg"
-                              data-toggle="modal"
-                              data-target="#mainPictureDialog"
                               onClick={() =>
-                                this.setState({ picturePickMode: "main" })
+                                this.setState({
+                                  picturePickMode: "main",
+                                  showPictureDialog: true
+                                })
                               }
                             >
                               Add picture
@@ -236,7 +240,7 @@ class ProductDetail extends Component {
                       <Field
                         name="category"
                         component="select"
-                        className="form-control"
+                        className="form-control border-input"
                       >
                         <option>Phone</option>
                         <option>Tablet</option>
@@ -248,7 +252,7 @@ class ProductDetail extends Component {
                     <div className="form-group">
                       <label>Guarantee</label>
                       <div className="row">
-                        <div className="col-3">
+                        <div className="col-xs-3">
                           <Field
                             name="guarantee"
                             component="input"
@@ -257,7 +261,7 @@ class ProductDetail extends Component {
                             type="number"
                           />
                         </div>
-                        <div className="col-3">
+                        <div className="col-xs-3">
                           <p style={{ fontSize: 20 }}>months</p>
                         </div>
                       </div>
@@ -281,14 +285,17 @@ class ProductDetail extends Component {
               </div>
             </div>
             <div className="card mt-5">
-              <h3 className="card-header">Additional pictures</h3>
-              <div className="card-body">
+              <h3 className="header">Additional pictures</h3>
+              <div className="content">
                 <button
                   type="button"
                   className="btn btn-light"
-                  data-toggle="modal"
-                  data-target="#mainPictureDialog"
-                  onClick={() => this.setState({ picturePickMode: "addition" })}
+                  onClick={() =>
+                    this.setState({
+                      picturePickMode: "addition",
+                      showPictureDialog: true
+                    })
+                  }
                 >
                   <i className="fa fa-plus" /> Add pictures
                 </button>

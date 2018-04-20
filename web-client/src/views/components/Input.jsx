@@ -16,7 +16,7 @@ const input = ({
       <textarea
         {...input}
         type="text"
-        className="form-control"
+        className="form-control border-input"
         placeholder={placeholder}
         rows={7}
         required={required}
@@ -25,7 +25,7 @@ const input = ({
       <input
         {...input}
         type={type}
-        className="form-control"
+        className="form-control border-input"
         placeholder={placeholder}
         required={required}
       />

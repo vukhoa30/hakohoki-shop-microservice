@@ -79,6 +79,15 @@ class ProductList extends Component {
 
     return (
       <div className="container-fluid">
+        <div className="text-right" style={{ marginBottom: 10 }}>
+          <button
+            className="btn btn-success"
+            onClick={() => history.push("/main/product/add-product")}
+          >
+           <i className="fa fa-plus" style={{ marginRight: 10 }} ></i>
+            Add product
+          </button>
+        </div>
         <form
           onSubmit={async e => {
             e.preventDefault();
@@ -93,31 +102,18 @@ class ProductList extends Component {
             this.setState({ searchingForProduct: false });
           }}
         >
-          <div className="input-group mt-1 mb-3">
+          <div className="form-group">
             <input
               ref={ref => (this.productId = ref)}
               type="text"
-              className="form-control"
+              className="form-control border-input"
               placeholder="Enter product Id"
               required
             />
-            <div className="input-group-append">
-              <button
-                className="btn btn-outline-secondary"
-                type="submit"
-                disabled={this.state.searchingForProduct}
-              >
-                {this.state.searchingForProduct ? (
-                  <i className="fa fa-spinner fa-spin" />
-                ) : (
-                  <i className="fa fa-search" />
-                )}
-              </button>
-            </div>
           </div>
         </form>
         <div className="card" style={{ padding: 10 }}>
-          <div className="card-body">
+          <div className="content">
             <form
               onSubmit={e => {
                 e.preventDefault();
@@ -133,19 +129,14 @@ class ProductList extends Component {
                 });
               }}
             >
-              <div className="input-group mb-3">
+              <div className="form-group">
                 <input
                   ref={ref => (this.q = ref)}
                   type="text"
-                  className="form-control"
+                  className="form-control border-input"
                   placeholder="Search for product"
                   required
                 />
-                <div className="input-group-append">
-                  <button className="btn btn-outline-secondary" type="submit">
-                    <i className="fa fa-search" />
-                  </button>
-                </div>
               </div>
             </form>
             <ul className="list-inline">
@@ -189,14 +180,14 @@ class ProductList extends Component {
           </div>
         ) : (
           !isLoading && (
-            <div className="d-flex justify-content-center">
+            <div className="text-center">
               <p style={{ color: "gray" }} className="mt-5">
                 NO PRODUCT FOUND
               </p>
             </div>
           )
         )}
-        <div className="row d-flex justify-content-center mt-3">
+        <div className="row text-center">
           {err !== null && (
             <div
               className="alert alert-danger clickable"
