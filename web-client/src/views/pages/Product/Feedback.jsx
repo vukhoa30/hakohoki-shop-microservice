@@ -116,7 +116,6 @@ class ProductFeedback extends Component {
                             comment =>
                               comment.parentId === this.state.selectedCommentId
                           )
-                          .reverse()
                           .map(comment => (
                             <li
                               key={"comment-" + comment.id}

@@ -17,11 +17,16 @@ class Bill extends Component {
         ) : (
           <p style={{ color: "green" }}>COMPLETED</p>
         )}
-        <div className="d-flex justify-content-between">
-          <h5 className="mb-1 font-weight-bold">
+        <div style={{ display: "flex" }}>
+          <h5 style={{ fontWeight: "bold", marginTop: 0, flex: 1 }}>
             Total price: {currencyFormat(bill.totalPrice)}
           </h5>
-          <small>{formatTime(bill.createdAt)}</small>
+          <div className="text-right" style={{ flex: 1 }}>
+            <small>created at: {formatTime(bill.createdAt)}</small>
+            {bill.status === "completed" && (
+              <small style={{ display: 'block' }}>confirmed at: {formatTime(bill.completedAt)}</small>
+            )}
+          </div>
         </div>
         <p className="mb-1 mt-3">
           <b>Buyer:</b> {bill.buyer.fullName} (<a href="javascript:;">
@@ -36,7 +41,9 @@ class Bill extends Component {
           </p>
         )}
         <div className="d-flex flex-row-reverse">
-          <a href="javascript:;" onClick={() => selectBill(bill)}>View detail</a>
+          <a href="javascript:;" onClick={() => selectBill(bill)}>
+            View detail
+          </a>
         </div>
       </li>
     );

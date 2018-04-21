@@ -91,6 +91,8 @@ class BillList extends Component {
           CREATE A BILL
         </button>
         <form
+          className="form-inline"
+          style={{ marginTop: 10 }}
           onSubmit={async e => {
             e.preventDefault();
             if (this.state.searchingForBill) return;
@@ -106,15 +108,30 @@ class BillList extends Component {
             this.setState({ searchingForBill: false });
           }}
         >
-          <div className="form-group" style={{ marginTop: 20 }}>
+          <div className="form-group" style={{ width: "90%" }}>
             <input
               ref={ref => (this.billId = ref)}
               type="text"
               className="form-control border-input"
-              placeholder="Enter bill Id"
+              placeholder="Looking for bill by ID"
+              style={{
+                width: "100%",
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0
+              }}
               required
             />
           </div>
+          <button
+            className="btn btn-default"
+            type="submit"
+            disabled={this.state.searchingForBill}
+            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+          >
+          {
+            this.state.searchingForBill ? <i className="fa fa-circle-o-notch fa-spin" /> : <i className="fa fa-search" />
+          }
+          </button>
         </form>
 
         <div className="row mt-3">
@@ -217,8 +234,8 @@ class BillList extends Component {
                   }}
                 >
                   <div className="row">
-                    <div className="col-md-8">
-                      <div className="form-group">
+                    <div className="col-md-10" style={{ display: "flex" }}>
+                      <div className="form-group" style={{ flex: 2 }}>
                         <label>Buyer</label>
                         <input
                           ref={ref => (this.buyer = ref)}
@@ -228,8 +245,22 @@ class BillList extends Component {
                           className="form-control border-input"
                         />
                       </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label style={{ color: "white" }}>User info</label>
+                        <select
+                          className="form-control border-input"
+                          ref={ref => (this.buyerInfoKey = ref)}
+                        >
+                          <option defaultValue value="accountId">
+                            By User ID
+                          </option>
+                          <option value="fullName">By name</option>
+                          <option value="email">By email</option>
+                          <option value="phoneNumber">By phone number</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="col-md-4">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label>Status</label>
                         <select

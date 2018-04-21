@@ -79,16 +79,9 @@ class ProductList extends Component {
 
     return (
       <div className="container-fluid">
-        <div className="text-right" style={{ marginBottom: 10 }}>
-          <button
-            className="btn btn-success"
-            onClick={() => history.push("/main/product/add-product")}
-          >
-           <i className="fa fa-plus" style={{ marginRight: 10 }} ></i>
-            Add product
-          </button>
-        </div>
         <form
+          className="form-inline"
+          style={{ marginTop: 10 }}
           onSubmit={async e => {
             e.preventDefault();
             if (this.state.searchingForProduct) return;
@@ -102,19 +95,46 @@ class ProductList extends Component {
             this.setState({ searchingForProduct: false });
           }}
         >
-          <div className="form-group">
+          <div className="form-group" style={{ width: "80%" }}>
             <input
               ref={ref => (this.productId = ref)}
               type="text"
               className="form-control border-input"
               placeholder="Enter product Id"
+              style={{
+                width: "100%",
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0
+              }}
               required
             />
           </div>
+          <button
+            className="btn btn-default"
+            type="submit"
+            disabled={this.state.searchingForProduct}
+            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+          >
+            {this.state.searchingForProduct ? (
+              <i className="fa fa-circle-o-notch fa-spin" />
+            ) : (
+              <i className="fa fa-search" />
+            )}
+          </button>
+          <button
+            className="btn btn-success"
+            style={{ marginLeft: 20 }}
+            onClick={() => history.push("/main/product/add-product")}
+          >
+            <i className="fa fa-plus" />
+            Add product
+          </button>
         </form>
-        <div className="card" style={{ padding: 10 }}>
+        <div className="card" style={{ padding: 10, marginTop: 10 }}>
           <div className="content">
             <form
+              className="form-inline"
+              style={{ marginBottom: 10 }}
               onSubmit={e => {
                 e.preventDefault();
                 history.push({
@@ -129,15 +149,27 @@ class ProductList extends Component {
                 });
               }}
             >
-              <div className="form-group">
+              <div className="form-group" style={{ width: "90%" }}>
                 <input
                   ref={ref => (this.q = ref)}
                   type="text"
                   className="form-control border-input"
                   placeholder="Search for product"
+                  style={{
+                    width: "100%",
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0
+                  }}
                   required
                 />
               </div>
+              <button
+                className="btn btn-default"
+                type="submit"
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+              >
+                <i className="fa fa-search" />
+              </button>
             </form>
             <ul className="list-inline">
               {categories.map(category => (

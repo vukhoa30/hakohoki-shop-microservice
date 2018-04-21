@@ -16,15 +16,46 @@ import { parseToQueryString } from "../../utils";
 import { logOut } from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
+import { Badge, Modal } from "react-bootstrap";
 
 class Main extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      logOutConfirmDialog: false
+    };
   }
   render() {
-    const { match, logOut, role, location } = this.props;
+    const { match, logOut, role, location, fullName } = this.props;
     return (
       <div className="wrapper">
+        <Modal show={this.state.logOutConfirmDialog}>
+          <Modal.Header>
+            <Modal.Title>READY TO LOG OUT?</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Are you sure to log out?</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <button
+              type="button"
+              className="btn btn-warning btn-fill"
+              onClick={() => {
+                this.setState({ logOutConfirmDialog: false });
+                logOut();
+              }}
+            >
+              Yes
+            </button>
+            <button
+              type="button"
+              className="btn btn-default"
+              onClick={() => this.setState({ logOutConfirmDialog: false })}
+            >
+              No
+            </button>
+          </Modal.Footer>
+        </Modal>
         <div
           className="sidebar"
           data-background-color="white"
@@ -36,8 +67,24 @@ class Main extends React.Component {
       */}
           <div className="sidebar-wrapper">
             <div className="logo">
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <img
+                  src={`assets/img/${role + ".png"}`}
+                  style={{ width: 100, height: 100 }}
+                />
+              </div>
               <a href="javascript:;" className="simple-text">
-                ADMIN PAGE
+                {fullName}
+              </a>
+              <a href="javascript:;" className="simple-text">
+                <b>{role}</b>
               </a>
             </div>
             <ul className="nav">
@@ -98,26 +145,15 @@ class Main extends React.Component {
               </div>
               <div className="collapse navbar-collapse">
                 <ul className="nav navbar-nav navbar-right">
-                  <li>
-                    <a
-                      href="#"
-                      className="dropdown-toggle"
-                      data-toggle="dropdown"
-                    >
-                      <i className="ti-panel" />
-                      <p>Stats</p>
-                    </a>
-                  </li>
                   <li className="dropdown">
                     <a
                       href="#"
                       className="dropdown-toggle"
                       data-toggle="dropdown"
                     >
-                      <i className="ti-bell" />
-                      <p className="notification">5</p>
-                      <p>Notifications</p>
-                      <b className="caret" />
+                      <i className="fa fa-bell" style={{ color: "orange" }} />
+                      <Badge style={{ backgroundColor: "red" }}>5</Badge>
+                      <b className="fa fa-caret-down" />
                     </a>
                     <ul className="dropdown-menu">
                       <li>
@@ -138,9 +174,14 @@ class Main extends React.Component {
                     </ul>
                   </li>
                   <li>
-                    <a href="#">
-                      <i className="ti-settings" />
-                      <p>Settings</p>
+                    <a
+                      href="javascript:;"
+                      onClick={() =>
+                        this.setState({ logOutConfirmDialog: true })
+                      }
+                    >
+                      <i className="fa fa-sign-out" />
+                      <p>Log out</p>
                     </a>
                   </li>
                 </ul>
@@ -172,7 +213,10 @@ class Main extends React.Component {
               component={ProductFeedback}
             />
             <Route path={`${match.url}/bill/list`} component={BillList} />
-            <Route path={`${match.url}/bill/detail/:id`} component={BillDetail} />
+            <Route
+              path={`${match.url}/bill/detail/:id`}
+              component={BillDetail}
+            />
           </div>
           <footer className="footer">
             <div className="container-fluid">
@@ -198,7 +242,8 @@ class Main extends React.Component {
 const mapStateToProps = state => ({
   product: state.product.detail,
   router: state.router,
-  role: state.user.role
+  role: state.user.role,
+  fullName: state.user.fullName
 });
 const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut())
