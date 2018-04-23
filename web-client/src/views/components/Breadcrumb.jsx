@@ -80,8 +80,10 @@ const mapStateToProps = state => {
     routes = [{ name: "Account" }, { name: "Management" }];
   } else if (pathname.includes("bill/detail")) {
     routes = [{ name: "Bill" }, { name: "Detail" }];
+  } else if (pathname.includes("promotion")) {
+    routes = [{ name: "Promotion" }];
   } else {
-    routes = [{ name: "Unknown" }];
+    routes = [{ name: "Page not found" }];
   }
   return {
     routes

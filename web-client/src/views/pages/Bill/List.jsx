@@ -208,7 +208,7 @@ class BillList extends Component {
           <div className="col-md-12">
             <div className="card">
               <div className="header">
-                <h3>Filter box</h3>
+                <h3>SEARCHING FOR BILL</h3>
               </div>
               <div className="content">
                 <form
@@ -303,7 +303,7 @@ class BillList extends Component {
                       className="btn btn-info btn-fill btn-wd"
                       type="submit"
                     >
-                      Search
+                      SEARCH
                     </button>
                   </div>
                 </form>

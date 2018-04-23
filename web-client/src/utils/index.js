@@ -39,9 +39,9 @@ export const request = (url, method, header, data) => {
 };
 
 export const currencyFormat = currency => {
-  return (
-    currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
-  );
+  return currency && currency !== null
+    ? currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
+    : "0 VND";
 };
 
 export const formatTime = time => {

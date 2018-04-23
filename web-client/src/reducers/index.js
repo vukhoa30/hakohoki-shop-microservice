@@ -6,6 +6,8 @@ import app from './app'
 import user from './user'
 import bill from './bill'
 import account from './account'
+import notification from './notification'
+import promotion from './promotion'
 import { routerReducer as router } from 'react-router-redux'
 
 export default combineReducers({
@@ -17,6 +19,8 @@ export default combineReducers({
     app,
     user,
     bill,
-    account
+    account,
+    notification,
+    promotion
 
 })

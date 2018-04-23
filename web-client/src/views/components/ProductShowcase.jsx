@@ -67,10 +67,14 @@ class ProducShowcase extends Component {
           >
             {product.promotionPrice ? currencyFormat(product.price) : "None"}
           </small>
-          <div>
-            {this.renderStars(product.reviewScore)}
-            <small style={{ color: "gray" }}>({product.reviewCount})</small>
-          </div>
+          {product.reviewScore ? (
+            <div>
+              {this.renderStars(product.reviewScore)}
+              <small style={{ color: "gray" }}>({product.reviewCount})</small>
+            </div>
+          ) : (
+            <small style={{ color: "gray", display: 'block' }}>No reviews</small>
+          )}
           {showButton && (
             <div style={{ marginTop: 20 }}>
               <button

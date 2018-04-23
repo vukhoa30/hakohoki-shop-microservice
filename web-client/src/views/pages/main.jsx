@@ -6,14 +6,15 @@ import Dashboard from "./Dashboard";
 import ProductList from "./Product/List";
 import ProductDetail from "./Product/Detail";
 import AddProduct from "./Product/AddProduct";
-import Notification from "./Notification";
+import NotificationPage from "./Notification";
 import ProductFeedback from "./Product/Feedback";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
+import Promotion from "./Promotion";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
-import { parseToQueryString } from "../../utils";
-import { logOut } from "../../api";
+import { parseToQueryString, formatTime } from "../../utils";
+import { logOut, setNotificationAsRead, loadNotifications } from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
 import { Badge, Modal } from "react-bootstrap";
@@ -24,9 +25,24 @@ class Main extends React.Component {
     this.state = {
       logOutConfirmDialog: false
     };
+    const { notification, token, loadNotifications } = props;
+    if (notification.isFirstLoad) loadNotifications(this.props.token);
   }
   render() {
-    const { match, logOut, role, location, fullName } = this.props;
+    const {
+      match,
+      logOut,
+      role,
+      location,
+      fullName,
+      notification,
+      token,
+      setNotificationAsRead
+    } = this.props;
+    const notifications = notification.data;
+    const notificationUnreadCount = notifications.filter(
+      notification => !notification.read
+    ).length;
     return (
       <div className="wrapper">
         <Modal show={this.state.logOutConfirmDialog}>
@@ -126,6 +142,16 @@ class Main extends React.Component {
                   <p>Bill</p>
                 </Link>
               </li>
+              <li
+                className={
+                  location.pathname.includes("promotion") ? "active" : ""
+                }
+              >
+                <Link to={`${match.url}/promotion`}>
+                  <i className="fa fa-bomb" />
+                  <p>Promotion</p>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -152,24 +178,43 @@ class Main extends React.Component {
                       data-toggle="dropdown"
                     >
                       <i className="fa fa-bell" style={{ color: "orange" }} />
-                      <Badge style={{ backgroundColor: "red" }}>5</Badge>
+                      {notificationUnreadCount > 0 && (
+                        <Badge style={{ backgroundColor: "red" }}>
+                          {notificationUnreadCount}
+                        </Badge>
+                      )}
                       <b className="fa fa-caret-down" />
                     </a>
                     <ul className="dropdown-menu">
+                      {notifications.splice(0, 10).map(notification => (
+                        <li key={"notification-" + notification._id}>
+                          <Link
+                            to={`${match.url}/product/feedback/${
+                              notification.productId
+                            }`}
+                            onClick={() =>
+                              setNotificationAsRead(notification._id, token)
+                            }
+                            style={{ padding: 20 }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: notification.read ? "none" : "bold"
+                              }}
+                            >
+                              New comment about product{" "}
+                              <b>{notification.productName}</b>
+                              <small style={{ display: "block" }}>
+                                {formatTime(notification.createdAt)}
+                              </small>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
                       <li>
-                        <a href="#">Notification 1</a>
-                      </li>
-                      <li>
-                        <a href="#">Notification 2</a>
-                      </li>
-                      <li>
-                        <a href="#">Notification 3</a>
-                      </li>
-                      <li>
-                        <a href="#">Notification 4</a>
-                      </li>
-                      <li>
-                        <a href="#">Another notification</a>
+                        <Link to={`${match.url}/notification`}>
+                          View other notifications ...
+                        </Link>
                       </li>
                     </ul>
                   </li>
@@ -189,36 +234,55 @@ class Main extends React.Component {
             </div>
           </nav>
           <div className="content">
-            <Redirect exact path={match.url} to={`${match.url}/dashboard`} />
-            <Route path={`${match.url}/dashboard`} component={Dashboard} />
-            <Route
-              path={`${match.url}/account/management`}
-              component={AccountManager}
-            />
-            <Route path={`${match.url}/product/list`} component={ProductList} />
-            <Route
-              path={`${match.url}/product/detail/:id`}
-              component={ProductDetail}
-            />
-            <Route
-              path={`${match.url}/product/add-product`}
-              component={AddProduct}
-            />
-            <Route
-              path={`${match.url}/product/update-product/:id`}
-              component={AddProduct}
-            />
-            <Route
-              path={`${match.url}/product/feedback/:id`}
-              component={ProductFeedback}
-            />
-            <Route path={`${match.url}/bill/list`} component={BillList} />
-            <Route
-              path={`${match.url}/bill/detail/:id`}
-              component={BillDetail}
-            />
+            <Switch>
+              <Redirect exact path={match.url} to={`${match.url}/dashboard`} />
+              <Route path={`${match.url}/dashboard`} component={Dashboard} />
+              <Route
+                path={`${match.url}/account/management`}
+                component={AccountManager}
+              />
+              <Route
+                path={`${match.url}/product/list`}
+                component={ProductList}
+              />
+              <Route
+                path={`${match.url}/product/detail/:id`}
+                component={ProductDetail}
+              />
+              <Route
+                path={`${match.url}/product/add-product`}
+                component={AddProduct}
+              />
+              <Route
+                path={`${match.url}/product/update-product/:id`}
+                component={AddProduct}
+              />
+              <Route
+                path={`${match.url}/product/feedback/:id`}
+                component={ProductFeedback}
+              />
+              <Route path={`${match.url}/bill/list`} component={BillList} />
+              <Route
+                path={`${match.url}/bill/detail/:id`}
+                component={BillDetail}
+              />
+              <Route
+                path={`${match.url}/promotion`}
+                component={Promotion}
+              />
+              <Route
+                path={`${match.url}/notification`}
+                component={NotificationPage}
+              />
+              <Route component={props => 
+              <div class="container-fluid">
+                <h1>OOPS!</h1>
+                <hr/>
+                <p>It looks like that page no longer exists</p>
+              </div>} />
+            </Switch>
           </div>
-          <footer className="footer">
+          {/* <footer className="footer">
             <div className="container-fluid">
               <nav className="pull-left">
                 <ul>
@@ -232,7 +296,7 @@ class Main extends React.Component {
                 <a href="http://www.creative-tim.com">Creative Tim</a>
               </div>
             </div>
-          </footer>
+          </footer> */}
         </div>
       </div>
     );
@@ -243,9 +307,14 @@ const mapStateToProps = state => ({
   product: state.product.detail,
   router: state.router,
   role: state.user.role,
-  fullName: state.user.fullName
+  fullName: state.user.fullName,
+  notification: state.notification,
+  token: state.user.token
 });
 const mapDispatchToProps = dispatch => ({
-  logOut: () => dispatch(logOut())
+  logOut: () => dispatch(logOut()),
+  setNotificationAsRead: (notificationId, token) =>
+    dispatch(setNotificationAsRead(notificationId, token)),
+  loadNotifications: token => dispatch(loadNotifications(token))
 });
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));

@@ -340,5 +340,13 @@ button.btn.btn-secondary {
 
 .form-control-plaintext {
   border-width: 0;
-  width: 100%
+  width: 100%;
+}
+
+.btn {
+  border-radius: 0;
+}
+
+.checkbox .second-icon {
+  opacity: 1;
 }

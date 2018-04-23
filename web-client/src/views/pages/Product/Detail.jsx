@@ -71,7 +71,7 @@ class ProductDetail extends Component {
       <div className="container-fluid">
         <Modal show={this.state.showReview}>
           <Modal.Header>
-            <Modal.Title>ANSWERS</Modal.Title>
+            <Modal.Title>REVIEWS</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div style={{ height: 600, overflowY: "auto" }}>
@@ -104,7 +104,7 @@ class ProductDetail extends Component {
           </Modal.Footer>
         </Modal>
         {product.isLoading ? (
-          <div className="d-flex justify-content-center">
+          <div className="text-center">
             <Loader style={{ marginTop: 50 }} />
           </div>
         ) : (

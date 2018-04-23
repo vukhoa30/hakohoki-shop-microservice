@@ -17,7 +17,10 @@ const {
   LOADING_COMPLETED_BILL,
   SEARCHING_BILL,
   SELECT_BILL,
-  LOADING_ACCOUNTS
+  LOADING_ACCOUNTS,
+  LOADING_NOTIFICATIONS,
+  SET_NOTIFICATION_STATUS,
+  LOADING_PROMOTION
 } = keys;
 
 const {
@@ -448,4 +451,77 @@ export const setAccountStatus = async (accountStatus, email, token) => {
     _error = error;
   }
   return Promise.resolve({ ok: false, _error });
+};
+
+export const loadNotifications = token => {
+  return async dispatch => {
+    dispatch(getAction(LOADING_NOTIFICATIONS, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+
+    try {
+      const { status, data } = await request("/notifications", "GET", {
+        Authorization: "JWT " + token
+      });
+      if (status === 200) {
+        return dispatch(
+          getAction(LOADING_NOTIFICATIONS, {
+            isLoading: false,
+            data
+          })
+        );
+      } else if (status === 401) err = FORBIDDEN;
+      else err = INTERNAL_SERVER_ERROR;
+    } catch (error) {
+      err = error;
+    }
+
+    dispatch(getAction(LOADING_NOTIFICATIONS, { isLoading: false, err }));
+  };
+};
+
+export const setNotificationAsRead = (notificationId, token) => {
+  return async dispatch => {
+    dispatch(
+      getAction(SET_NOTIFICATION_STATUS, { notificationId, read: true })
+    );
+
+    try {
+      const { status } = await request(
+        "/notifications/read",
+        "PUT",
+        {
+          Authorization: "JWT " + token
+        },
+        [notificationId]
+      );
+      if (status === 200) return;
+    } catch (error) {}
+
+    dispatch(
+      getAction(SET_NOTIFICATION_STATUS, { notificationId, read: false })
+    );
+  };
+};
+
+export const loadPromotions = () => {
+  return async dispatch => {
+    dispatch(getAction(LOADING_PROMOTION, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+
+    try {
+      const { status, data } = await request("/promotions", "GET");
+      if (status === 200) {
+        return dispatch(
+          getAction(LOADING_PROMOTION, {
+            isLoading: false,
+            data
+          })
+        );
+      } else err = INTERNAL_SERVER_ERROR;
+    } catch (error) {
+      err = error;
+    }
+
+    dispatch(getAction(LOADING_PROMOTION, { isLoading: false, err }));
+  };
 };
