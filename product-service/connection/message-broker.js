@@ -121,5 +121,13 @@ module.exports = {
   responseGetSpecificInfos: () => {
     var core = require('../core')
     responseAmqp(core.getSpecificInfos, 'getSpecificInfos')
+  },
+  responseGetAllProducts: () => {
+    var db = require('../database')
+    responseAmqp(db.GetAllProducts, 'getAllProducts')
+  },
+  responseGetAllCategories: () => {
+    var db = require('../database')
+    responseAmqp(db.GetAllCategories, 'getAllCategories')
   }
 }

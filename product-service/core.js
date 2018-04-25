@@ -391,7 +391,8 @@ module.exports = {
           p._id.toString() == s.productId.toString())
         s.productName = finder.name
         s.mainPicture = finder.mainPicture
-        console.log(s)
+        s.productId = finder._id
+        s.category = finder.category
       })
       return specifics
     } catch(e) { console.log(e); return false }

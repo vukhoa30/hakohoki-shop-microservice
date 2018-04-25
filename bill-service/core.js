@@ -265,5 +265,48 @@ module.exports = {
       }
       res.json(bills)
     } catch(e) { catchError(res, e) }
+  },
+  getStatistics: async (req, res) => {
+    try {
+      var token;
+      if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+        token = req.headers.authorization.split(' ')[1]
+      } else { return catchUnauthorized(res) }
+      var authentication = await msgBroker.requestAuthenticateEmployee(token)
+      if (!authentication || authentication.role !== 'manager') { return catchUnauthorized(res) }
+
+      var bills = await db.GetBills({...req.query, status: 'completed'})
+      var income = 0
+      var allProducts = await msgBroker.requestGetAllProducts()
+      var allCategoryNames = await msgBroker.requestGetAllCategories()
+      var allCategories = []
+      var specificIds = []
+      bills.forEach(b => {
+        specificIds = specificIds.concat(b.specificProducts.map(s => {
+          income += s.price
+          return s.id
+        }))
+      })
+      var specificProducts = await msgBroker.requestGetSpecificInfos(specificIds)
+
+      allCategoryNames.forEach(name => {
+        allCategories.push({
+          name,
+          soldCount: specificProducts.filter(s => 
+            s.category === name).length
+        })
+      })
+      allProducts.forEach(product => {
+        product.soldCount = specificProducts.filter(s => 
+          s.productId.toString() == product._id.toString()).length
+      })
+
+      res.json({
+        billCount: bills.length,
+        income,
+        categories: allCategories,
+        products: allProducts
+      })
+    } catch(e) { catchError(res, e) }
   }
 }

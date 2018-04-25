@@ -85,5 +85,11 @@ module.exports = {
   },
   requestGetSpecificInfos: (specificIds) => {
     return requestAmqp(specificIds, 'getSpecificInfos')
+  },
+  requestGetAllProducts: () => {
+    return requestAmqp(null, 'getAllProducts')
+  },
+  requestGetAllCategories: () => {
+    return requestAmqp(null, 'getAllCategories')
   }
 }

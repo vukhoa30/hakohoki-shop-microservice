@@ -47,7 +47,7 @@ module.exports = {
     })
   },
   GetBills: (queryInput) => {
-    var limit = queryInput ? 0 : 100
+    var limit = 0//queryInput ? 0 : 100
     var query = {}
     if (queryInput.billId) { query._id = queryInput.billId }
     else {
@@ -124,5 +124,6 @@ module.exports = {
         else ( resolve(rslt) )
       })
     })
-  }
+  },
+
 }

@@ -17,6 +17,7 @@ app.use(morgan('combined'));
 //REST API ------------------------------------------------------------------
 app.get('/', core.getBills)
 app.get('/:billId', core.getBills)
+app.get('/statistics/info', core.getStatistics)
 app.post('/', core.createBill)
 app.post('/order', core.createPendingBill)
 app.put('/order', core.completeBill)

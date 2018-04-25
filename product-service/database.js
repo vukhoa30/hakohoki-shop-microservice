@@ -429,5 +429,21 @@ module.exports = {
       .then(rslt => { resolve(parseRslt(rslt)) })
       .catch(err => { reject(err) })
     })
+  },
+  GetAllProducts: () => {
+    return new Promise((resolve, reject) => {
+      models.Product
+      .find()
+      .then(rslt => { resolve(parseRslt(rslt)) })
+      .catch(err => { reject(err) })
+    })
+  },
+  GetAllCategories: () => {
+    return new Promise((resolve, reject) => {
+      models.Category
+      .find()
+      .then(rslt => { resolve(rslt.map(r => r.name)) })
+      .catch(err => { reject(err) })
+    })
   }
 }
