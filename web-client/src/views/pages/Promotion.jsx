@@ -11,7 +11,7 @@ import {
 import { loadPromotions, toast } from "../../api";
 import DatePicker from "react-datepicker";
 import { Checkbox, Modal } from "react-bootstrap";
-import { differenceWith } from "lodash";
+import { differenceWith, uniqWith } from "lodash";
 import moment from "moment";
 class Promotion extends Component {
   constructor(props) {
@@ -172,7 +172,7 @@ class Promotion extends Component {
                     ))}
                 </div>
                 {differenceWith(
-                  products,
+                  uniqWith(products, (a, b) => a._id === b._id),
                   selectedProducts,
                   (productA, productB) => productA._id === productB._id
                 ).map(product => (
@@ -429,8 +429,9 @@ class Promotion extends Component {
           name="promotion_form"
           onSubmit={async e => {
             e.preventDefault();
-            if (this.state.isSubmittingForm) return
-            if (selectedProducts.length === 0) return toast('PLEASE SELECT SOME PRODUCTS','error')
+            if (this.state.isSubmittingForm) return;
+            if (selectedProducts.length === 0)
+              return toast("PLEASE SELECT SOME PRODUCTS", "error");
             const { name, start, end, sendNotification, sendMail } = e.target;
             const obj = {
               name: name.value,
@@ -441,9 +442,12 @@ class Promotion extends Component {
               sendMail: sendMail.checked,
               products: selectedProducts.map(product => ({
                 product_id: product._id,
-                new_price: product.currentPrice - this.state.promotionRate * product.currentPrice / 100
+                new_price:
+                  product.currentPrice -
+                  this.state.promotionRate * product.currentPrice / 100
               }))
             };
+            console.log(obj);
             this.setState({ isSubmittingForm: true });
             let err = "UNDEFINED ERROR! TRY AGAIN LATER";
             try {
@@ -613,7 +617,10 @@ class Promotion extends Component {
                       {currencyFormat(product.currentPrice)} ->{" "}
                       <b>
                         {currencyFormat(
-                          product.currentPrice - this.state.promotionRate * product.currentPrice / 100
+                          product.currentPrice -
+                            this.state.promotionRate *
+                              product.currentPrice /
+                              100
                         )}
                       </b>
                     </p>

@@ -14,7 +14,7 @@ import Promotion from "./Promotion";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { parseToQueryString, formatTime } from "../../utils";
-import { logOut, setNotificationAsRead, loadNotifications } from "../../api";
+import { logOut, setNotificationAsRead, loadNotifications, loadStatistic } from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
 import { Badge, Modal } from "react-bootstrap";
@@ -25,8 +25,9 @@ class Main extends React.Component {
     this.state = {
       logOutConfirmDialog: false
     };
-    const { notification, token, loadNotifications } = props;
-    if (notification.isFirstLoad) loadNotifications(this.props.token);
+    const { notification, token, loadNotifications, loadStatistic } = props;
+    loadNotifications(this.props.token);
+    loadStatistic(token)
   }
   render() {
     const {
@@ -266,20 +267,20 @@ class Main extends React.Component {
                 path={`${match.url}/bill/detail/:id`}
                 component={BillDetail}
               />
-              <Route
-                path={`${match.url}/promotion`}
-                component={Promotion}
-              />
+              <Route path={`${match.url}/promotion`} component={Promotion} />
               <Route
                 path={`${match.url}/notification`}
                 component={NotificationPage}
               />
-              <Route component={props => 
-              <div class="container-fluid">
-                <h1>OOPS!</h1>
-                <hr/>
-                <p>It looks like that page no longer exists</p>
-              </div>} />
+              <Route
+                component={props => (
+                  <div class="container-fluid">
+                    <h1>OOPS!</h1>
+                    <hr />
+                    <p>It looks like that page no longer exists</p>
+                  </div>
+                )}
+              />
             </Switch>
           </div>
           {/* <footer className="footer">
@@ -315,6 +316,7 @@ const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut()),
   setNotificationAsRead: (notificationId, token) =>
     dispatch(setNotificationAsRead(notificationId, token)),
-  loadNotifications: token => dispatch(loadNotifications(token))
+  loadNotifications: token => dispatch(loadNotifications(token)),
+  loadStatistic: (token) => dispatch(loadStatistic(token))
 });
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));

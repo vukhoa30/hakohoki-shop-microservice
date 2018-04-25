@@ -20,7 +20,8 @@ const {
   LOADING_ACCOUNTS,
   LOADING_NOTIFICATIONS,
   SET_NOTIFICATION_STATUS,
-  LOADING_PROMOTION
+  LOADING_PROMOTION,
+  LOADING_STATISTIC
 } = keys;
 
 const {
@@ -167,6 +168,10 @@ export const authenticate = async (values, onSubmitSuccess) => {
       values
     );
     if (status === 200) {
+      localStorage.setItem(
+        "@User:info",
+        JSON.stringify({ account: data.account, token: data.token })
+      );
       return Promise.resolve(onSubmitSuccess(data.account, data.token));
     } else {
       _error = "Internal server error";
@@ -199,7 +204,6 @@ export const createAccount = async (values, token, onSubmitSuccess) => {
 
 export const logIn = (account, token) => {
   return dispatch => {
-    localStorage.setItem("@User:info", JSON.stringify({ account, token }));
     dispatch(getAction(LOG_IN, { account, token }));
   };
 };
@@ -227,8 +231,9 @@ export const loadUserInfo = () => {
     if (infoString !== null) {
       try {
         const { account, token } = JSON.parse(infoString);
+        console.log(token);
         console.log(account);
-        dispatch(getAction(LOG_IN, { account, token }));
+        dispatch(logIn(account, token));
       } catch (error) {}
     }
     setTimeout(() => dispatch(getAction(FINISH_LOADING_APP)), 50);
@@ -462,15 +467,13 @@ export const loadNotifications = token => {
       const { status, data } = await request("/notifications", "GET", {
         Authorization: "JWT " + token
       });
+      const obj = {
+        isLoading: false,
+        data
+      };
       if (status === 200) {
-        return dispatch(
-          getAction(LOADING_NOTIFICATIONS, {
-            isLoading: false,
-            data
-          })
-        );
-      } else if (status === 401) err = FORBIDDEN;
-      else err = INTERNAL_SERVER_ERROR;
+        return dispatch(getAction(LOADING_NOTIFICATIONS, obj));
+      } else err = INTERNAL_SERVER_ERROR;
     } catch (error) {
       err = error;
     }
@@ -510,6 +513,7 @@ export const loadPromotions = () => {
 
     try {
       const { status, data } = await request("/promotions", "GET");
+      console.log(data);
       if (status === 200) {
         return dispatch(
           getAction(LOADING_PROMOTION, {
@@ -523,5 +527,41 @@ export const loadPromotions = () => {
     }
 
     dispatch(getAction(LOADING_PROMOTION, { isLoading: false, err }));
+  };
+};
+
+export const loadStatistic = token => {
+  return async dispatch => {
+    dispatch(getAction(LOADING_STATISTIC, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+
+    try {
+      const { status, data: rawData } = await request(
+        "/bills/statistics/info",
+        "GET",
+        { Authorization: "JWT " + token }
+      );
+      if (status === 200) {
+        const data = {
+          billCount: rawData.billCount,
+          revenue: rawData.income,
+          categories: rawData.categories,
+          soldProductCount: rawData.products.reduce(
+            (total, cur) => total + cur.soldCount,
+            0
+          )
+        };
+        return dispatch(
+          getAction(LOADING_STATISTIC, {
+            isLoading: false,
+            ...data
+          })
+        );
+      } else err = INTERNAL_SERVER_ERROR;
+    } catch (error) {
+      err = error;
+    }
+
+    dispatch(getAction(LOADING_STATISTIC, { isLoading: false, err }));
   };
 };

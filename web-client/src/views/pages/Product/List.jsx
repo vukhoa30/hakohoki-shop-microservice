@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import ProductShowcase from "../../components/ProductShowcase";
+import { uniqWith } from "lodash";
 import {
   loadProductList,
   fetchProductData,
@@ -34,6 +35,10 @@ class ProductList extends Component {
     }
   }
   componentWillReceiveProps(nextProps) {
+    if (this.props.isLoading !== nextProps.isLoading) {
+      console.log(nextProps.isLoading);
+      console.log(nextProps.data);
+    }
     if (this.props.location !== nextProps.location) {
       const { loadProductList, location } = nextProps;
       loadProductList(location.search, 0, 10);
@@ -44,7 +49,7 @@ class ProductList extends Component {
       isLoading,
       err,
       history,
-      data: list,
+      data,
       loadProductList,
       location,
       selectProduct,
@@ -76,6 +81,8 @@ class ProductList extends Component {
         icon: "fa fa-credit-card-alt"
       }
     ];
+
+    const list = uniqWith(data, (a, b) => a._id === b._id);
 
     return (
       <div className="container-fluid">

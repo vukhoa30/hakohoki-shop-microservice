@@ -16,7 +16,7 @@ const initialState = {
     isLoading: false,
     _id: null,
     name: null,
-    category: 'All',
+    category: "All",
     description: null,
     price: 0,
     guarantee: 6,
@@ -52,7 +52,11 @@ const productListReducer = (prevState, action) => {
       : { ...prevState, isLoading, err: null };
   return err
     ? { ...prevState, isLoading, err }
-    : { ...prevState, isLoading, data: prevState.data.concat(data) };
+    : {
+        ...prevState,
+        isLoading,
+        data: prevState.data.concat(data)
+      };
 };
 
 const feedbackReducer = (prevState, action) => {
