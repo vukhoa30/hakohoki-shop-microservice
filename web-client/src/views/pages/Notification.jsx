@@ -84,7 +84,7 @@ class Notification extends Component {
                   </h3>
                   <small>{formatTime(notification.createdAt)}</small>
                 </div>
-                <p class="mb-1">
+                <p className="mb-1">
                   Some user has give a feedback to product{" "}
                   <Link to={`/main/product/detail/${notification.productId}`}>
                     {`${notification.productName}`}(ID:{" "}

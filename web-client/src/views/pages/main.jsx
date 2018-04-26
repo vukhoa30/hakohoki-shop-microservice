@@ -14,7 +14,12 @@ import Promotion from "./Promotion";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { parseToQueryString, formatTime } from "../../utils";
-import { logOut, setNotificationAsRead, loadNotifications, loadStatistic } from "../../api";
+import {
+  logOut,
+  setNotificationAsRead,
+  loadNotifications,
+  loadStatistic
+} from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
 import { Badge, Modal } from "react-bootstrap";
@@ -27,7 +32,7 @@ class Main extends React.Component {
     };
     const { notification, token, loadNotifications, loadStatistic } = props;
     loadNotifications(this.props.token);
-    loadStatistic(token)
+    loadStatistic(token);
   }
   render() {
     const {
@@ -40,7 +45,7 @@ class Main extends React.Component {
       token,
       setNotificationAsRead
     } = this.props;
-    const notifications = notification.data;
+    const notifications = notification.data.slice(0, 10);
     const notificationUnreadCount = notifications.filter(
       notification => !notification.read
     ).length;
@@ -187,7 +192,7 @@ class Main extends React.Component {
                       <b className="fa fa-caret-down" />
                     </a>
                     <ul className="dropdown-menu">
-                      {notifications.splice(0, 10).map(notification => (
+                      {notifications.map(notification => (
                         <li key={"notification-" + notification._id}>
                           <Link
                             to={`${match.url}/product/feedback/${
@@ -317,6 +322,6 @@ const mapDispatchToProps = dispatch => ({
   setNotificationAsRead: (notificationId, token) =>
     dispatch(setNotificationAsRead(notificationId, token)),
   loadNotifications: token => dispatch(loadNotifications(token)),
-  loadStatistic: (token) => dispatch(loadStatistic(token))
+  loadStatistic: token => dispatch(loadStatistic(token))
 });
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));
