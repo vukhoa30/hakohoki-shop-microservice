@@ -368,5 +368,82 @@ module.exports = {
         resolve(months)
       } catch(e) {reject(e)}
     })
+  },
+  GetPendingProducts: (productIdsAndAmounts) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct.find({ 
+        productId: { $in: productIdsAndAmounts.map(
+          i => mongoose.Types.ObjectId(i.productId)) },
+        status: 'inStock'
+      })
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        var specifics = []
+        for (var i = 0; i < productIdsAndAmounts.length; i++) {
+          var matchedSpecifics = rslt.filter(r => 
+            r.productId.toString() == productIdsAndAmounts[i].productId.toString())
+          if (matchedSpecifics.length < productIdsAndAmounts[i].amount) {
+            return reject(false);
+          }
+          for (var j = 0; j < productIdsAndAmounts[i].amount; j++) {
+            specifics.push(matchedSpecifics[j])
+          }
+        }
+        models.SpecificProduct
+
+        .updateMany({ 
+          _id: {$in: specifics.map(s => s._id) }
+          }, { $set: {
+            status: 'pending'
+          } 
+        }, (err, rslt) => {
+          if (err) { return reject(err) }
+          else {
+            console.log('updated: ' + rslt.n + ' ' + rslt.nModified)
+            resolve(specifics.map(s => { return {
+              productId: s.productId,
+              specificId: s._id
+            }}))
+          }
+        })
+      })
+    })
+  },
+  GetSpecificProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.SpecificProduct
+      .find({ _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))} })
+      .then(rslt => { resolve(rslt.map(r => { return {
+        specificId: r._id,
+        productId: r.productId,
+        status: r.status,
+        addedAt: r.addedAt
+      }})) })
+      .catch(err => { reject(err) })
+    })
+  },
+  GetProductsByIds: (ids) => {
+    return new Promise((resolve, reject) => {
+      models.Product
+      .find({ _id: {$in: ids.map(id => mongoose.Types.ObjectId(id))} })
+      .then(rslt => { resolve(parseRslt(rslt)) })
+      .catch(err => { reject(err) })
+    })
+  },
+  GetAllProducts: () => {
+    return new Promise((resolve, reject) => {
+      models.Product
+      .find()
+      .then(rslt => { resolve(parseRslt(rslt)) })
+      .catch(err => { reject(err) })
+    })
+  },
+  GetAllCategories: () => {
+    return new Promise((resolve, reject) => {
+      models.Category
+      .find()
+      .then(rslt => { resolve(rslt.map(r => r.name)) })
+      .catch(err => { reject(err) })
+    })
   }
 }

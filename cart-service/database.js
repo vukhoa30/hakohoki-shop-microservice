@@ -41,5 +41,14 @@ module.exports = {
       .then(rowCount => resolve(rowCount))
       .catch(e => reject(e))
     })
+  },
+  ClearCart: (account_id) => {
+    return new Promise((resolve, reject) => {
+      db('carts')
+      .where({ account_id })
+      .del()
+      .then(rowCount => resolve(rowCount))
+      .catch(e => reject(e))
+    })
   }
 }

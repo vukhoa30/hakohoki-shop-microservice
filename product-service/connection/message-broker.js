@@ -113,5 +113,21 @@ module.exports = {
   },
   requestCheckReviewed: (accountAndProductId) => {
     return requestAmqp(accountAndProductId, 'checkReviewed')
+  },
+  responseGetPendingProducts: () => {
+    var core = require('../core')
+    responseAmqp(core.getPendingProducts, 'getPendingProducts')
+  },
+  responseGetSpecificInfos: () => {
+    var core = require('../core')
+    responseAmqp(core.getSpecificInfos, 'getSpecificInfos')
+  },
+  responseGetAllProducts: () => {
+    var db = require('../database')
+    responseAmqp(db.GetAllProducts, 'getAllProducts')
+  },
+  responseGetAllCategories: () => {
+    var db = require('../database')
+    responseAmqp(db.GetAllCategories, 'getAllCategories')
   }
 }

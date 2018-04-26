@@ -355,5 +355,46 @@ module.exports = {
       req.body.id,
       req.body.product
     ));
+  },
+  getPendingProducts: async (productIdsAndAmounts) => {
+    try {
+      var products = await db.GetProductsByIds(productIdsAndAmounts.map(i => 
+        i.productId))
+      var promotionPrices = await msgBroker.requestPromotionPrices(products.map(p =>
+        p._id))
+      products.map(p => {
+        var item = promotionPrices.find(e => {
+          return e.productId.toString() == p._id.toString()
+        })
+        if (item) { p.price = item.promotionPrice }
+      })
+      var specifics = await db
+        .GetPendingProducts(productIdsAndAmounts)
+      console.log(specifics)
+      if (!specifics) { return false }
+
+      specifics.forEach(s => {
+        var finder = products.find(p => 
+          p._id.toString() == s.productId.toString())
+        s.price = finder.price
+      });
+
+      return specifics
+    } catch(e) { console.log(e); return false }
+  },
+  getSpecificInfos: async (specificIds) => {
+    try {
+      var specifics = await db.GetSpecificProductsByIds(specificIds)
+      var products = await db.GetProductsByIds(specifics.map(s => s.productId))
+      specifics.map(s => {
+        var finder = products.find(p => 
+          p._id.toString() == s.productId.toString())
+        s.productName = finder.name
+        s.mainPicture = finder.mainPicture
+        s.productId = finder._id
+        s.category = finder.category
+      })
+      return specifics
+    } catch(e) { console.log(e); return false }
   }
 }

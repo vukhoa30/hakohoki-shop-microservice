@@ -53,6 +53,9 @@ module.exports = {
   requestAuthenticateEmployee: (token) => {
     return requestAmqp(token, 'authenticateEmployee')
   },
+  requestAuthenticateCustomer: (token) => {
+    return requestAmqp(token, 'authenticateCustomer')
+  },
   requestUpdateSpecificsStatus: (ids) => {
     return requestAmqp(ids, 'updateSpecificsStatus')
   },
@@ -74,4 +77,19 @@ module.exports = {
   requestCustomers: (ids) => {
     return requestAmqp(ids, 'getCustomers')
   },
+  requestGetPendingProducts: (productIdsAndAmount) => {
+    return requestAmqp(productIdsAndAmount, 'getPendingProducts')
+  },
+  requestClearCart: (accountId) => {
+    return requestAmqp(accountId, 'clearCart')
+  },
+  requestGetSpecificInfos: (specificIds) => {
+    return requestAmqp(specificIds, 'getSpecificInfos')
+  },
+  requestGetAllProducts: () => {
+    return requestAmqp(null, 'getAllProducts')
+  },
+  requestGetAllCategories: () => {
+    return requestAmqp(null, 'getAllCategories')
+  }
 }

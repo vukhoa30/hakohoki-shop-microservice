@@ -71,5 +71,12 @@ module.exports = {
         res.json({ ok: false })
       }
     } catch(e) { catchError(res, e) }
+  },
+  clearCart: async (accountId) => {
+    try {
+      var rslt = await db.ClearCart(accountId)
+      if (rslt < 1) { return false }
+      return true
+    } catch(e) { catchError(res, e) }
   }
 }

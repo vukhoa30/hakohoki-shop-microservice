@@ -102,5 +102,14 @@ module.exports = {
       })
       .catch(e => { reject(e); })
     })
+  },
+  GetAllEmployees: () => {
+    return new Promise((resolve, reject) => {
+      db('accounts')
+      .then(rows => {
+        resolve(rows)
+      })
+      .catch(e => { reject(e); })
+    })
   }
 }

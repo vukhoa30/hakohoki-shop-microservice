@@ -5,6 +5,21 @@ mongoose.connect(dbAddress);
 
 var models =  require('./models')(mongoose);
 
+var parseRslt = (rslts) => { 
+  return rslts.map(rslt => { 
+    return {
+      _id: rslt._id,
+      createdAt: rslt.createdAt,
+      paymentMethod: rslt.paymentMethod,
+      seller: rslt.seller,
+      buyer: rslt.buyer,
+      specificProducts: rslt.specificProducts,
+      status: rslt.status,
+      completedAt: rslt.completedAt
+    }
+  }
+)}
+
 module.exports = {
   CreateBill: (bill) => {
     return new Promise((resolve, reject) => {
@@ -12,45 +27,71 @@ module.exports = {
       newBill
       .save((err, rslt) => {
         if (err) { reject(err) }
+        else { console.log(rslt); resolve(rslt) }
+      })
+    })
+  },
+  CompleteBill: (billId, seller) => {
+    return new Promise((resolve, reject) => {
+      models.Bill
+      .update({ _id: billId }, {
+        $set: {
+          seller,
+          completedAt: new Date(),
+          status: 'completed'
+        }
+      }, (err, rslt) => {
+        if (err) { reject(err) }
         else { resolve(rslt) }
       })
     })
   },
-  GetBillsByBuyer: (buyer) => { // [ conditions ]
+  GetBills: (queryInput) => {
+    var limit = 0//queryInput ? 0 : 100
     var query = {}
-    Object.keys(buyer).map(k => {
-      query[`buyer.${k}`] = buyer[`${k}`]
-    })
+    if (queryInput.billId) { query._id = queryInput.billId }
+    else {
+      if (queryInput.begin || queryInput.end) { query.createdAt = {} }
+      Object.keys(queryInput).map(k => {
+        if (k === 'begin') { query.createdAt.$gt = new Date(queryInput.begin) }
+        else if (k === 'end') { query.createdAt.$lt = new Date(queryInput.end) }
+        else if (k === 'status') { query.status = queryInput.status }
+        else { query[`buyer.${k}`] = queryInput[`${k}`] }
+      })
+    }
     return new Promise((resolve, reject) => {
       models.Bill
       .find(query)
+      .limit(limit)
       .exec((err, rslt) => {
         if (err) { reject(err) }
-        else { resolve(rslt.map(r => { return {
-          createdAt: r.createdAt,
-          paymentMethod: r.paymentMethod,
-          seller: r.seller,
-          buyer: r.buyer,
-          specificProducts: r.specificProducts
-        }})) }
+        else { resolve(parseRslt(rslt)) }
       })
     })
   },
-  GetBillsByTime: (begin, end) => {
+  GetBillsByTime: (begin, end, status) => {
+    var query = { createdAt: {} }
+    if (begin) { query.createdAt.$gt = new Date(begin) }
+    if (end) { query.createdAt.$lt = new Date(end) }
+    if (status) { query.status = status }
     return new Promise((resolve, reject) => {
       models.Bill
-      .find({
-        createdAt: {$lt: end, $gt: begin}
+      .find(query)
+      .sort({ createdAt: -1 })
+      .exec((err, rslt) => {
+        console.log(rslt)
+        if (err) { reject(err) }
+        else { resolve(parseRslt(rslt)) }
       })
+    })
+  },
+  GetBillById: (id) => {
+    return new Promise((resolve, reject) => {
+      models.Bill
+      .find({ _id: id })
       .exec((err, rslt) => {
         if (err) { reject(err) }
-        else { resolve(rslt.map(r => { return {
-          createdAt: r.createdAt,
-          paymentMethod: r.paymentMethod,
-          seller: r.seller,
-          buyer: r.buyer,
-          specificProducts: r.specificProducts
-        }})) }
+        else { resolve(parseRslt(rslt)[0]) }
       })
     })
   },
@@ -58,16 +99,6 @@ module.exports = {
     return new Promise((resolve, reject) => {
       models.Bill
       .findOne({ specificProducts: {$elemMatch:{productId: id}} })
-      .exec((err, rslt) => {
-        if (err) { reject(err) }
-        else ( resolve(rslt) )
-      })
-    })
-  },
-  GetBillById: (billId) => {
-    return new Promise((resolve, reject) => {
-      models.Bill
-      .findOne({ _id: billId })
       .exec((err, rslt) => {
         if (err) { reject(err) }
         else ( resolve(rslt) )
@@ -94,4 +125,5 @@ module.exports = {
       })
     })
   },
+
 }
