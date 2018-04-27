@@ -18,7 +18,6 @@ import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 import Bill from "../../components/Bill";
 import Loader from "../../components/Loader";
-import $ from "jquery";
 import { findDOMNode } from "react-dom";
 
 class BillList extends Component {
