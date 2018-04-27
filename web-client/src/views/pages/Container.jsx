@@ -8,8 +8,6 @@ import Toast from "../components/Notification";
 import Main from "./Main";
 import Login from "./Login";
 
-window.$ = window.jQuery = require("jquery");
-
 class Container extends Component {
   constructor(props) {
     super(props);
