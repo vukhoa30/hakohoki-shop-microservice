@@ -29,7 +29,7 @@ app.put('/deactivate', core.deactiveAccount)
 //Respone RPC
 amqpResponse.responseAuthenticateEmployee()
 amqpResponse.responseGetEmployees()
-amqpResponse.responseGetAllReceptionists()
+amqpResponse.responseGetAllEmployees()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

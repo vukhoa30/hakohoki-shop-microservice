@@ -96,8 +96,8 @@ module.exports = {
   produceNotificationRequest: (requests) => {
     return produceAmqp(requests, 'notificationRequest')
   },
-  requestGetAllReceptionists: () => {
-    return requestAmqp({}, 'getAllReceptionists')
+  requestGetAllEmployees: () => {
+    return requestAmqp({}, 'getAllEmployees')
   },
   responseCheckReviewed: () => {
     var db = require('../database')

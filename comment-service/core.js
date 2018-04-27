@@ -55,7 +55,7 @@ module.exports = {
         }])
       }
       else {
-        var receiptionistIds = await msgBroker.requestGetAllReceptionists({nothing:true})
+        var receiptionistIds = await msgBroker.requestGetAllEmployees({nothing:true})
         console.log(receiptionistIds)
         msgBroker.produceNotificationRequest(
           receiptionistIds.map(id => {
