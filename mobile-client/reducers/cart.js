@@ -4,12 +4,14 @@ import {
   REMOVE_ALL,
   MODIFY_CART_PRODUCT,
   CART_LOADING,
-  FINISH_LOADING_CART
+  FINISH_LOADING_CART,
+  MAKING_ORDER,
+  FINISH_MAKING_ORDER
 } from "../actions";
 import { remove } from "lodash";
 
 const initialState = {
-  status: "LOADED",
+  status: "INIT",
   list: []
 };
 
@@ -27,7 +29,7 @@ function reducer(state = initialState, action) {
       };
       break;
     case REMOVE_ALL:
-      nextState = initialState;
+      nextState = { ...state, list: [] };
       break;
     case MODIFY_CART_PRODUCT:
       const cartProductIndex = state.list.findIndex(
@@ -47,6 +49,18 @@ function reducer(state = initialState, action) {
         ...state,
         status: "LOADED",
         list: list ? list : state.list
+      };
+      break;
+    case MAKING_ORDER:
+      nextState = {
+        ...state,
+        status: "ORDERING"
+      };
+      break;
+    case FINISH_MAKING_ORDER:
+      nextState = {
+        ...state,
+        status: "LOADED"
       };
       break;
   }

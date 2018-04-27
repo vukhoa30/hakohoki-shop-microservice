@@ -31,6 +31,8 @@ import {
   ADD_TO_CART,
   REMOVE_FROM_CART,
   REMOVE_ALL,
+  MAKING_ORDER,
+  FINISH_MAKING_ORDER,
   MODIFY_CART_PRODUCT,
   PROMOTION_LOADING,
   PROMOTION_LOADING_FAILED,
@@ -45,6 +47,10 @@ import { NavigationActions } from "react-navigation";
 import { AsyncStorage } from "react-native";
 
 var socket = null;
+
+function disconnect() {
+  if (socket !== null) socket.disconnect();
+}
 
 function connectToServer(accountId) {
   return async dispatch => {
@@ -142,7 +148,8 @@ function loadUserInfo() {
 function logIn(token, account) {
   return dispatch => {
     dispatch(connectToServer(account.accountId));
-    dispatch(loadNotifications(token))
+    dispatch(loadNotifications(token));
+    dispatch(loadCart(token));
     dispatch(getAction(USER_LOG_IN, { token, account }));
   };
 }
@@ -584,7 +591,9 @@ function setCart(token, product, type, amount) {
       const actionKey =
         type === "ADD"
           ? ADD_TO_CART
-          : type === "REMOVE" ? REMOVE_FROM_CART : MODIFY_CART_PRODUCT;
+          : type === "REMOVE"
+            ? REMOVE_FROM_CART
+            : MODIFY_CART_PRODUCT;
       const data = {
         productId: product._id,
         amount
@@ -834,6 +843,34 @@ function loadPromotion() {
   };
 }
 
+function makeOrder(productList, token) {
+  return async dispatch => {
+    dispatch(getAction(MAKING_ORDER))
+    let err = "Could not make order now! Try again later";
+    try {
+      const { status } = await request(
+        "/bills/order",
+        "POST",
+        { Authorization: "JWT " + token },
+        productList
+      );
+      if (status === 200) {
+        alert(
+          "Success",
+          "Order successfully! We will contact you soon to confirm your order"
+        );
+        return dispatch(getAction(REMOVE_ALL));
+      } else if (status === 401)
+        err = "Authentication failed! Please log in again";
+    } catch (error) {
+      if (error === "CONNECTION_ERROR")
+        err = "Could not connect to server! Try again later";
+    }
+    alert("Error", err);
+    dispatch(getAction(FINISH_MAKING_ORDER))
+  };
+}
+
 module.exports = {
   connectToServer,
   authenticate,
@@ -862,5 +899,7 @@ module.exports = {
   loadNotifications,
   viewAnswers,
   loadPromotion,
-  loadCart
+  loadCart,
+  disconnect,
+  makeOrder
 };

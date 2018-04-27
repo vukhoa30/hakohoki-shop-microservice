@@ -11,7 +11,7 @@ import {
 
 const initialState = {
 
-    status: 'LOADING',
+    status: 'INIT',
     list: [],
     connectionStatus: 'NOT_CONNECTED'
 

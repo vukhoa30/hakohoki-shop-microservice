@@ -63,26 +63,39 @@ class AppProductFooter extends Component {
           <View style={{ width: "100%" }}>
             <Grid>
               <Col>
-                <Button
-                  disabled={product.quantity === 0 || cartStatus === "LOADING"}
-                  success
-                  full
-                  small
-                  iconLeft
-                  style={{ flexDirection: "row" }}
-                  onPress={() => {
-                    if (productQuantityInCart > 1)
-                      confirm(
-                        "Product existed",
-                        `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
-                        () => this.setState({ showPickerDialog: true })
-                      );
-                    else this.setState({ showPickerDialog: true });
-                  }}
-                >
-                  {cartStatus === "LOADING" ? <Spinner /> : <Icon name="add" />}
-                  <AppText>CART</AppText>
-                </Button>
+                {productQuantityInCart === 0 ? (
+                  <Button
+                    disabled={
+                      product.quantity === 0 || cartStatus === "LOADING"
+                    }
+                    success
+                    full
+                    small
+                    iconLeft
+                    style={{ flexDirection: "row" }}
+                    onPress={() => {
+                      if (productQuantityInCart > 1)
+                        confirm(
+                          "Product existed",
+                          `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
+                          () => this.setState({ showPickerDialog: true })
+                        );
+                      else this.setState({ showPickerDialog: true });
+                    }}
+                  >
+                    {cartStatus === "LOADING" ? (
+                      <Spinner />
+                    ) : (
+                      <Icon name="add" />
+                    )}
+                    <Icon name="cart" style={{ fontSize: 30 }} />
+                  </Button>
+                ) : (
+                  <Button disabled full iconLeft style={{ flexDirection: 'row' }}>
+                    <Icon name="cart" style={{ fontSize: 30 }} />
+                    <Icon name="md-checkmark-circle"/>
+                  </Button>
+                )}
               </Col>
               <Col>
                 {this.state.isWatchListUpdating ? (
