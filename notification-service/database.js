@@ -13,6 +13,7 @@ var handleCallback = (err, rslt) => {
 var parseRslt = (rslt) => {
   return rslt.map(r => {
     return {
+      id: r._id,
       accountId: r.accountId,
       createdAt: r.createdAt,
       read: r.read,
