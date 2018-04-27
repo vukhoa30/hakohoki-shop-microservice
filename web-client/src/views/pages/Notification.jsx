@@ -70,9 +70,9 @@ class Notification extends Component {
           <ListGroup>
             {notifications.map(notification => (
               <ListGroupItem
-                key={"notification-" + notification._id}
+                key={"notification-" + notification.id}
                 onClick={() => {
-                  setNotificationAsRead(notification._id, token);
+                  setNotificationAsRead(notification.id, token);
                   history.push(
                     "/main/product/feedback/" + notification.productId
                   );

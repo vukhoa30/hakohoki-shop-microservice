@@ -18,11 +18,13 @@ import {
   logOut,
   setNotificationAsRead,
   loadNotifications,
-  loadStatistic
+  loadStatistic,
+  connectToServer
 } from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
 import { Badge, Modal } from "react-bootstrap";
+import Loader from "../components/Loader";
 
 class Main extends React.Component {
   constructor(props) {
@@ -43,8 +45,12 @@ class Main extends React.Component {
       fullName,
       notification,
       token,
-      setNotificationAsRead
+      setNotificationAsRead,
+      connection,
+      accountId,
+      connectToServer
     } = this.props;
+    const { isConnecting, isConnected } = connection;
     const notifications = notification.data.slice(0, 10);
     const notificationUnreadCount = notifications.filter(
       notification => !notification.read
@@ -162,6 +168,23 @@ class Main extends React.Component {
           </div>
         </div>
         <div className="main-panel">
+          <div
+            className="text-center clickable"
+            style={{ width: "100%", paddingTop: 10 }}
+          >
+            {isConnecting ? (
+              <Loader />
+            ) : (
+              !isConnected && (
+                <p
+                  style={{ color: "red" }}
+                  onClick={() => connectToServer(accountId)}
+                >
+                  COULD NOT CONNECT TO SERVER. CLICK TO TRY AGAIN
+                </p>
+              )
+            )}
+          </div>
           <nav className="navbar navbar-default">
             <div className="container-fluid">
               <div className="navbar-header">
@@ -193,13 +216,13 @@ class Main extends React.Component {
                     </a>
                     <ul className="dropdown-menu">
                       {notifications.map(notification => (
-                        <li key={"notification-" + notification._id}>
+                        <li key={"notification-" + notification.id}>
                           <Link
                             to={`${match.url}/product/feedback/${
                               notification.productId
                             }`}
                             onClick={() =>
-                              setNotificationAsRead(notification._id, token)
+                              setNotificationAsRead(notification.id, token)
                             }
                             style={{ padding: 20 }}
                           >
@@ -315,13 +338,16 @@ const mapStateToProps = state => ({
   role: state.user.role,
   fullName: state.user.fullName,
   notification: state.notification,
-  token: state.user.token
+  token: state.user.token,
+  accountId: state.user.accountId,
+  connection: state.connection
 });
 const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut()),
   setNotificationAsRead: (notificationId, token) =>
     dispatch(setNotificationAsRead(notificationId, token)),
   loadNotifications: token => dispatch(loadNotifications(token)),
-  loadStatistic: token => dispatch(loadStatistic(token))
+  loadStatistic: token => dispatch(loadStatistic(token)),
+  connectToServer: accountId => dispatch(connectToServer(accountId))
 });
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));

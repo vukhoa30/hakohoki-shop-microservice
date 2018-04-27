@@ -1,6 +1,10 @@
 import { keys } from "../actions";
 
-const { LOADING_NOTIFICATIONS, SET_NOTIFICATION_STATUS } = keys;
+const {
+  LOADING_NOTIFICATIONS,
+  SET_NOTIFICATION_STATUS,
+  APPEND_NOTIFICATION
+} = keys;
 
 const initialState = {
   isFirstLoad: true,
@@ -25,6 +29,9 @@ const reducer = (state = initialState, action) => {
       newNotifications[index].read = read;
       nextState = { ...state, data: newNotifications };
     }
+  } else if (type === APPEND_NOTIFICATION) {
+    const newNotifications = [data].push(state.data);
+    nextState = { ...state, data: newNotifications };
   }
   return nextState;
 };

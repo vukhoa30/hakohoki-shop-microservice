@@ -1,5 +1,10 @@
 import { getAction, keys } from "../actions";
-import { request, parseToQueryString, convertObjectToArray } from "../utils";
+import {
+  request,
+  parseToQueryString,
+  convertObjectToArray,
+  createSocketConnection
+} from "../utils";
 import { reduce, transform } from "lodash";
 import { push } from "react-router-redux";
 import { resolve } from "url";
@@ -18,10 +23,14 @@ const {
   SEARCHING_BILL,
   SELECT_BILL,
   LOADING_ACCOUNTS,
+  APPEND_NOTIFICATION,
   LOADING_NOTIFICATIONS,
   SET_NOTIFICATION_STATUS,
   LOADING_PROMOTION,
-  LOADING_STATISTIC
+  LOADING_STATISTIC,
+  CONNECTION_SETTING,
+  CONNECTION_FINISH_SETTING,
+  CONNECTION_FAILED
 } = keys;
 
 const {
@@ -31,6 +40,45 @@ const {
   INTERNAL_SERVER_ERROR,
   DATA_NOT_FOUND
 } = errCode;
+
+var socket = null;
+
+window.addEventListener("beforeunload", ev => {
+  ev.preventDefault();
+  if (socket !== null) socket.disconnect();
+});
+
+export function connectToServer(accountId) {
+  return async dispatch => {
+    dispatch(getAction(CONNECTION_SETTING));
+    socket = createSocketConnection(
+      () => {
+        console.log("Connected");
+        if (socket !== null) {
+          socket.emit("give-accountid", accountId);
+          dispatch(getAction(CONNECTION_FINISH_SETTING));
+        }
+      },
+      () => {
+        console.log("Connection timeout");
+        dispatch(getAction(CONNECTION_FAILED));
+      },
+      () => {
+        console.log("Connection error");
+        dispatch(getAction(CONNECTION_FAILED));
+      },
+      data => {
+        console.log(data);
+        dispatch(getAction(APPEND_NOTIFICATION, { data }));
+      },
+      () => {
+        console.log("Disconnected");
+        dispatch(getAction(CONNECTION_FAILED));
+        socket = null;
+      }
+    );
+  };
+}
 
 /* PRODUCT */
 export const fetchProductData = async productId => {
@@ -204,12 +252,17 @@ export const createAccount = async (values, token, onSubmitSuccess) => {
 
 export const logIn = (account, token) => {
   return dispatch => {
+    dispatch(connectToServer(account.accountId));
     dispatch(getAction(LOG_IN, { account, token }));
   };
 };
 
 export const logOut = url => {
   return dispatch => {
+    if (socket !== null) {
+      socket.disconnect();
+      socket = null;
+    }
     localStorage.removeItem("@User:info");
     dispatch(getAction(LOG_OUT));
     dispatch(
