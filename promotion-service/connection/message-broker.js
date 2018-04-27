@@ -92,5 +92,8 @@ module.exports = {
   },
   requestGetAllCustomers: () => {
     return requestAmqp({}, 'getAllCustomers')
+  },
+  responseGetPromotions: (promotionIds) => {
+    responseAmqp(db.GetPromotions, 'getPromotions')
   }
 }

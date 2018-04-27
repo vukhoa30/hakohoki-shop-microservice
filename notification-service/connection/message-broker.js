@@ -78,5 +78,11 @@ module.exports = {
   consumeNotificationRequest: () => {
     var core = require('../core')
     consumeAmqp(core.addNotification, 'notificationRequest')
-  }
+  },
+  requestGetProducts: (productIds) => {
+    return requestAmqp(productIds, 'getProducts')
+  },
+  requestGetPromotions: (promotionIds) => {
+    return requestAmqp(promotionIds, 'getPromotions')
+  },
 }

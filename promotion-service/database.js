@@ -64,4 +64,12 @@ module.exports = {
       .catch(e => { reject(e) })
     })
   },
+  GetPromotions: (promotionIds) => {
+    return new Promise((resolve, reject) => {
+      db('promotions')
+      .whereRaw('id = any(?)', [ promotionIds ])
+      .then(rows => resolve(rows))
+      .catch(e => { reject(e) })
+    })
+  }
 }

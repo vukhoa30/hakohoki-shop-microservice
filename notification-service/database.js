@@ -10,6 +10,21 @@ var handleCallback = (err, rslt) => {
   return rslt;
 }
 
+var parseRslt = (rslt) => {
+  return rslt.map(r => {
+    return {
+      accountId: r.accountId,
+      createdAt: r.createdAt,
+      read: r.read,
+      type: r.type,
+      productId: r.productId,
+      promotionId: r.promotionId,
+      amount: r.amount,
+      commentId: r.commentId
+    }
+  })
+}
+
 module.exports = {
   AddNotifications: (notifications) => {
     return new Promise((resolve, reject) => {
@@ -27,7 +42,7 @@ module.exports = {
       .sort({ 'createdAt': -1 })
       .exec((err, rslt) => {
         if (err) { reject(err) }
-        else { resolve(rslt) }
+        else { resolve(parseRslt(rslt)) }
       })
     })
   },

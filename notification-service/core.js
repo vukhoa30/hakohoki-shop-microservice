@@ -38,7 +38,29 @@ module.exports = {
   },
   getNotification: async (req, res) => {
     try {
-      res.json(await db.GetNotifications(req.authentication.accountId))
+      var notifications = await db.GetNotifications(req.authentication.accountId)
+      var productIds = []
+      var promotionIds = []
+      notifications.forEach(n => {
+        if (n.productId) { productIds.push(n.productId) }
+        if (n.promotionId) { promotionIds.push(n.promotionId) }
+      })
+      var products = await msgBroker.requestGetProducts(productIds)
+      var promotions = await msgBroker.requestGetPromotions(promotionIds)
+      //console.log(products.map(e => e._id))
+      //console.log(notifications.map(e => e.productId))
+      //console.log(promotions)
+      notifications.forEach(n => {
+        if (n.productId) {
+          var finder = products.find(p => p._id.toString() == n.productId.toString())
+          if (finder) { n.productName = finder.name }
+        }
+        if (n.promotionId) {
+          var finder = promotions.find(p => p.id === n.promotionId)
+          if (finder) { n.promotionName = finder.name }
+        }
+      })
+      res.json(notifications)
     } catch (e) { catchError(res, e) }
   },
   addNotification:  (notifications) => {
