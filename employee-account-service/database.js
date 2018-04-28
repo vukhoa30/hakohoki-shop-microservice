@@ -96,16 +96,6 @@ module.exports = {
   GetAllEmployees: () => {
     return new Promise((resolve, reject) => {
       db('accounts')
-      .where({})
-      .then(rows => {
-        resolve(rows.map(r => r.id))
-      })
-      .catch(e => { reject(e); })
-    })
-  },
-  GetAllEmployees: () => {
-    return new Promise((resolve, reject) => {
-      db('accounts')
       .then(rows => {
         resolve(rows)
       })

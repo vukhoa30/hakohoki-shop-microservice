@@ -35,6 +35,6 @@ module.exports = {
     responseAmqp(db.GetEmployees, 'getEmployees')
   },
   responseGetAllEmployees: () => {
-    responseAmqp(db.GetAllReceptionists, 'getAllEmployees')
+    responseAmqp(db.GetAllEmployees, 'getAllEmployees')
   }
 }
