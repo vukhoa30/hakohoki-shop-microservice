@@ -97,7 +97,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db('accounts')
       .then(rows => {
-        resolve(rows)
+        resolve(rows.map(r => r.id))
       })
       .catch(e => { reject(e); })
     })
