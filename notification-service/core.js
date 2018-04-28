@@ -93,7 +93,7 @@ module.exports = {
             type: r.type,
             accountId: r.accountId,
             productId: r.productId,
-            _id: r._id,
+            id: r._id,
             commentId: r.commentId,
             productName: r.productName,
             promotionName: r.promotionName
