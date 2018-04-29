@@ -97,6 +97,15 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db('accounts')
       .then(rows => {
+        resolve(rows)
+      })
+      .catch(e => { reject(e); })
+    })
+  },
+  GetAllEmployeeIds: () => {
+    return new Promise((resolve, reject) => {
+      db('accounts')
+      .then(rows => {
         resolve(rows.map(r => r.id))
       })
       .catch(e => { reject(e); })
