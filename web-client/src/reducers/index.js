@@ -23,5 +23,6 @@ export default combineReducers({
   account,
   notification,
   statistic,
-  connection
+  connection,
+  promotion
 });
