@@ -10,6 +10,9 @@ import {
   getAction,
   USER_LOG_IN,
   USER_LOG_OUT,
+  CATEGORY_LOADING,
+  CATEGORY_LOADED,
+  CATEGORY_LOADING_FAILED,
   SELECT_PRODUCT,
   SELECT_CATEGORY,
   PRODUCT_DATA_LOADING,
@@ -288,45 +291,46 @@ function saveToBuffer(data) {
 }
 
 function loadCategories() {
-  return new Promise(async (resolve, reject) => {
+  return async dispatch => {
     try {
+      dispatch(getAction(CATEGORY_LOADING));
       const response = await request("/products/categories", "GET", {});
       const { status, data } = response;
 
-      if (status === 200)
-        resolve({
-          ok: true,
-          list: data.map(item => {
-            let icon = "info";
+      if (status === 200) return dispatch(getAction(CATEGORY_LOADED, { data }));
+      resolve({
+        ok: true,
+        list: data.map(item => {
+          let icon = "info";
 
-            switch (item) {
-              case "Phone":
-                icon = "md-phone-portrait";
-                break;
-              case "Tablet":
-                icon = "md-tablet-portrait";
-                break;
-              case "Accessory":
-                icon = "md-headset";
-                break;
-              case "SIM":
-                icon = "ios-card";
-                break;
-              case "Card":
-                icon = "md-card";
-                break;
-            }
+          switch (item) {
+            case "Phone":
+              icon = "md-phone-portrait";
+              break;
+            case "Tablet":
+              icon = "md-tablet-portrait";
+              break;
+            case "Accessory":
+              icon = "md-headset";
+              break;
+            case "SIM":
+              icon = "ios-card";
+              break;
+            case "Card":
+              icon = "md-card";
+              break;
+          }
 
-            return {
-              name: item,
-              icon
-            };
-          })
-        });
+          return {
+            name: item,
+            icon
+          };
+        })
+      });
     } catch (error) {}
 
-    resolve({ ok: false });
-  });
+    dispatch(getAction(CATEGORY_LOADING_FAILED));
+  };
 }
 
 function selectCategory(category) {
@@ -782,6 +786,7 @@ function loadNotifications(token) {
 
 function makeNotificationAsRead(token, notificationId) {
   return async dispatch => {
+    console.log(notificationId);
     dispatch(
       getAction(SET_NOTIFICATION_STATUS, { notificationId, read: true })
     );
@@ -845,7 +850,7 @@ function loadPromotion() {
 
 function makeOrder(productList, token) {
   return async dispatch => {
-    dispatch(getAction(MAKING_ORDER))
+    dispatch(getAction(MAKING_ORDER));
     let err = "Could not make order now! Try again later";
     try {
       const { status } = await request(
@@ -867,7 +872,7 @@ function makeOrder(productList, token) {
         err = "Could not connect to server! Try again later";
     }
     alert("Error", err);
-    dispatch(getAction(FINISH_MAKING_ORDER))
+    dispatch(getAction(FINISH_MAKING_ORDER));
   };
 }
 

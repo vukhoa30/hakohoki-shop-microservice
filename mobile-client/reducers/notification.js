@@ -34,7 +34,7 @@ const reducer = (state = initialState, action) => {
             nextState = { ...state, status: 'LOADING_FAILED' }
             break
         case SET_NOTIFICATION_STATUS:
-            const notificationIndex = state.list.findIndex(notification => notification._id === notificationId)
+            const notificationIndex = state.list.findIndex(notification => notification.id === notificationId)
             if (notificationIndex > -1) {
                 const notificationList = state.list.splice(0)
                 notificationList[notificationIndex].read = read

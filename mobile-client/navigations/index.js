@@ -25,6 +25,8 @@ import NotificationComponent from "../views/screens/Notification";
 import TabBarIcon from "../views/components/TabBarIcon";
 import { Icon } from "native-base";
 
+const themeColor = '#BE2E11'
+
 const ProductDetail = TabNavigator(
   {
     Information: {
@@ -51,7 +53,7 @@ const ProductDetail = TabNavigator(
       },
       inactiveTintColor: "white",
       style: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       }
     }
   }
@@ -97,7 +99,7 @@ const mainNavigator = TabNavigator(
     Notification: {
       screen: NotificationComponent,
       navigationOptions: {
-        header: null
+        title: 'Notification'
       }
     }
   },
@@ -142,7 +144,7 @@ const Account = TabNavigator(
       },
       inactiveTintColor: "white",
       style: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       }
     }
   }
@@ -154,7 +156,7 @@ const rootNavigator = StackNavigator(
       screen: mainNavigator,
       navigationOptions: {
         headerStyle: {
-          backgroundColor: "#F1810A",
+          backgroundColor: themeColor,
           elevation: 0,
           shadowOpacity: 0
         }
@@ -166,7 +168,7 @@ const rootNavigator = StackNavigator(
       navigationOptions: {
         title: "Account",
         headerStyle: {
-          backgroundColor: "#F1810A",
+          backgroundColor: themeColor,
           elevation: 0,
           shadowOpacity: 0
         },
@@ -201,7 +203,7 @@ const rootNavigator = StackNavigator(
       navigationOptions: ({ navigation }) => ({
         title: "Product detail",
         headerStyle: {
-          backgroundColor: "#F1810A",
+          backgroundColor: themeColor,
           elevation: 0,
           shadowOpacity: 0
         },
@@ -248,7 +250,7 @@ const rootNavigator = StackNavigator(
   {
     navigationOptions: ({ navigation }) => ({
       headerStyle: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       },
       headerTintColor: "#fff",
       headerTitleStyle: {
