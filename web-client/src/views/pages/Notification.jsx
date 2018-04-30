@@ -86,7 +86,7 @@ class Notification extends Component {
                 </div>
                 <p className="mb-1">
                   Some user has give a feedback to product{" "}
-                  <Link to={`/main/product/detail/${notification.productId}`}>
+                  <Link to={`/main/product/detail/${notification.productId}?reload=true`}>
                     {`${notification.productName}`}(ID:{" "}
                     {`${notification.productId}`})
                   </Link>

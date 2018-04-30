@@ -42,7 +42,7 @@ class BillDetail extends Component {
       this.loadData(nextProps);
   }
   render() {
-    const { selectedBill, selectBill, token, toast } = this.props;
+    const { selectedBill, selectBill, token, toast, role } = this.props;
     return (
       <div className="container-fluid">
         <div className="d-flex flex-row">
@@ -88,7 +88,7 @@ class BillDetail extends Component {
                     this.setState({ confirming: false });
                   }}
                 >
-                  {this.state.confirming ? (
+                  {role === "receptionist" && this.state.confirming ? (
                     <i className="fa fa-spinner fa-spin" />
                   ) : (
                     "CONFIRM"
@@ -98,6 +98,11 @@ class BillDetail extends Component {
             )}
             <div style={{ height: 700, overflowY: "auto" }}>
               <div className="d-flex w-100 justify-content-between">
+                {selectedBill.status === "pending" ? (
+                  <h1 style={{ color: "orange" }}>PENDING</h1>
+                ) : (
+                  <h1 style={{ color: "green" }}>COMPLETED</h1>
+                )}
                 <h3>User information</h3>
                 <p className="float-right" style={{ color: "gray" }}>
                   order at {formatTime(selectedBill.createdAt)}
@@ -183,7 +188,10 @@ class BillDetail extends Component {
                   ))}
                 </tbody>
               </table>
-              <div className="text-right" style={{ marginTop: 10, width: '100%' }}>
+              <div
+                className="text-right"
+                style={{ marginTop: 10, width: "100%" }}
+              >
                 <b>
                   TOTAL:{" "}
                   {currencyFormat(
@@ -203,7 +211,8 @@ class BillDetail extends Component {
 }
 const mapStateToProps = state => ({
   selectedBill: state.bill.selected,
-  token: state.user.token
+  token: state.user.token,
+  role: state.user.role
 });
 const mapDispatchToProps = dispatch => ({
   selectBill: (bill, token) => dispatch(selectBill(bill, token)),

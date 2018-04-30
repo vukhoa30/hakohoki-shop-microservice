@@ -9,18 +9,35 @@ import { loadProductFeedback, giveAnswer, toast } from "../../../api";
 class ProductFeedback extends Component {
   constructor(props) {
     super(props);
+    this.comments = [];
+    const { feedback, loadProductFeedback, id, location, search } = props;
+    const { selected } = search;
     this.state = {
       mode: "reviews",
-      selectedCommentId: null,
-      submittingAnswer: false
+      selectedCommentId: selected ? selected : null,
+      submittingAnswer: false,
+      willAutoScroll: false
     };
-    const { feedback, loadProductFeedback, id } = props;
     if (id !== feedback._id) loadProductFeedback(id);
   }
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      const { feedback, loadProductFeedback, id } = nextProps;
-      loadProductFeedback(id);
+    if (
+      this.props.id !== nextProps.id ||
+      this.props.location !== nextProps.location
+    ) {
+      const { feedback, loadProductFeedback, id, location, search } = nextProps;
+      const { selected, reload } = search;
+      if (this.props.id !== nextProps.id || reload) loadProductFeedback(id);
+      if (selected) this.setState({ selectedCommentId: selected });
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    const { isLoading: prevLoading } = prevProps.feedback;
+    const { isLoading: curLoading } = this.props.feedback;
+    if (prevLoading !== curLoading && !curLoading) {
+      const { selected } = this.props.search;
+      const element = this.comments[selected];
+      if (element) element.scrollIntoView();
     }
   }
   renderStars(starCount) {
@@ -53,7 +70,8 @@ class ProductFeedback extends Component {
       id,
       token,
       loadProductFeedback,
-      toast
+      toast,
+      location
     } = this.props;
     const {
       isLoading: isFeedbackLoading,
@@ -220,13 +238,16 @@ class ProductFeedback extends Component {
               </div>
               {comments.length > 0 && (
                 <div
+                  ref={ref => (this.commentList = ref)}
                   className="card"
                   style={{ overflowY: "auto", height: 600 }}
                 >
                   {comments
                     .filter(comment => !comment.parentId)
+                    .reverse()
                     .map((comment, index) => (
                       <a
+                        ref={ref => (this.comments[comment.id] = ref)}
                         key={"comment-" + index}
                         href="javascript:;"
                         className={`list-group-item list-group-item-action flex-column align-items-start ${
@@ -234,8 +255,13 @@ class ProductFeedback extends Component {
                             ? "active"
                             : ""
                         }`}
-                        onClick={() =>
-                          this.setState({ selectedCommentId: comment.id })
+                        onClick={
+                          () =>
+                            history.push({
+                              ...location,
+                              search: "?selected=" + comment.id
+                            })
+                          //this.setState({ selectedCommentId: comment.id })
                         }
                       >
                         <div className="d-flex w-100 justify-content-between">
@@ -302,12 +328,32 @@ class ProductFeedback extends Component {
                             }}
                           >
                             <div className="d-flex w-100 justify-content-between">
-                              <h5
-                                className="mb-1"
-                                style={{ fontWeight: "bold" }}
-                              >
-                                {comment.userName}
-                              </h5>
+                              <div className="row">
+                                <div className="col-xs-6">
+                                  <h5
+                                    className="mb-1"
+                                    style={{ fontWeight: "bold" }}
+                                  >
+                                    {comment.userName}
+                                  </h5>
+                                </div>
+                                <div className="col-xs-6 text-right">
+                                  <h5
+                                    style={{
+                                      color:
+                                        comment.userRole === "manager"
+                                          ? "red"
+                                          : comment.userRole === "receptionist"
+                                            ? "orange"
+                                            : comment.userRole === "employee"
+                                              ? "lightblue"
+                                              : "green"
+                                    }}
+                                  >
+                                    {comment.userRole}
+                                  </h5>
+                                </div>
+                              </div>
                               <small>{formatTime(comment.createdAt)}</small>
                             </div>
                             <p className="mb-1">{comment.content}</p>
@@ -438,7 +484,7 @@ class ProductFeedback extends Component {
   }
 }
 const mapStateToProps = (state, props) => {
-  const { match } = props;
+  const { match, location } = props;
   const { detail: product, feedback } = state.product;
   const { id } = match.params;
   const { token } = state.user;
@@ -447,7 +493,8 @@ const mapStateToProps = (state, props) => {
     product,
     feedback,
     id,
-    token
+    token,
+    search: parseToObject(location.search)
   };
 };
 const mapDispatchToProps = dispatch => ({

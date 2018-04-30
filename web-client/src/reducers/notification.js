@@ -23,14 +23,14 @@ const reducer = (state = initialState, action) => {
   } else if (type === SET_NOTIFICATION_STATUS) {
     const newNotifications = state.data;
     const index = newNotifications.findIndex(
-      notification => notification._id === notificationId
+      notification => notification.id === notificationId
     );
     if (index > -1) {
       newNotifications[index].read = read;
       nextState = { ...state, data: newNotifications };
     }
   } else if (type === APPEND_NOTIFICATION) {
-    const newNotifications = [data].push(state.data);
+    const newNotifications = [{ ...data }].concat(state.data);
     nextState = { ...state, data: newNotifications };
   }
   return nextState;

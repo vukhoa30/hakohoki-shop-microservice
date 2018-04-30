@@ -51,7 +51,7 @@ class ProductDetail extends Component {
     return stars;
   }
   render() {
-    const { product, history, feedback } = this.props;
+    const { product, history, feedback, role } = this.props;
     const { reviews } = feedback;
     const statistic = transform(
       feedback.reviews,
@@ -119,15 +119,17 @@ class ProductDetail extends Component {
               >
                 View comments
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() =>
-                  history.push("/main/product/update-product/" + product._id)
-                }
-                style={{ marginRight: 10 }}
-              >
-                Update product
-              </button>
+              {role === "manager" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() =>
+                    history.push("/main/product/update-product/" + product._id)
+                  }
+                  style={{ marginRight: 10 }}
+                >
+                  Update product
+                </button>
+              )}
             </div>
             <div className="card" style={{ marginTop: 20 }}>
               <div className="content">
@@ -349,7 +351,8 @@ class ProductDetail extends Component {
 }
 const mapStateToProps = state => ({
   product: state.product.detail,
-  feedback: state.product.feedback
+  feedback: state.product.feedback,
+  role: state.user.role
 });
 const mapDispatchToProps = dispatch => ({
   loadProductData: productId => dispatch(loadProductData(productId)),

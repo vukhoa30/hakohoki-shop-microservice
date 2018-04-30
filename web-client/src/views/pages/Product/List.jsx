@@ -53,7 +53,8 @@ class ProductList extends Component {
       loadProductList,
       location,
       selectProduct,
-      toast
+      toast,
+      role
     } = this.props;
     const categories = [
       {
@@ -128,14 +129,16 @@ class ProductList extends Component {
               <i className="fa fa-search" />
             )}
           </button>
-          <button
-            className="btn btn-success"
-            style={{ marginLeft: 20 }}
-            onClick={() => history.push("/main/product/add-product")}
-          >
-            <i className="fa fa-plus" />
-            Add product
-          </button>
+          {role === "manager" && (
+            <button
+              className="btn btn-success"
+              style={{ marginLeft: 20 }}
+              onClick={() => history.push("/main/product/add-product")}
+            >
+              <i className="fa fa-plus" />
+              Add product
+            </button>
+          )}
         </form>
         <div className="card" style={{ padding: 10, marginTop: 10 }}>
           <div className="content">
@@ -281,7 +284,8 @@ class ProductList extends Component {
   }
 }
 const mapStateToProps = state => ({
-  ...state.product.list
+  ...state.product.list,
+  role: state.user.role
 });
 const mapDispatchToProps = dispatch => ({
   loadProductList: (query, offset, limit) =>

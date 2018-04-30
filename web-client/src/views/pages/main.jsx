@@ -11,6 +11,7 @@ import ProductFeedback from "./Product/Feedback";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import Promotion from "./Promotion";
+import ProtectedRoute from "../components/ProtectedRoute";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { parseToQueryString, formatTime } from "../../utils";
@@ -116,26 +117,30 @@ class Main extends React.Component {
               </a>
             </div>
             <ul className="nav">
-              <li
-                className={
-                  location.pathname.includes("dashboard") ? "active" : ""
-                }
-              >
-                <Link to={`${match.url}/dashboard`}>
-                  <i className="ti-pie-chart" />
-                  <p>Dashboard</p>
-                </Link>
-              </li>
-              <li
-                className={
-                  location.pathname.includes("account") ? "active" : ""
-                }
-              >
-                <Link to={`${match.url}/account/management`}>
-                  <i className="fa fa-user" />
-                  <p>Account</p>
-                </Link>
-              </li>
+              {role === "manager" && (
+                <li
+                  className={
+                    location.pathname.includes("dashboard") ? "active" : ""
+                  }
+                >
+                  <Link to={`${match.url}/dashboard`}>
+                    <i className="ti-pie-chart" />
+                    <p>Dashboard</p>
+                  </Link>
+                </li>
+              )}
+              {role === "manager" && (
+                <li
+                  className={
+                    location.pathname.includes("account") ? "active" : ""
+                  }
+                >
+                  <Link to={`${match.url}/account/management`}>
+                    <i className="fa fa-user" />
+                    <p>Account</p>
+                  </Link>
+                </li>
+              )}
               <li
                 className={
                   location.pathname.includes("product") ? "active" : ""
@@ -220,7 +225,7 @@ class Main extends React.Component {
                           <Link
                             to={`${match.url}/product/feedback/${
                               notification.productId
-                            }`}
+                            }?reload=true`}
                             onClick={() =>
                               setNotificationAsRead(notification.id, token)
                             }
@@ -264,11 +269,26 @@ class Main extends React.Component {
           </nav>
           <div className="content">
             <Switch>
-              <Redirect exact path={match.url} to={`${match.url}/dashboard`} />
-              <Route path={`${match.url}/dashboard`} component={Dashboard} />
-              <Route
+              <Redirect
+                exact
+                path={match.url}
+                to={
+                  role === "manager"
+                    ? `${match.url}/dashboard`
+                    : role === "receptionist"
+                      ? `${match.url}/bill/list`
+                      : `${match.url}/product/list`
+                }
+              />
+              <ProtectedRoute
+                path={`${match.url}/dashboard`}
+                component={Dashboard}
+                isAuthorized={() => role === "manager"}
+              />
+              <ProtectedRoute
                 path={`${match.url}/account/management`}
                 component={AccountManager}
+                isAuthorized={() => role === "manager"}
               />
               <Route
                 path={`${match.url}/product/list`}
@@ -278,13 +298,15 @@ class Main extends React.Component {
                 path={`${match.url}/product/detail/:id`}
                 component={ProductDetail}
               />
-              <Route
+              <ProtectedRoute
                 path={`${match.url}/product/add-product`}
                 component={AddProduct}
+                isAuthorized={() => role === "manager"}
               />
-              <Route
+              <ProtectedRoute
                 path={`${match.url}/product/update-product/:id`}
                 component={AddProduct}
+                isAuthorized={() => role === "manager"}
               />
               <Route
                 path={`${match.url}/product/feedback/:id`}
