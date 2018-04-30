@@ -59,10 +59,10 @@ var consumeAmqpNotification = (io, queue) => {
         console.log(content)
         content.map(notification => {
           var socketDes = clientSockets.find(clientSocket =>
-            clientSocket.accountId.toString() == notification.accountId.toString()
+            clientSocket.accountId.toString() === notification.accountId.toString()
           );
           if (socketDes) {
-            console.log(socketDes.id)
+            console.log('SOCKET_ID: ' + socketDes.id)
             notification.accountId = undefined
             io.of('/notifications').to(socketDes.id).emit('message', notification)
           }
