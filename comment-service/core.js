@@ -63,7 +63,8 @@ module.exports = {
               type: 'commentPosted',
               accountId: id,
               productId: req.body.productId,
-              productName
+              productName,
+              commentId
             }
           })
         )
