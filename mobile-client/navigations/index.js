@@ -6,7 +6,7 @@ import {
   NavigationActions
 } from "react-navigation";
 import React, { Component } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Image } from "react-native";
 import Home from "../views/screens/Home";
 import Profile from "../views/screens/Profile";
 import LogIn from "../views/screens/LogIn";
@@ -25,7 +25,7 @@ import NotificationComponent from "../views/screens/Notification";
 import TabBarIcon from "../views/components/TabBarIcon";
 import { Icon } from "native-base";
 
-const themeColor = '#BE2E11'
+const themeColor = "#BE2E11";
 
 const ProductDetail = TabNavigator(
   {
@@ -97,10 +97,7 @@ const mainNavigator = TabNavigator(
       screen: Profile
     },
     Notification: {
-      screen: NotificationComponent,
-      navigationOptions: {
-        title: 'Notification'
-      }
+      screen: NotificationComponent
     }
   },
   {
@@ -155,11 +152,25 @@ const rootNavigator = StackNavigator(
     Main: {
       screen: mainNavigator,
       navigationOptions: {
-        headerStyle: {
-          backgroundColor: themeColor,
-          elevation: 0,
-          shadowOpacity: 0
-        }
+        title: "HKShop",
+        headerLeft: (
+          <Image
+            source={require("../resources/images/logoTitle.png")}
+            style={{
+              width: 30,
+              height: 30,
+              resizeMode: "stretch",
+              marginLeft: 20
+            }}
+          />
+        ),
+        headerRight: (
+          <Icon
+            name="search"
+            style={{ marginRight: 20, color: "white" }}
+            onPress={() => navigation.navigate("Search")}
+          />
+        )
       }
     },
 

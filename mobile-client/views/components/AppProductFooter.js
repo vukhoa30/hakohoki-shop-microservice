@@ -6,7 +6,8 @@ import {
   updateWatchList,
   logOut,
   loadWatchList,
-  updateWatchListStateOfProduct
+  updateWatchListStateOfProduct,
+  navigate
 } from "../../api";
 import {
   Container,
@@ -41,7 +42,8 @@ class AppProductFooter extends Component {
       isAvailableInWatchList,
       cartStatus,
       product,
-      setCart
+      setCart,
+      navigate
     } = this.props;
 
     return (
@@ -60,89 +62,100 @@ class AppProductFooter extends Component {
           }
         />
         <FooterTab>
-          <View style={{ width: "100%" }}>
-            <Grid>
-              <Col>
-                {productQuantityInCart === 0 ? (
-                  <Button
-                    disabled={
-                      product.quantity === 0 || cartStatus === "LOADING"
-                    }
-                    success
-                    full
-                    small
-                    iconLeft
-                    style={{ flexDirection: "row" }}
-                    onPress={() => {
-                      if (productQuantityInCart > 1)
-                        confirm(
-                          "Product existed",
-                          `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
-                          () => this.setState({ showPickerDialog: true })
-                        );
-                      else this.setState({ showPickerDialog: true });
-                    }}
-                  >
-                    {cartStatus === "LOADING" ? (
+          {isLoggedIn ? (
+            <View style={{ width: "100%" }}>
+              <Grid>
+                <Col>
+                  {productQuantityInCart === 0 ? (
+                    <Button
+                      disabled={
+                        product.quantity === 0 || cartStatus === "LOADING"
+                      }
+                      success
+                      full
+                      small
+                      iconLeft
+                      style={{ flexDirection: "row" }}
+                      onPress={() => {
+                        if (productQuantityInCart > 1)
+                          confirm(
+                            "Product existed",
+                            `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
+                            () => this.setState({ showPickerDialog: true })
+                          );
+                        else this.setState({ showPickerDialog: true });
+                      }}
+                    >
+                      {cartStatus === "LOADING" ? (
+                        <Spinner />
+                      ) : (
+                        <Icon name="add" />
+                      )}
+                      <Icon name="cart" style={{ fontSize: 30 }} />
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled
+                      full
+                      iconLeft
+                      style={{ flexDirection: "row" }}
+                    >
+                      <Icon name="cart" style={{ fontSize: 30 }} />
+                      <Icon name="md-checkmark-circle" />
+                    </Button>
+                  )}
+                </Col>
+                <Col>
+                  {this.state.isWatchListUpdating ? (
+                    <Button block disabled>
                       <Spinner />
-                    ) : (
+                    </Button>
+                  ) : isAvailableInWatchList ? (
+                    <Button
+                      warning
+                      full
+                      small
+                      iconLeft
+                      style={{ flexDirection: "row" }}
+                      onPress={() => {
+                        if (!isLoggedIn) logOut();
+                        else
+                          confirm(
+                            "Confirm",
+                            `Are you sure to remove product "${
+                              product.name
+                            }" from your watch list?`,
+                            () => updateWatchList.call(this, "REMOVE")
+                          );
+                      }}
+                    >
+                      <Icon name="close" />
+                      <AppText>WATCH LIST</AppText>
+                    </Button>
+                  ) : (
+                    <Button
+                      primary
+                      full
+                      small
+                      iconLeft
+                      style={{ flexDirection: "row" }}
+                      onPress={() => {
+                        if (!isLoggedIn) logOut();
+                        else updateWatchList.call(this, "ADD");
+                      }}
+                    >
                       <Icon name="add" />
-                    )}
-                    <Icon name="cart" style={{ fontSize: 30 }} />
-                  </Button>
-                ) : (
-                  <Button disabled full iconLeft style={{ flexDirection: 'row' }}>
-                    <Icon name="cart" style={{ fontSize: 30 }} />
-                    <Icon name="md-checkmark-circle"/>
-                  </Button>
-                )}
-              </Col>
-              <Col>
-                {this.state.isWatchListUpdating ? (
-                  <Button block disabled>
-                    <Spinner />
-                  </Button>
-                ) : isAvailableInWatchList ? (
-                  <Button
-                    warning
-                    full
-                    small
-                    iconLeft
-                    style={{ flexDirection: "row" }}
-                    onPress={() => {
-                      if (!isLoggedIn) logOut();
-                      else
-                        confirm(
-                          "Confirm",
-                          `Are you sure to remove product "${
-                            product.name
-                          }" from your watch list?`,
-                          () => updateWatchList.call(this, "REMOVE")
-                        );
-                    }}
-                  >
-                    <Icon name="close" />
-                    <AppText>WATCH LIST</AppText>
-                  </Button>
-                ) : (
-                  <Button
-                    primary
-                    full
-                    small
-                    iconLeft
-                    style={{ flexDirection: "row" }}
-                    onPress={() => {
-                      if (!isLoggedIn) logOut();
-                      else updateWatchList.call(this, "ADD");
-                    }}
-                  >
-                    <Icon name="add" />
-                    <AppText>WATCH LIST</AppText>
-                  </Button>
-                )}
-              </Col>
-            </Grid>
-          </View>
+                      <AppText>WATCH LIST</AppText>
+                    </Button>
+                  )}
+                </Col>
+              </Grid>
+            </View>
+          ) : (
+            <Button block onPress={() => navigate("Account/LogIn")}>
+              <AppText>LOG IN TO BUY THIS PRODUCT</AppText>
+            </Button>
+          )}
         </FooterTab>
       </Footer>
     );
@@ -176,7 +189,8 @@ const mapDispatchToProps = dispatch => ({
   loadWatchList: (token, offset, length) =>
     dispatch(loadWatchList(token, offset, length)),
   updateWatchListStateOfProduct: existsInWatchlist =>
-    dispatch(updateWatchListStateOfProduct(existsInWatchlist))
+    dispatch(updateWatchListStateOfProduct(existsInWatchlist)),
+  navigate: (path, params) => dispatch(navigate(path,params))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppProductFooter);

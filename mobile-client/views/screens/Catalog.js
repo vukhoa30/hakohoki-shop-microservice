@@ -239,12 +239,12 @@ class Catalog extends Component {
                 })}
             </ScrollView>
           }
+          {this.state.q && (
+            <AppText style={{ margin: 10, color: "black" }} note>
+              >> Keyword: {this.state.q}
+            </AppText>
+          )}
         </View>
-        {this.state.q && (
-          <AppText style={{ margin: 10 }} note>
-            >> Keyword: {this.state.q}
-          </AppText>
-        )}
         <Content
           onScroll={({ nativeEvent }) => {
             const { contentOffset } = nativeEvent;

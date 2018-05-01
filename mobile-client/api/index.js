@@ -51,6 +51,11 @@ import { AsyncStorage } from "react-native";
 
 var socket = null;
 
+function navigate(path, params) {
+  return dispatch =>
+    dispatch(navigator.router.getActionForPathAndParams(path, params));
+}
+
 function disconnect() {
   if (socket !== null) socket.disconnect();
 }
@@ -507,48 +512,49 @@ function sendReview(values) {
   });
 }
 
-function sendComment(values) {
-  return new Promise(async (resolve, reject) => {
-    let err = `Undefined error, try again later!`;
-    try {
-      const content = values.comment;
-      const {
-        token,
-        reset,
-        productId,
-        parentId,
-        loadProductFeedback,
-        logOut
-      } = this.props;
-      console.log(`ProductId: ${productId} && ParentId: ${parentId}`);
-      reset();
-      const response = await request(
-        "/comments",
-        "POST",
-        { Authorization: "JWT " + token },
-        { productId, content, parentId }
-      );
-      const { status, data } = response;
+async function sendComment(values) {
+  let hasError = false;
+  let err = `Undefined error, try again later!`;
+  this.setState({ submitting: true });
+  try {
+    const content = this.state.comment;
+    const {
+      token,
+      productId,
+      parentId,
+      loadProductFeedback,
+      logOut
+    } = this.props;
+    const response = await request(
+      "/comments",
+      "POST",
+      { Authorization: "JWT " + token },
+      { productId, content, parentId }
+    );
+    const { status, data } = response;
 
-      switch (status) {
-        case 200:
-          loadProductFeedback(productId);
-          return resolve();
-        case 401:
-          err = "Authenticate user failed! Please log in again";
-          logOut();
-          break;
-        case 500:
-          err = "Internal server error! Try again later";
-          break;
-      }
-    } catch (error) {
-      console.log(error);
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+    switch (status) {
+      case 200:
+        loadProductFeedback(productId);
+        this.setState({ comment: "" });
+        break;
+      case 401:
+        err = "Authenticate user failed! Please log in again";
+        logOut();
+        hasError = true;
+        break;
+      case 500:
+        err = "Internal server error! Try again later";
+        hasError = true;
+        break;
     }
-
-    reject(new SubmissionError({ _error: err }));
-  });
+  } catch (error) {
+    hasError = true;
+    console.log(error);
+    if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+  }
+  if (hasError) alert("Error", err);
+  this.setState({ submitting: false });
 }
 
 async function loadAnswers(productId, parentId) {
@@ -877,6 +883,7 @@ function makeOrder(productList, token) {
 }
 
 module.exports = {
+  navigate,
   connectToServer,
   authenticate,
   enroll,

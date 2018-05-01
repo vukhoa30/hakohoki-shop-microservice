@@ -22,7 +22,7 @@ class TabBarIcon extends Component {
     }
 
     render() {
-        const { routeName, focused, notificationUnreadCount } = this.props
+        const { routeName, focused, notificationUnreadCount, isLoggedIn } = this.props
         let icon = null
         switch (routeName) {
 
@@ -47,7 +47,7 @@ class TabBarIcon extends Component {
             <View>
                 {icon}
                 {
-                    routeName === 'Notification' && notificationUnreadCount !== 0 &&
+                    isLoggedIn && routeName === 'Notification' && notificationUnreadCount !== 0 &&
                     <View style={{ position: 'absolute', right: -7, top: -7 }} >
                         <Text style={{ fontSize: 10, color: 'red', fontWeight: 'bold' }} >{notificationUnreadCount}</Text>
                     </View>
@@ -60,7 +60,8 @@ class TabBarIcon extends Component {
 
 const mapStateToProps = (state) => ({
 
-    notificationUnreadCount: state.notification.list.filter(notification => !notification.read).length
+    notificationUnreadCount: state.notification.list.filter(notification => !notification.read).length,
+    isLoggedIn: state.user.isLoggedIn
 
 })
 

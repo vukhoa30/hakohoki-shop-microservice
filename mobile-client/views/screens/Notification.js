@@ -28,7 +28,7 @@ class Notification extends Component {
     super(props);
     this.state = {};
     const { token, loadNotifications, status, isLoggedIn } = this.props;
-    if (isLoggedIn && status !== "LOADING") loadNotifications(token);
+    if (isLoggedIn && status !== "INIT") loadNotifications(token);
   }
 
   componentWillReceiveProps(nextProps) {
