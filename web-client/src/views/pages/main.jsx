@@ -225,7 +225,7 @@ class Main extends React.Component {
                           <Link
                             to={`${match.url}/product/feedback/${
                               notification.productId
-                            }?reload=true`}
+                            }?selected=${notification.commentId}&reload=true`}
                             onClick={() =>
                               setNotificationAsRead(notification.id, token)
                             }

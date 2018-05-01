@@ -51,51 +51,52 @@ class BillDetail extends Component {
         </div>
         {!selectedBill.isLoading && (
           <div className="container p-5">
-            {selectedBill.status === "pending" && (
-              <div className="text-right" style={{ width: "100%" }}>
-                <button
-                  className="btn btn-info mb-3"
-                  disabled={this.state.confirming}
-                  onClick={async () => {
-                    this.setState({ confirming: true });
-                    const result = await confirmBill(selectedBill._id, token);
-                    if (result.ok) {
-                      toast("BILL CONFIRMED", "success");
-                      selectBill({ _id: selectedBill._id }, token);
-                    } else {
-                      const { status } = result;
-                      switch (status) {
-                        case 401:
-                          toast("YOU ARE NOT AUTHORIZED", "error");
-                          break;
-                        case 0:
-                          toast(
-                            "CONNECTION ERROR! PLEASE CHECK YOUR CONNECTION",
-                            "error"
-                          );
-                          break;
-                        case 500:
-                          toast(
-                            "INTERNAL SERVER ERROR! TRY AGAIN LATER",
-                            "error"
-                          );
-                          break;
-                        default:
-                          toast("UNDEFINED ERROR! TRY AGAIN LATER", "error");
-                          break;
+            {role === "receptionist" &&
+              selectedBill.status === "pending" && (
+                <div className="text-right" style={{ width: "100%" }}>
+                  <button
+                    className="btn btn-info mb-3"
+                    disabled={this.state.confirming}
+                    onClick={async () => {
+                      this.setState({ confirming: true });
+                      const result = await confirmBill(selectedBill._id, token);
+                      if (result.ok) {
+                        toast("BILL CONFIRMED", "success");
+                        selectBill({ _id: selectedBill._id }, token);
+                      } else {
+                        const { status } = result;
+                        switch (status) {
+                          case 401:
+                            toast("YOU ARE NOT AUTHORIZED", "error");
+                            break;
+                          case 0:
+                            toast(
+                              "CONNECTION ERROR! PLEASE CHECK YOUR CONNECTION",
+                              "error"
+                            );
+                            break;
+                          case 500:
+                            toast(
+                              "INTERNAL SERVER ERROR! TRY AGAIN LATER",
+                              "error"
+                            );
+                            break;
+                          default:
+                            toast("UNDEFINED ERROR! TRY AGAIN LATER", "error");
+                            break;
+                        }
                       }
-                    }
-                    this.setState({ confirming: false });
-                  }}
-                >
-                  {role === "receptionist" && this.state.confirming ? (
-                    <i className="fa fa-spinner fa-spin" />
-                  ) : (
-                    "CONFIRM"
-                  )}
-                </button>
-              </div>
-            )}
+                      this.setState({ confirming: false });
+                    }}
+                  >
+                    {this.state.confirming ? (
+                      <i className="fa fa-spinner fa-spin" />
+                    ) : (
+                      "CONFIRM"
+                    )}
+                  </button>
+                </div>
+              )}
             <div style={{ height: 700, overflowY: "auto" }}>
               <div className="d-flex w-100 justify-content-between">
                 {selectedBill.status === "pending" ? (
