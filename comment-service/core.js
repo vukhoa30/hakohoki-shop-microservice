@@ -2,12 +2,6 @@ var db = require('./database')
 //var helper = require('../helper')
 var msgBroker = require('./connection/message-broker')
 
-//chỉ chạy 1 promise
-var typicalResponse = (res, func) => {
-  func.then(rslt => res.json(rslt))
-  .catch(err => catchError(res, err));
-}
-
 var catchError = (res, err) => {
   console.log(err)
   res.status(500);
@@ -84,19 +78,25 @@ module.exports = {
           .map(e => parseInt(e)))
         var accounts = customers.concat(employees)
       } catch (e) {return catchError(res, e)}
-      console.log(accounts)
-      console.log(rslt.map(r=>r.accountId))
+      //console.log(accounts)
+      //console.log(rslt.map(r=>r.accountId))
       res.json(rslt
-        .filter(r => { return accounts.find(e => 
-          e.accountId.toString() == r.accountId.toString()) })
+        //.filter(r => { return accounts.find(e => 
+          //e.accountId.toString() == r.accountId.toString()) })
         .map(r => {
           var accountInfo = accounts.find(e => 
             e.accountId.toString() == r.accountId.toString())
+          var account = {};
+          if (accountInfo) {
+            account = {
+              userId: accountInfo.accountId,
+              userName: accountInfo.fullName,
+              userRole: accountInfo.role
+            }
+          }
           return {
             ...r,
-            userId: accountInfo.accountId,
-            userName: accountInfo.fullName,
-            userRole: accountInfo.role
+            ...account
           }
         })
       )

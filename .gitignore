@@ -10,8 +10,6 @@ comment-service/node_modules
 bill-service/node_modules
 notification-service/node_modules
 sms-service/node_modules
-<<<<<<< HEAD
 cart-service/node_modules
-=======
-web-client/
->>>>>>> mobile_client
+web-client/src/config.js
+mobile-client/config.js
