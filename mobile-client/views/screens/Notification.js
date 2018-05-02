@@ -73,14 +73,14 @@ class Notification extends Component {
         break;
       case "commentReplied":
         title = "Comment replied!";
-        content = `Your comment about product with ID "${productId}" has been replied`;
+        content = `Your comment about product ${productName} with ID "${productId}" has been replied`;
         callback = () => viewAnswers(productId, commentId);
         break;
       case "promotionCreated":
         title = "New promotion coming up!";
         content = `${promotionName}`;
         break;
-      case "productBough":
+      case "productBought":
         title = "New order has been made!";
         content = `You have made an order for product ${productName}`;
         break;

@@ -233,7 +233,7 @@ const mapStateToProps = (state) => {
 
     return {
 
-        userId: account.accountId,
+        userId: isLoggedIn ? account.accountId : null,
         isReviewed: data.reviewedBySelf,
         isLoggedIn,
         token,
