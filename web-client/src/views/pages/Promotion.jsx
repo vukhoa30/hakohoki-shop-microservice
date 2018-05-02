@@ -95,7 +95,8 @@ class Promotion extends Component {
       handleSubmit,
       submitting,
       toast,
-      token
+      token,
+      role
     } = this.props;
     const {
       selectedPromotion,
@@ -424,252 +425,263 @@ class Promotion extends Component {
             </div>
           </div>
         </div>
-        <h3>CREATE PROMOTION</h3>
-        <form
-          name="promotion_form"
-          onSubmit={async e => {
-            e.preventDefault();
-            if (this.state.isSubmittingForm) return;
-            if (selectedProducts.length === 0)
-              return toast("PLEASE SELECT SOME PRODUCTS", "error");
-            const { name, start, end, sendNotification, sendMail } = e.target;
-            const obj = {
-              name: name.value,
-              start: start.value,
-              end: end.value,
-              sendNotification: sendNotification.checked,
-              posterUrl: this.state.currentPicture,
-              sendMail: sendMail.checked,
-              products: selectedProducts.map(product => ({
-                product_id: product._id,
-                new_price:
-                  product.currentPrice -
-                  this.state.promotionRate * product.currentPrice / 100
-              }))
-            };
-            console.log(obj);
-            this.setState({ isSubmittingForm: true });
-            let err = "UNDEFINED ERROR! TRY AGAIN LATER";
-            try {
-              const { status } = await request(
-                "/promotions",
-                "POST",
-                { Authorization: "JWT " + token },
-                obj
-              );
-              if (status === 200) {
-                toast("ADD PROMOTION SUCCESSFULLY", "success");
-                loadPromotions();
-                return this.setState({
-                  isSubmittingForm: false,
-                  selectedPromotion: null
-                });
-              } else if (status === 401) {
-                err = "AUTHENTICATION FAILED. PLEASE CHECK YOUR ACCOUNT ROLE!";
-              }
-            } catch (error) {}
-            toast(err, "error");
-            this.setState({ isSubmittingForm: false });
-          }}
-        >
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
+        {role === "manager" && (
+          <div>
+            <h3>CREATE PROMOTION</h3>
+            <form
+              name="promotion_form"
+              onSubmit={async e => {
+                e.preventDefault();
+                if (this.state.isSubmittingForm) return;
+                if (selectedProducts.length === 0)
+                  return toast("PLEASE SELECT SOME PRODUCTS", "error");
+                const {
+                  name,
+                  start,
+                  end,
+                  sendNotification,
+                  sendMail
+                } = e.target;
+                const obj = {
+                  name: name.value,
+                  start: start.value,
+                  end: end.value,
+                  sendNotification: sendNotification.checked,
+                  posterUrl: this.state.currentPicture,
+                  sendMail: sendMail.checked,
+                  products: selectedProducts.map(product => ({
+                    product_id: product._id,
+                    new_price:
+                      product.currentPrice -
+                      this.state.promotionRate * product.currentPrice / 100
+                  }))
+                };
+                this.setState({ isSubmittingForm: true });
+                let err = "UNDEFINED ERROR! TRY AGAIN LATER";
+                try {
+                  const { status } = await request(
+                    "/promotions",
+                    "POST",
+                    { Authorization: "JWT " + token },
+                    obj
+                  );
+                  if (status === 200) {
+                    toast("ADD PROMOTION SUCCESSFULLY", "success");
+                    loadPromotions();
+                    return this.setState({
+                      isSubmittingForm: false,
+                      selectedPromotion: null
+                    });
+                  } else if (status === 401) {
+                    err =
+                      "AUTHENTICATION FAILED. PLEASE CHECK YOUR ACCOUNT ROLE!";
+                  }
+                } catch (error) {}
+                toast(err, "error");
+                this.setState({ isSubmittingForm: false });
+              }}
             >
-              POSTER
-            </label>
-            <div className="col-sm-9">
-              <input
-                type="text"
-                name="poster"
-                className="form-control border-input"
-                placeholder="Enter picture URL"
-                value={this.state.currentPicture}
-                onChange={({ target }) =>
-                  this.setState({ currentPicture: target.value })
-                }
-                required
-              />
-              {this.state.currentPicture !== "" ? (
-                <img
-                  src={this.state.currentPicture}
-                  alt=""
-                  style={{ width: "100%", height: "auto" }}
-                />
-              ) : (
-                <p>Please enter picture url on the textbox above</p>
-              )}
-            </div>
-          </div>
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
-            >
-              NAME
-            </label>
-            <div className="col-sm-9">
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter promotion name"
-                className="form-control border-input"
-                required
-              />
-            </div>
-          </div>
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
-            >
-              START TIME
-            </label>
-            <div className="col-sm-9">
-              <DatePicker
-                name="start"
-                selected={this.state.start}
-                onChange={date => this.setState({ start: date })}
-                className="form-control border-input"
-                required
-              />
-            </div>
-          </div>
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
-            >
-              END TIME
-            </label>
-            <div className="col-sm-9">
-              <DatePicker
-                name="end"
-                selected={this.state.end}
-                onChange={date => this.setState({ end: date })}
-                className="form-control border-input"
-                required
-              />
-              <Checkbox name="sendNotification" defaultChecked>
-                Send notification to users
-              </Checkbox>
-              <Checkbox name="sendMail" defaultChecked>
-                Send notification to users through email
-              </Checkbox>
-            </div>
-          </div>
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
-            >
-              PROMOTION RATE
-            </label>
-            <div className="col-sm-3">
-              <input
-                type="number"
-                className="form-control border-input"
-                value={this.state.promotionRate}
-                onChange={({ target }) =>
-                  this.setState({
-                    promotionRate: target.value === "" ? 100 : target.value
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="col-sm-1">
-              <h5>%</h5>
-            </div>
-          </div>
-          <div className="form-group row">
-            <label
-              className="col-sm-3 col-form-label font-weight-bold text-right"
-              style={{ paddingTop: 10 }}
-            >
-              PRODUCTS
-            </label>
-            <div className="col-sm-9">
-              {this.state.selectedProducts.map((product, index) => (
-                <div
-                  className="row clickable"
-                  key={"selected-product-" + product._id}
-                  // onClick={() =>
-                  //   history.push("/main/product/detail/" + product._id)
-                  // }
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
                 >
-                  <div
-                    className="col-xs-2"
-                    style={{ paddingTop: 10, paddingBottom: 10 }}
-                  >
+                  POSTER
+                </label>
+                <div className="col-sm-9">
+                  <input
+                    type="text"
+                    name="poster"
+                    className="form-control border-input"
+                    placeholder="Enter picture URL"
+                    value={this.state.currentPicture}
+                    onChange={({ target }) =>
+                      this.setState({ currentPicture: target.value })
+                    }
+                    required
+                  />
+                  {this.state.currentPicture !== "" ? (
                     <img
-                      src={product.mainPicture}
-                      alt="Product picture"
-                      style={{ width: 100, height: 100 }}
+                      src={this.state.currentPicture}
+                      alt=""
+                      style={{ width: "100%", height: "auto" }}
                     />
-                  </div>
-                  <div className="col-xs-8">
-                    <h3 className="display-4" style={{ color: "red" }}>
-                      {product.name}
-                    </h3>
-                    <p>
-                      {currencyFormat(product.currentPrice)} ->{" "}
-                      <b>
-                        {currencyFormat(
-                          product.currentPrice -
-                            this.state.promotionRate *
-                              product.currentPrice /
-                              100
-                        )}
-                      </b>
-                    </p>
-                  </div>
-                  <div className="col-xs-1">
-                    <i
-                      className="fa fa-remove fa-2x"
-                      style={{ color: "red" }}
-                      onClick={() => {
-                        const newArray = selectedProducts;
-                        newArray.splice(index, 1);
-                        this.setState({ selectedProducts: newArray });
-                      }}
-                    />
-                  </div>
+                  ) : (
+                    <p>Please enter picture url on the textbox above</p>
+                  )}
                 </div>
-              ))}
-              <button
-                className="btn btn-default btn-fill"
-                type="button"
-                onClick={() =>
-                  this.setState({ showProductPicker: true, marginTop: 50 })
-                }
-              >
-                <i className="fa fa-plus" />
-              </button>
-            </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
+                >
+                  NAME
+                </label>
+                <div className="col-sm-9">
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter promotion name"
+                    className="form-control border-input"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
+                >
+                  START TIME
+                </label>
+                <div className="col-sm-9">
+                  <DatePicker
+                    name="start"
+                    selected={this.state.start}
+                    onChange={date => this.setState({ start: date })}
+                    className="form-control border-input"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
+                >
+                  END TIME
+                </label>
+                <div className="col-sm-9">
+                  <DatePicker
+                    name="end"
+                    selected={this.state.end}
+                    onChange={date => this.setState({ end: date })}
+                    className="form-control border-input"
+                    required
+                  />
+                  <Checkbox name="sendNotification" defaultChecked>
+                    Send notification to users
+                  </Checkbox>
+                  <Checkbox name="sendMail" defaultChecked>
+                    Send notification to users through email
+                  </Checkbox>
+                </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
+                >
+                  PROMOTION RATE
+                </label>
+                <div className="col-sm-3">
+                  <input
+                    type="number"
+                    className="form-control border-input"
+                    value={this.state.promotionRate}
+                    onChange={({ target }) =>
+                      this.setState({
+                        promotionRate: target.value === "" ? 100 : target.value
+                      })
+                    }
+                    required
+                  />
+                </div>
+                <div className="col-sm-1">
+                  <h5>%</h5>
+                </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  className="col-sm-3 col-form-label font-weight-bold text-right"
+                  style={{ paddingTop: 10 }}
+                >
+                  PRODUCTS
+                </label>
+                <div className="col-sm-9">
+                  {this.state.selectedProducts.map((product, index) => (
+                    <div
+                      className="row clickable"
+                      key={"selected-product-" + product._id}
+                      // onClick={() =>
+                      //   history.push("/main/product/detail/" + product._id)
+                      // }
+                    >
+                      <div
+                        className="col-xs-2"
+                        style={{ paddingTop: 10, paddingBottom: 10 }}
+                      >
+                        <img
+                          src={product.mainPicture}
+                          alt="Product picture"
+                          style={{ width: 100, height: 100 }}
+                        />
+                      </div>
+                      <div className="col-xs-8">
+                        <h3 className="display-4" style={{ color: "red" }}>
+                          {product.name}
+                        </h3>
+                        <p>
+                          {currencyFormat(product.currentPrice)} ->{" "}
+                          <b>
+                            {currencyFormat(
+                              product.currentPrice -
+                                this.state.promotionRate *
+                                  product.currentPrice /
+                                  100
+                            )}
+                          </b>
+                        </p>
+                      </div>
+                      <div className="col-xs-1">
+                        <i
+                          className="fa fa-remove fa-2x"
+                          style={{ color: "red" }}
+                          onClick={() => {
+                            const newArray = selectedProducts;
+                            newArray.splice(index, 1);
+                            this.setState({ selectedProducts: newArray });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    className="btn btn-default btn-fill"
+                    type="button"
+                    onClick={() =>
+                      this.setState({ showProductPicker: true, marginTop: 50 })
+                    }
+                  >
+                    <i className="fa fa-plus" />
+                  </button>
+                </div>
+              </div>
+              <div className="text-center">
+                <button
+                  className="btn btn-success btn-fill"
+                  type="submit"
+                  disabled={this.state.isSubmittingForm}
+                >
+                  {this.state.isSubmittingForm ? (
+                    <i className="fa fa-circle-o-notch" />
+                  ) : (
+                    "ADD PROMOTION"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="text-center">
-            <button
-              className="btn btn-success btn-fill"
-              type="submit"
-              disabled={this.state.isSubmittingForm}
-            >
-              {this.state.isSubmittingForm ? (
-                <i className="fa fa-circle-o-notch" />
-              ) : (
-                "ADD PROMOTION"
-              )}
-            </button>
-          </div>
-        </form>
+        )}
       </div>
     );
   }
 }
 const mapStateToProps = state => ({
   ...state.promotion,
-  token: state.user.token
+  token: state.user.token,
+  role: state.user.role
 });
 const mapDispatchToProps = dispatch => ({
   loadPromotions: () => dispatch(loadPromotions()),

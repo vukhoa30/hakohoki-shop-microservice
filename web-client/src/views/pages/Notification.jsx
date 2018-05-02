@@ -18,7 +18,7 @@ class Notification extends Component {
     super(props);
     this.state = {};
     const { isFirstLoad, loadNotifications, token } = props;
-    if (isFirstLoad) loadNotifications(token)
+    if (isFirstLoad) loadNotifications(token);
   }
   componentWillReceiveProps(nextProps) {
     if (this.props.err !== nextProps.err && nextProps.err !== null) {
@@ -70,11 +70,15 @@ class Notification extends Component {
           <ListGroup>
             {notifications.map(notification => (
               <ListGroupItem
-                key={"notification-" + notification._id}
+                key={"notification-" + notification.id}
                 onClick={() => {
-                  setNotificationAsRead(notification._id, token);
+                  setNotificationAsRead(notification.id, token);
                   history.push(
-                    "/main/product/feedback/" + notification.productId
+                    "/main/product/feedback/" +
+                      notification.productId +
+                      "?selected=" +
+                      notification.commentId +
+                      "&reload=true"
                   );
                 }}
               >
@@ -86,7 +90,11 @@ class Notification extends Component {
                 </div>
                 <p className="mb-1">
                   Some user has give a feedback to product{" "}
-                  <Link to={`/main/product/detail/${notification.productId}`}>
+                  <Link
+                    to={`/main/product/detail/${
+                      notification.productId
+                    }?reload=true`}
+                  >
                     {`${notification.productName}`}(ID:{" "}
                     {`${notification.productId}`})
                   </Link>

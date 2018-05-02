@@ -1,6 +1,10 @@
 import { keys } from "../actions";
 
-const { LOADING_NOTIFICATIONS, SET_NOTIFICATION_STATUS } = keys;
+const {
+  LOADING_NOTIFICATIONS,
+  SET_NOTIFICATION_STATUS,
+  APPEND_NOTIFICATION
+} = keys;
 
 const initialState = {
   isFirstLoad: true,
@@ -19,12 +23,15 @@ const reducer = (state = initialState, action) => {
   } else if (type === SET_NOTIFICATION_STATUS) {
     const newNotifications = state.data;
     const index = newNotifications.findIndex(
-      notification => notification._id === notificationId
+      notification => notification.id === notificationId
     );
     if (index > -1) {
       newNotifications[index].read = read;
       nextState = { ...state, data: newNotifications };
     }
+  } else if (type === APPEND_NOTIFICATION) {
+    const newNotifications = [{ ...data }].concat(state.data);
+    nextState = { ...state, data: newNotifications };
   }
   return nextState;
 };

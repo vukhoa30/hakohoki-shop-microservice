@@ -7,6 +7,7 @@ import { loadUserInfo } from "../../api";
 import Toast from "../components/Notification";
 import Main from "./Main";
 import Login from "./Login";
+import Forbidden from "./Forbidden";
 
 class Container extends Component {
   constructor(props) {
@@ -32,6 +33,7 @@ class Container extends Component {
               <Redirect exact path="/" to="/main" />
               <PrivateRoute path="/main" component={Main} valid={isLoggedIn} />
               <Route path="/login" component={Login} />
+              <Route path="/forbidden" component={Forbidden} />
             </Switch>
           </ConnectedRouter>
         )}

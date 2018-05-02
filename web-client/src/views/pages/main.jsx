@@ -11,6 +11,7 @@ import ProductFeedback from "./Product/Feedback";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import Promotion from "./Promotion";
+import ProtectedRoute from "../components/ProtectedRoute";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { parseToQueryString, formatTime } from "../../utils";
@@ -18,11 +19,13 @@ import {
   logOut,
   setNotificationAsRead,
   loadNotifications,
-  loadStatistic
+  loadStatistic,
+  connectToServer
 } from "../../api";
 import Breadcrumb from "../components/Breadcrumb";
 import BillList from "./Bill/List";
 import { Badge, Modal } from "react-bootstrap";
+import Loader from "../components/Loader";
 
 class Main extends React.Component {
   constructor(props) {
@@ -43,8 +46,12 @@ class Main extends React.Component {
       fullName,
       notification,
       token,
-      setNotificationAsRead
+      setNotificationAsRead,
+      connection,
+      accountId,
+      connectToServer
     } = this.props;
+    const { isConnecting, isConnected } = connection;
     const notifications = notification.data.slice(0, 10);
     const notificationUnreadCount = notifications.filter(
       notification => !notification.read
@@ -110,26 +117,30 @@ class Main extends React.Component {
               </a>
             </div>
             <ul className="nav">
-              <li
-                className={
-                  location.pathname.includes("dashboard") ? "active" : ""
-                }
-              >
-                <Link to={`${match.url}/dashboard`}>
-                  <i className="ti-pie-chart" />
-                  <p>Dashboard</p>
-                </Link>
-              </li>
-              <li
-                className={
-                  location.pathname.includes("account") ? "active" : ""
-                }
-              >
-                <Link to={`${match.url}/account/management`}>
-                  <i className="fa fa-user" />
-                  <p>Account</p>
-                </Link>
-              </li>
+              {role === "manager" && (
+                <li
+                  className={
+                    location.pathname.includes("dashboard") ? "active" : ""
+                  }
+                >
+                  <Link to={`${match.url}/dashboard`}>
+                    <i className="ti-pie-chart" />
+                    <p>Dashboard</p>
+                  </Link>
+                </li>
+              )}
+              {role === "manager" && (
+                <li
+                  className={
+                    location.pathname.includes("account") ? "active" : ""
+                  }
+                >
+                  <Link to={`${match.url}/account/management`}>
+                    <i className="fa fa-user" />
+                    <p>Account</p>
+                  </Link>
+                </li>
+              )}
               <li
                 className={
                   location.pathname.includes("product") ? "active" : ""
@@ -162,6 +173,23 @@ class Main extends React.Component {
           </div>
         </div>
         <div className="main-panel">
+          <div
+            className="text-center clickable"
+            style={{ width: "100%", paddingTop: 10 }}
+          >
+            {isConnecting ? (
+              <Loader />
+            ) : (
+              !isConnected && (
+                <p
+                  style={{ color: "red" }}
+                  onClick={() => connectToServer(accountId)}
+                >
+                  COULD NOT CONNECT TO SERVER. CLICK TO TRY AGAIN
+                </p>
+              )
+            )}
+          </div>
           <nav className="navbar navbar-default">
             <div className="container-fluid">
               <div className="navbar-header">
@@ -193,13 +221,13 @@ class Main extends React.Component {
                     </a>
                     <ul className="dropdown-menu">
                       {notifications.map(notification => (
-                        <li key={"notification-" + notification._id}>
+                        <li key={"notification-" + notification.id}>
                           <Link
                             to={`${match.url}/product/feedback/${
                               notification.productId
-                            }`}
+                            }?selected=${notification.commentId}&reload=true`}
                             onClick={() =>
-                              setNotificationAsRead(notification._id, token)
+                              setNotificationAsRead(notification.id, token)
                             }
                             style={{ padding: 20 }}
                           >
@@ -241,11 +269,26 @@ class Main extends React.Component {
           </nav>
           <div className="content">
             <Switch>
-              <Redirect exact path={match.url} to={`${match.url}/dashboard`} />
-              <Route path={`${match.url}/dashboard`} component={Dashboard} />
-              <Route
+              <Redirect
+                exact
+                path={match.url}
+                to={
+                  role === "manager"
+                    ? `${match.url}/dashboard`
+                    : role === "receptionist"
+                      ? `${match.url}/bill/list`
+                      : `${match.url}/product/list`
+                }
+              />
+              <ProtectedRoute
+                path={`${match.url}/dashboard`}
+                component={Dashboard}
+                isAuthorized={() => role === "manager"}
+              />
+              <ProtectedRoute
                 path={`${match.url}/account/management`}
                 component={AccountManager}
+                isAuthorized={() => role === "manager"}
               />
               <Route
                 path={`${match.url}/product/list`}
@@ -255,13 +298,15 @@ class Main extends React.Component {
                 path={`${match.url}/product/detail/:id`}
                 component={ProductDetail}
               />
-              <Route
+              <ProtectedRoute
                 path={`${match.url}/product/add-product`}
                 component={AddProduct}
+                isAuthorized={() => role === "manager"}
               />
-              <Route
+              <ProtectedRoute
                 path={`${match.url}/product/update-product/:id`}
                 component={AddProduct}
+                isAuthorized={() => role === "manager"}
               />
               <Route
                 path={`${match.url}/product/feedback/:id`}
@@ -315,13 +360,16 @@ const mapStateToProps = state => ({
   role: state.user.role,
   fullName: state.user.fullName,
   notification: state.notification,
-  token: state.user.token
+  token: state.user.token,
+  accountId: state.user.accountId,
+  connection: state.connection
 });
 const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut()),
   setNotificationAsRead: (notificationId, token) =>
     dispatch(setNotificationAsRead(notificationId, token)),
   loadNotifications: token => dispatch(loadNotifications(token)),
-  loadStatistic: token => dispatch(loadStatistic(token))
+  loadStatistic: token => dispatch(loadStatistic(token)),
+  connectToServer: accountId => dispatch(connectToServer(accountId))
 });
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));

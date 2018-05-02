@@ -80,15 +80,18 @@ class BillList extends Component {
       handleSubmit,
       history,
       toast,
-      selectBill
+      selectBill,
+      role
     } = this.props;
     const { selectedBill, confirmingBill } = this.state;
     return (
       <div className="container-fluid">
-        <button className="btn btn-success mb-3">
-          <i className="fa fa-plus mr-3" />
-          CREATE A BILL
-        </button>
+        {role === "receptionist" && (
+          <button className="btn btn-success mb-3">
+            <i className="fa fa-plus mr-3" />
+            CREATE A BILL
+          </button>
+        )}
         <form
           className="form-inline"
           style={{ marginTop: 10 }}
@@ -127,9 +130,11 @@ class BillList extends Component {
             disabled={this.state.searchingForBill}
             style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
           >
-          {
-            this.state.searchingForBill ? <i className="fa fa-circle-o-notch fa-spin" /> : <i className="fa fa-search" />
-          }
+            {this.state.searchingForBill ? (
+              <i className="fa fa-circle-o-notch fa-spin" />
+            ) : (
+              <i className="fa fa-search" />
+            )}
           </button>
         </form>
 
@@ -345,14 +350,15 @@ class BillList extends Component {
   }
 }
 const mapStateToProps = (state, props) => {
-  const { token } = state.user;
+  const { token, role } = state.user;
   const { upcoming, search, completed } = state.bill;
 
   return {
     token,
     upcoming,
     search,
-    completed
+    completed,
+    role
   };
 };
 const mapDispatchToProps = dispatch => ({

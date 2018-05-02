@@ -5,6 +5,7 @@ const { LOG_IN, LOG_OUT } = keys;
 const initialState = {
   isLoggedIn: false,
   email: null,
+  accountId: null,
   fullName: null,
   phone_number: null,
   role: "unknown",
