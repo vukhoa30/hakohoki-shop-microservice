@@ -1,7 +1,7 @@
 import { gatewayAddress } from "../config";
 import { stringify } from "query-string";
 import io from "socket.io-client";
-import { chain, transform } from "lodash";
+import { chain, transform, reduce } from "lodash";
 
 export const request = (url, method, header, data) => {
   const fullUrl = gatewayAddress + url;
@@ -76,7 +76,11 @@ export const convertObjectToArray = obj => {
 };
 
 export const reduceString = string => {
-  return string.length > 20 ? string.slice(0, 17) + "..." : string;
+  return string
+    ? string.length > 20
+      ? string.slice(0, 17) + "..."
+      : string
+    : "Unknown product";
 };
 
 export const createSocketConnection = (
