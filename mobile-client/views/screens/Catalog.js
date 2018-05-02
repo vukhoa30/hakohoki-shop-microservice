@@ -57,8 +57,6 @@ class Catalog extends Component {
     this.state = {
       firstLoad: true,
       selectedCategory: "none",
-      categories: [],
-      categoryStatus: "LOADING",
       productStatus: "LOADING",
       list: [],
       categoryMinimized: false,
@@ -73,7 +71,6 @@ class Catalog extends Component {
   componentDidMount() {
     if (this.state.firstLoad) {
       this.setState({ firstLoad: false });
-      this.loadCategories();
       const { params } = this.props.navigation.state;
       const { category } = params ? params : { category: "Latest" };
       this.selectCategory(category);
@@ -145,17 +142,25 @@ class Catalog extends Component {
 
   render() {
     const {
-      categoryStatus,
-      categories,
       productStatus,
       list,
       selectedCategory,
       categoryMinimized
     } = this.state;
+    const { category, loadCategories } = this.props;
+    const { status: categoryStatus, data: categories } = category;
 
     return (
       <Container>
-        <View style={{ padding: 5, backgroundColor: "black" }}>
+        <View
+          style={{
+            padding: 5,
+            backgroundColor: "black",
+            position: "absolute",
+            zIndex: 100,
+            width: "100%"
+          }}
+        >
           {
             <ScrollView
               style={{ width: "100%" }}
@@ -196,28 +201,50 @@ class Catalog extends Component {
                 </AppText>
               )}
               {categoryStatus === "LOADED" &&
-                categories.map(category => (
-                  <AppIconButton
-                    key={"category-" + category.name}
-                    smallSize={categoryMinimized}
-                    name={category.icon}
-                    buttonName={category.name}
-                    color="white"
-                    selected={selectedCategory === category.name}
-                    onPress={() =>
-                      selectedCategory !== category.name &&
-                      this.selectCategory(category.name)
-                    }
-                  />
-                ))}
+                categories.map(category => {
+                  let icon = "info";
+
+                  switch (category) {
+                    case "Phone":
+                      icon = "md-phone-portrait";
+                      break;
+                    case "Tablet":
+                      icon = "md-tablet-portrait";
+                      break;
+                    case "Accessory":
+                      icon = "md-headset";
+                      break;
+                    case "SIM":
+                      icon = "ios-card";
+                      break;
+                    case "Card":
+                      icon = "md-card";
+                      break;
+                  }
+
+                  return (
+                    <AppIconButton
+                      key={"category-" + category}
+                      smallSize={categoryMinimized}
+                      name={icon}
+                      buttonName={category}
+                      color="white"
+                      selected={selectedCategory === category}
+                      onPress={() =>
+                        selectedCategory !== category &&
+                        this.selectCategory(category)
+                      }
+                    />
+                  );
+                })}
             </ScrollView>
           }
+          {this.state.q && (
+            <AppText style={{ margin: 10, color: "black" }} note>
+              >> Keyword: {this.state.q}
+            </AppText>
+          )}
         </View>
-        {this.state.q && (
-          <AppText style={{ margin: 10 }} note>
-            >> Keyword: {this.state.q}
-          </AppText>
-        )}
         <Content
           onScroll={({ nativeEvent }) => {
             const { contentOffset } = nativeEvent;
@@ -232,11 +259,13 @@ class Catalog extends Component {
               SELECT A CATEGORY TO SEE PRODUCT LIST
             </AppText>
           ) : (
-            <ProductList
-              status={productStatus}
-              list={list}
-              load={() => this.selectCategory(selectedCategory)}
-            />
+            <View style={{ marginTop: 100 }}>
+              <ProductList
+                status={productStatus}
+                list={list}
+                load={() => this.selectCategory(selectedCategory)}
+              />
+            </View>
           )}
         </Content>
       </Container>
@@ -244,7 +273,9 @@ class Catalog extends Component {
   }
 }
 
-const mapStateToProps = state => ({});
+const mapStateToProps = state => ({
+  category: state.category
+});
 
 const mapDispatchToProps = dispatch => ({});
 

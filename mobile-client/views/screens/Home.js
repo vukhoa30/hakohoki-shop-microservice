@@ -44,26 +44,20 @@ import PromotionCarousel from "../components/Carousel";
 const { width, height } = Dimensions.get("window");
 
 class Home extends Component {
-  static navigationOptions = ({ navigation }) => {
-    const params = navigation.state.params || {};
-    const { search, category } = params;
-
-    return {
-      header: null
-    };
-  };
+  static navigationOptions = ({ navigation }) => ({
+    title: "Home"
+  });
 
   constructor(props) {
     super(props);
     this.state = {
       searchBarHeight: 0,
       firstLoad: true,
-      categoryStatus: "LOADING",
-      categories: [],
       latestProductStatus: "LOADING",
       latestProductList: [],
       fadingBanner: false,
       fadingOffset: 150,
+      categoryMinimized: false
       //opacity: new Animated.Value(0)
     };
   }
@@ -71,7 +65,7 @@ class Home extends Component {
   componentDidMount() {
     if (this.state.firstLoad) {
       this.setState({ firstLoad: false });
-      this.loadCategories();
+      this.props.loadCategories();
       this.loadLatestProducts();
     }
   }
@@ -94,20 +88,6 @@ class Home extends Component {
     this.props.navigation.navigate("Catalog", { category });
   }
 
-  async loadCategories() {
-    this.setState({ categoryStatus: "LOADING" });
-    const result = await loadCategories();
-
-    if (result.ok) {
-      this.setState({
-        categoryStatus: "LOADED",
-        categories: result.list
-      });
-    } else {
-      this.setState({ categoryStatus: "LOADING_FAILED" });
-    }
-  }
-
   // changeCategoryPosition(isFixed = false) {
   //   let initValue = isFixed ? 0 : 1,
   //     finalValue = isFixed ? 1 : 0;
@@ -122,43 +102,121 @@ class Home extends Component {
 
   render() {
     const {
-      categoryStatus,
-      categories,
       latestProductStatus,
       latestProductList,
-      fadingBanner
+      fadingBanner,
+      categoryMinimized
     } = this.state;
 
     const {
+      category,
       selectProduct,
       navigation,
       promotionStatus,
       promotionList,
-      loadPromotion
+      loadPromotion,
+      loadCategories
     } = this.props;
+
+    const { status: categoryStatus, data: categories } = category;
 
     return (
       <Container>
+        <View
+          style={{
+            backgroundColor: "black",
+            width: "100%",
+            position: "absolute",
+            zIndex: 100
+          }}
+        >
+          {
+            <ScrollView
+              style={{ width: "100%" }}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            >
+              <AppIconButton
+                smallSize={categoryMinimized}
+                name="md-apps"
+                buttonName="All"
+                color="white"
+                onPress={() => this.selectCategory("All")}
+              />
+              {categoryStatus === "LOADING" && (
+                <Spinner style={{ marginLeft: 100 }} />
+              )}
+              {categoryStatus === "LOADING_FAILED" && (
+                <AppText
+                  color="yellow"
+                  center
+                  small
+                  onPress={() => loadCategories()}
+                >
+                  Could not load categories! Tap to try again
+                </AppText>
+              )}
+              {categoryStatus === "LOADED" &&
+                categories.map(category => {
+                  let icon = "info";
+
+                  switch (category) {
+                    case "Phone":
+                      icon = "md-phone-portrait";
+                      break;
+                    case "Tablet":
+                      icon = "md-tablet-portrait";
+                      break;
+                    case "Accessory":
+                      icon = "md-headset";
+                      break;
+                    case "SIM":
+                      icon = "ios-card";
+                      break;
+                    case "Card":
+                      icon = "md-card";
+                      break;
+                  }
+
+                  return (
+                    <AppIconButton
+                      smallSize={categoryMinimized}
+                      key={"category-" + category}
+                      name={icon}
+                      buttonName={category}
+                      color="white"
+                      onPress={() => this.selectCategory(category)}
+                    />
+                  );
+                })}
+            </ScrollView>
+          }
+        </View>
         <Content
+          style={{ paddingTop: 70 }}
           onScroll={({ nativeEvent }) => {
             const { contentOffset } = nativeEvent;
             let fadingBanner = true;
-            let categoryFixedMode = true
-            if (contentOffset.y < this.state.fadingOffset) {
-              fadingBanner = false;
-            }
-            if (contentOffset.y < this.state.categoryOffset) {
-              categoryFixedMode = false;
-            }
-            if (this.state.fadingBanner !== fadingBanner) {
-              this.setState({ fadingBanner });
-            }
-            if (this.state.categoryFixedMode !== categoryFixedMode) {
-              this.setState({ categoryFixedMode });
-            }
+            let categoryFixedMode = true;
+            let categoryMinimized = true;
+            if (contentOffset.y < 150) categoryMinimized = false;
+            if (this.state.categoryMinimized !== categoryMinimized)
+              this.setState({ categoryMinimized });
+            // if (contentOffset.y < this.state.fadingOffset) {
+            //   fadingBanner = false;
+            // }
+            // if (contentOffset.y < this.state.categoryOffset) {
+            //   categoryFixedMode = false;
+            // }
+            // if (this.state.fadingBanner !== fadingBanner) {
+            //   this.setState({ fadingBanner });
+            // }
+            // if (this.state.categoryFixedMode !== categoryFixedMode) {
+            //   this.setState({ categoryFixedMode });
+            // }
           }}
         >
-          <SearchBar
+          {/* <SearchBar
             onLayout={e =>
               this.setState({
                 searchBarHeight: e.nativeEvent.layout.height + 13
@@ -177,7 +235,7 @@ class Home extends Component {
             inputStyle={{ backgroundColor: "white" }}
             placeholder="Searching for product"
             onTouchStart={() => navigation.navigate("Search")}
-          />
+          /> */}
           <PromotionCarousel
             navigation={navigation}
             isHide={fadingBanner}
@@ -187,54 +245,11 @@ class Home extends Component {
           />
           <View
             style={{
-              backgroundColor: "black"
-            }}
-          >
-            {
-              <ScrollView
-                style={{ width: "100%" }}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-              >
-                <AppIconButton
-                  name="md-apps"
-                  buttonName="All"
-                  color="white"
-                  onPress={() => this.selectCategory("All")}
-                />
-                {categoryStatus === "LOADING" && (
-                  <Spinner style={{ marginLeft: 100 }} />
-                )}
-                {categoryStatus === "LOADING_FAILED" && (
-                  <AppText
-                    color="yellow"
-                    center
-                    small
-                    onPress={() => this.loadCategories()}
-                  >
-                    Could not load categories! Tap to try again
-                  </AppText>
-                )}
-                {categoryStatus === "LOADED" &&
-                  categories.map(category => (
-                    <AppIconButton
-                      key={"category-" + category.name}
-                      name={category.icon}
-                      buttonName={category.name}
-                      color="white"
-                      onPress={() => this.selectCategory(category.name)}
-                    />
-                  ))}
-              </ScrollView>
-            }
-          </View>
-          <View
-            style={{
               width: "100%",
               height: 500
             }}
           >
-            <List style={{ marginBottom: 5 }}>
+            <List>
               <ListItem itemHeader first>
                 <Body>
                   <AppText note>LATEST PRODUCT</AppText>
@@ -283,12 +298,14 @@ class Home extends Component {
 
 const mapStateToProps = state => ({
   promotionStatus: state.promotion.status,
-  promotionList: state.promotion.list
+  promotionList: state.promotion.list,
+  category: state.category
 });
 
 const mapDispatchToProps = dispatch => ({
   selectProduct: productId => dispatch(selectProduct(productId)),
-  loadPromotion: () => dispatch(loadPromotion())
+  loadPromotion: () => dispatch(loadPromotion()),
+  loadCategories: () => dispatch(loadCategories())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { View, ScrollView, Dimensions } from "react-native";
-import { setCart, loadCart } from "../../api";
+import { setCart, loadCart, makeOrder } from "../../api";
 import {
   Container,
   Content,
@@ -15,7 +15,8 @@ import {
   Thumbnail,
   FooterTab,
   Footer,
-  Spinner
+  Spinner,
+  Header
 } from "native-base";
 import AppText from "../components/AppText";
 import NumberPicker from "../components/NumberPicker";
@@ -31,29 +32,20 @@ class Cart extends Component {
       showPickerDialog: false,
       modifiedProduct: null
     };
-    const { isLoggedIn, token, loadCart } = this.props;
-    if (isLoggedIn) loadCart(token);
+    const { isLoggedIn, token, loadCart, status } = this.props;
+    if (isLoggedIn && status === "INIT") loadCart(token);
   }
 
   render() {
-    const { setCart, totalPrice, list, token, status } = this.props;
+    const { setCart, totalPrice, list, token, status, makeOrder } = this.props;
     return (
       <Container>
+        {status === "LOADING" && (
+          <View style={{ width: "100%", alignItems: "center" }}>
+            <Spinner />
+          </View>
+        )}
         <Content>
-          {status === "LOADING" && (
-            <View
-              style={{
-                position: "absolute",
-                alignItems: "center",
-                justifyContent: "center",
-                width,
-                height: height - 50,
-                zIndex: 100,
-              }}
-            >
-              <Spinner />
-            </View>
-          )}
           <NumberPicker
             product={this.state.modifiedProduct}
             isVisible={this.state.showPickerDialog}
@@ -134,7 +126,27 @@ class Cart extends Component {
         <Footer>
           <FooterTab>
             <View style={{ width: "100%" }}>
-              <Button block primary disabled={list.length === 0} small>
+              <Button
+                full
+                primary
+                disabled={list.length === 0 || status === 'ORDERING'}
+                small
+                iconLeft
+                onPress={() =>
+                  makeOrder(
+                    list.map(
+                      product => ({
+                        productId: product._id,
+                        amount: product.amount
+                      }),
+                    ),
+                    token
+                  )
+                }
+              >
+                {
+                  status === 'ORDERING' && <Spinner />
+                }
                 <AppText>CHECK OUT</AppText>
               </Button>
             </View>
@@ -160,7 +172,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   setCart: (token, product, type, amount) =>
     dispatch(setCart(token, product, type, amount)),
-  loadCart: token => dispatch(loadCart(token))
+  loadCart: token => dispatch(loadCart(token)),
+  makeOrder: (productList, token) => dispatch(makeOrder(productList, token))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cart);

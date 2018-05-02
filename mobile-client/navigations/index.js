@@ -6,13 +6,15 @@ import {
   NavigationActions
 } from "react-navigation";
 import React, { Component } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Image } from "react-native";
 import Home from "../views/screens/Home";
 import Profile from "../views/screens/Profile";
+import Setting from "../views/screens/Setting";
 import LogIn from "../views/screens/LogIn";
 import SignUp from "../views/screens/SignUp";
 import Activation from "../views/screens/Activation";
 import Search from "../views/screens/Search";
+import ServerAddressForm from "../views/screens/ServerAddressForm";
 import ProductInformation from "../views/screens/ProductInformation";
 import ProductReviews from "../views/screens/ProductReviews";
 import ProductComments from "../views/screens/ProductComments";
@@ -24,6 +26,8 @@ import WatchList from "../views/screens/WatchList";
 import NotificationComponent from "../views/screens/Notification";
 import TabBarIcon from "../views/components/TabBarIcon";
 import { Icon } from "native-base";
+
+const themeColor = "#BE2E11";
 
 const ProductDetail = TabNavigator(
   {
@@ -51,7 +55,7 @@ const ProductDetail = TabNavigator(
       },
       inactiveTintColor: "white",
       style: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       }
     }
   }
@@ -95,10 +99,10 @@ const mainNavigator = TabNavigator(
       screen: Profile
     },
     Notification: {
-      screen: NotificationComponent,
-      navigationOptions: {
-        header: null
-      }
+      screen: NotificationComponent
+    },
+    Setting: {
+      screen: Setting
     }
   },
   {
@@ -142,7 +146,7 @@ const Account = TabNavigator(
       },
       inactiveTintColor: "white",
       style: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       }
     }
   }
@@ -153,11 +157,25 @@ const rootNavigator = StackNavigator(
     Main: {
       screen: mainNavigator,
       navigationOptions: {
-        headerStyle: {
-          backgroundColor: "#F1810A",
-          elevation: 0,
-          shadowOpacity: 0
-        }
+        title: "HKShop",
+        headerLeft: (
+          <Image
+            source={require("../resources/images/logoTitle.png")}
+            style={{
+              width: 30,
+              height: 30,
+              resizeMode: "stretch",
+              marginLeft: 20
+            }}
+          />
+        ),
+        headerRight: (
+          <Icon
+            name="search"
+            style={{ marginRight: 20, color: "white" }}
+            onPress={() => navigation.navigate("Search")}
+          />
+        )
       }
     },
 
@@ -166,7 +184,7 @@ const rootNavigator = StackNavigator(
       navigationOptions: {
         title: "Account",
         headerStyle: {
-          backgroundColor: "#F1810A",
+          backgroundColor: themeColor,
           elevation: 0,
           shadowOpacity: 0
         },
@@ -189,6 +207,13 @@ const rootNavigator = StackNavigator(
       screen: Search
     },
 
+    ServerAddressForm: {
+      screen: ServerAddressForm,
+      navigationOptions: {
+        title: 'Server address'
+      }
+    },
+
     PromotionDetail: {
       screen: PromotionDetail,
       navigationOptions: {
@@ -201,7 +226,7 @@ const rootNavigator = StackNavigator(
       navigationOptions: ({ navigation }) => ({
         title: "Product detail",
         headerStyle: {
-          backgroundColor: "#F1810A",
+          backgroundColor: themeColor,
           elevation: 0,
           shadowOpacity: 0
         },
@@ -248,7 +273,7 @@ const rootNavigator = StackNavigator(
   {
     navigationOptions: ({ navigation }) => ({
       headerStyle: {
-        backgroundColor: "#F1810A"
+        backgroundColor: themeColor
       },
       headerTintColor: "#fff",
       headerTitleStyle: {

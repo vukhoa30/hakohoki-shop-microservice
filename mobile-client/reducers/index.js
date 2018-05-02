@@ -1,4 +1,5 @@
 import { combineReducers } from "redux"
+import app from './app'
 import buffer from './buffer'
 import user from './user'
 import product from './product'
@@ -8,9 +9,11 @@ import feedback from './feedback'
 import watchList from './watch-list'
 import notification from './notification'
 import promotion from './promotion'
+import category from './category'
 import { reducer as form } from 'redux-form';
 
 const appReducer = combineReducers({
+    app,
     user,
     buffer,
     product,
@@ -20,7 +23,8 @@ const appReducer = combineReducers({
     form,
     feedback,
     watchList,
-    promotion
+    promotion,
+    category
 });
 
 export default appReducer

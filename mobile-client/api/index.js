@@ -3,13 +3,18 @@ import {
   parseToQueryString,
   delay,
   alert,
-  createSocketConnection
+  createSocketConnection,
+  updateGateway
 } from "../utils";
 import navigator from "../navigations";
 import {
   getAction,
+  UPDATE_SERVER_ADDRESS,
   USER_LOG_IN,
   USER_LOG_OUT,
+  CATEGORY_LOADING,
+  CATEGORY_LOADED,
+  CATEGORY_LOADING_FAILED,
   SELECT_PRODUCT,
   SELECT_CATEGORY,
   PRODUCT_DATA_LOADING,
@@ -31,6 +36,8 @@ import {
   ADD_TO_CART,
   REMOVE_FROM_CART,
   REMOVE_ALL,
+  MAKING_ORDER,
+  FINISH_MAKING_ORDER,
   MODIFY_CART_PRODUCT,
   PROMOTION_LOADING,
   PROMOTION_LOADING_FAILED,
@@ -45,6 +52,24 @@ import { NavigationActions } from "react-navigation";
 import { AsyncStorage } from "react-native";
 
 var socket = null;
+
+function updateServerAddress(host, port) {
+  return dispatch => {
+    updateGateway(host, port);
+    dispatch(
+      getAction(UPDATE_SERVER_ADDRESS, { gatewayHost: host, gatewayPort: port })
+    );
+  };
+}
+
+function navigate(path, params) {
+  return dispatch =>
+    dispatch(navigator.router.getActionForPathAndParams(path, params));
+}
+
+function disconnect() {
+  if (socket !== null) socket.disconnect();
+}
 
 function connectToServer(accountId) {
   return async dispatch => {
@@ -142,7 +167,8 @@ function loadUserInfo() {
 function logIn(token, account) {
   return dispatch => {
     dispatch(connectToServer(account.accountId));
-    dispatch(loadNotifications(token))
+    dispatch(loadNotifications(token));
+    dispatch(loadCart(token));
     dispatch(getAction(USER_LOG_IN, { token, account }));
   };
 }
@@ -281,45 +307,46 @@ function saveToBuffer(data) {
 }
 
 function loadCategories() {
-  return new Promise(async (resolve, reject) => {
+  return async dispatch => {
     try {
+      dispatch(getAction(CATEGORY_LOADING));
       const response = await request("/products/categories", "GET", {});
       const { status, data } = response;
 
-      if (status === 200)
-        resolve({
-          ok: true,
-          list: data.map(item => {
-            let icon = "info";
+      if (status === 200) return dispatch(getAction(CATEGORY_LOADED, { data }));
+      resolve({
+        ok: true,
+        list: data.map(item => {
+          let icon = "info";
 
-            switch (item) {
-              case "Phone":
-                icon = "md-phone-portrait";
-                break;
-              case "Tablet":
-                icon = "md-tablet-portrait";
-                break;
-              case "Accessory":
-                icon = "md-headset";
-                break;
-              case "SIM":
-                icon = "ios-card";
-                break;
-              case "Card":
-                icon = "md-card";
-                break;
-            }
+          switch (item) {
+            case "Phone":
+              icon = "md-phone-portrait";
+              break;
+            case "Tablet":
+              icon = "md-tablet-portrait";
+              break;
+            case "Accessory":
+              icon = "md-headset";
+              break;
+            case "SIM":
+              icon = "ios-card";
+              break;
+            case "Card":
+              icon = "md-card";
+              break;
+          }
 
-            return {
-              name: item,
-              icon
-            };
-          })
-        });
+          return {
+            name: item,
+            icon
+          };
+        })
+      });
     } catch (error) {}
 
-    resolve({ ok: false });
-  });
+    dispatch(getAction(CATEGORY_LOADING_FAILED));
+  };
 }
 
 function selectCategory(category) {
@@ -496,48 +523,49 @@ function sendReview(values) {
   });
 }
 
-function sendComment(values) {
-  return new Promise(async (resolve, reject) => {
-    let err = `Undefined error, try again later!`;
-    try {
-      const content = values.comment;
-      const {
-        token,
-        reset,
-        productId,
-        parentId,
-        loadProductFeedback,
-        logOut
-      } = this.props;
-      console.log(`ProductId: ${productId} && ParentId: ${parentId}`);
-      reset();
-      const response = await request(
-        "/comments",
-        "POST",
-        { Authorization: "JWT " + token },
-        { productId, content, parentId }
-      );
-      const { status, data } = response;
+async function sendComment(values) {
+  let hasError = false;
+  let err = `Undefined error, try again later!`;
+  this.setState({ submitting: true });
+  try {
+    const content = this.state.comment;
+    const {
+      token,
+      productId,
+      parentId,
+      loadProductFeedback,
+      logOut
+    } = this.props;
+    const response = await request(
+      "/comments",
+      "POST",
+      { Authorization: "JWT " + token },
+      { productId, content, parentId }
+    );
+    const { status, data } = response;
 
-      switch (status) {
-        case 200:
-          loadProductFeedback(productId);
-          return resolve();
-        case 401:
-          err = "Authenticate user failed! Please log in again";
-          logOut();
-          break;
-        case 500:
-          err = "Internal server error! Try again later";
-          break;
-      }
-    } catch (error) {
-      console.log(error);
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+    switch (status) {
+      case 200:
+        loadProductFeedback(productId);
+        this.setState({ comment: "" });
+        break;
+      case 401:
+        err = "Authenticate user failed! Please log in again";
+        logOut();
+        hasError = true;
+        break;
+      case 500:
+        err = "Internal server error! Try again later";
+        hasError = true;
+        break;
     }
-
-    reject(new SubmissionError({ _error: err }));
-  });
+  } catch (error) {
+    hasError = true;
+    console.log(error);
+    if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+  }
+  if (hasError) alert("Error", err);
+  this.setState({ submitting: false });
 }
 
 async function loadAnswers(productId, parentId) {
@@ -584,7 +612,9 @@ function setCart(token, product, type, amount) {
       const actionKey =
         type === "ADD"
           ? ADD_TO_CART
-          : type === "REMOVE" ? REMOVE_FROM_CART : MODIFY_CART_PRODUCT;
+          : type === "REMOVE"
+            ? REMOVE_FROM_CART
+            : MODIFY_CART_PRODUCT;
       const data = {
         productId: product._id,
         amount
@@ -773,6 +803,7 @@ function loadNotifications(token) {
 
 function makeNotificationAsRead(token, notificationId) {
   return async dispatch => {
+    console.log(notificationId);
     dispatch(
       getAction(SET_NOTIFICATION_STATUS, { notificationId, read: true })
     );
@@ -834,7 +865,37 @@ function loadPromotion() {
   };
 }
 
+function makeOrder(productList, token) {
+  return async dispatch => {
+    dispatch(getAction(MAKING_ORDER));
+    let err = "Could not make order now! Try again later";
+    try {
+      const { status } = await request(
+        "/bills/order",
+        "POST",
+        { Authorization: "JWT " + token },
+        productList
+      );
+      if (status === 200) {
+        alert(
+          "Success",
+          "Order successfully! We will contact you soon to confirm your order"
+        );
+        return dispatch(getAction(REMOVE_ALL));
+      } else if (status === 401)
+        err = "Authentication failed! Please log in again";
+    } catch (error) {
+      if (error === "CONNECTION_ERROR")
+        err = "Could not connect to server! Try again later";
+    }
+    alert("Error", err);
+    dispatch(getAction(FINISH_MAKING_ORDER));
+  };
+}
+
 module.exports = {
+  updateServerAddress,
+  navigate,
   connectToServer,
   authenticate,
   enroll,
@@ -862,5 +923,7 @@ module.exports = {
   loadNotifications,
   viewAnswers,
   loadPromotion,
-  loadCart
+  loadCart,
+  disconnect,
+  makeOrder
 };
