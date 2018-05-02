@@ -4,9 +4,10 @@ import { connect } from "react-redux";
 import Input from "../../components/Input";
 import Notification from "../../components/Notification";
 import { addProduct, toast, loadProductData } from "../../../api";
-import { parseToObject } from "../../../utils";
+import { parseToObject, request } from "../../../utils";
 import Loader from "../../components/Loader";
 import { Modal } from "react-bootstrap";
+import { reduce } from "lodash";
 
 const renderSpecifications = ({ fields, meta: { error, submitFailed } }) => (
   <div className="card">
@@ -56,7 +57,10 @@ class ProductDetail extends Component {
       mainPicture: this.props.initialValues.mainPicture,
       additionalPictures: this.props.initialValues.additionPicture,
       picturePickMode: "main",
-      showPictureDialog: false
+      showPictureDialog: false,
+      importing: false,
+      importRequesting: false,
+      currentProductId: null
     };
     const { initialValues: product, id } = props;
     if (id !== product._id) this.loadData();
@@ -73,6 +77,17 @@ class ProductDetail extends Component {
         mainPicture: nextProps.initialValues.mainPicture,
         additionalPictures: nextProps.initialValues.additionPicture
       });
+    } else if (
+      this.props.submitting !== nextProps.submitting &&
+      !nextProps.submitting
+    ) {
+      const { toast, reset } = this.props;
+      if (nextProps.submitFailed) toast(nextProps.error, "error");
+      else {
+        reset();
+        toast("Add product successfully!", "success");
+        this.setState({ mainPicture: null, additionalPictures: [] });
+      }
     }
   }
 
@@ -88,7 +103,8 @@ class ProductDetail extends Component {
       toast,
       isLoading,
       isError,
-      id
+      id,
+      token
     } = this.props;
     return (
       <div className="container-fluid">
@@ -106,64 +122,151 @@ class ProductDetail extends Component {
             COULD NOT LOAD DATA. CLICK TO TRY AGAIN!
           </div>
         )}
-        <form onSubmit={handleSubmit(addProduct.bind(this))}>
-          <Modal show={this.state.showPictureDialog}>
+        <Modal show={this.state.importing}>
+          <form
+            onSubmit={async e => {
+              e.preventDefault();
+              const amount = e.target.amount.value;
+              if (amount === "" || amount < 0) return;
+              this.setState({ importRequesting: true });
+              let error = "Undefined error! Try again later";
+              try {
+                const { status, data } = await request(
+                  "/products/specific",
+                  "POST",
+                  { Authorization: "JWT " + token },
+                  {
+                    productId: this.state.currentProductId,
+                    amount
+                  }
+                );
+                if (status === 200) {
+                  toast("Import goods successfully!", "success");
+                  return this.setState({
+                    importRequesting: false,
+                    importing: false
+                  });
+                } else if (status === 401) error = "You are not authorized!";
+                else error = "Internal server error!";
+              } catch (err) {
+                if (err === "CONNECTION_ERROR") error = "Connection error!";
+              }
+              toast(error, "error");
+              this.setState({ importRequesting: false });
+            }}
+          >
             <Modal.Header>
-              <Modal.Title>Add product picture</Modal.Title>
-              <button
-                type="button"
-                className="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">×</span>
-              </button>
+              <Modal.Title>IMPORT GOODS</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <div className="form-group">
+              <div class="form-group">
+                <label for="email">Product quantity</label>
                 <input
-                  className="form-control border-input"
-                  ref={ref => (this._mainPictureUri = ref)}
+                  type="number"
+                  class="form-control"
+                  name="amount"
+                  placeholder="Enter product quantity"
                 />
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <button
-                type="button"
-                className="btn btn-primary"
-                data-dismiss="modal"
-                onClick={() =>
-                  this.state.picturePickMode === "main"
-                    ? this.setState({
-                        mainPicture: this._mainPictureUri.value,
-                        showPictureDialog: false
-                      })
-                    : this.setState({
-                        additionalPictures: this.state.additionalPictures.concat(
-                          this._mainPictureUri.value
-                        ),
-                        showPictureDialog: false
-                      })
-                }
-              >
-                Save changes
+              <button type="submit" className="btn btn-primary btn-fill">
+                {this.state.importRequesting ? (
+                  <i className="fa fa-circle-notch-o fa-spin" style={{ color: 'white' }} />
+                ) : (
+                  "Import"
+                )}{" "}
               </button>
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() =>
-                  this.setState({
-                    showPictureDialog: false
-                  })
-                }
+                onClick={() => this.setState({ importing: false })}
               >
-                Close
+                Cancel
               </button>
             </Modal.Footer>
-          </Modal>
+          </form>
+        </Modal>
+        <Modal show={this.state.showPictureDialog}>
+          <Modal.Header>
+            <Modal.Title>Add product picture</Modal.Title>
+            <button
+              type="button"
+              className="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="form-group">
+              <input
+                className="form-control border-input"
+                ref={ref => (this._mainPictureUri = ref)}
+              />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-dismiss="modal"
+              onClick={() =>
+                this.state.picturePickMode === "main"
+                  ? this.setState({
+                      mainPicture: this._mainPictureUri.value,
+                      showPictureDialog: false
+                    })
+                  : this.setState({
+                      additionalPictures: this.state.additionalPictures.concat(
+                        this._mainPictureUri.value
+                      ),
+                      showPictureDialog: false
+                    })
+              }
+            >
+              Save changes
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() =>
+                this.setState({
+                  showPictureDialog: false
+                })
+              }
+            >
+              Close
+            </button>
+          </Modal.Footer>
+        </Modal>
+        <form
+          onSubmit={handleSubmit(values => {
+            const product = Object.assign({}, values, {
+              mainPicture: this.state.mainPicture,
+              additionPicture: this.state.additionalPictures,
+              specifications: reduce(
+                values.specifications,
+                (result, current) => {
+                  result[current.name] = current.value;
+                  return result;
+                },
+                {}
+              )
+            });
+            return addProduct(product, token).then(data =>
+              this.setState({
+                importing: true,
+                currentProductId: data.id
+              })
+            );
+          })}
+        >
           <div style={{ opacity: isLoading ? 0.3 : 1 }}>
             {id && (
               <button
+                type="button"
                 className="btn btn-secondary mb-5"
                 onClick={() => history.push("/main/product/detail/" + id)}
               >
@@ -212,6 +315,7 @@ class ProductDetail extends Component {
                           <hr className="my-4" />
                           <p className="lead">
                             <button
+                              type="button"
                               className="btn btn-primary btn-lg"
                               onClick={() =>
                                 this.setState({
@@ -303,12 +407,16 @@ class ProductDetail extends Component {
                   {this.state.additionalPictures.map((pictureUri, index) => (
                     <div
                       key={"additionalPicture-" + index}
-                      style={{ marginRight: 20 }}
+                      style={{
+                        marginRight: 20,
+                        width: 300,
+                        display: "inline-block"
+                      }}
                     >
                       <img
                         src={pictureUri}
                         alt="Additional image"
-                        style={{ height: 300, width: 300 }}
+                        style={{ height: 300, width: "100%" }}
                         onError={() => {
                           const newArray = this.state.additionalPictures;
                           newArray.splice(index, 1);
@@ -318,7 +426,8 @@ class ProductDetail extends Component {
                       />
                       <button
                         type="button"
-                        class="btn btn-danger btn-lg btn-block mt-3"
+                        style={{ marginTop: 10 }}
+                        className="btn btn-danger btn-lg btn-block"
                         onClick={() => {
                           const newArray = this.state.additionalPictures;
                           newArray.splice(index, 1);
@@ -346,7 +455,7 @@ class ProductDetail extends Component {
                     disabled={submitting || invalid || error}
                   >
                     {submitting && <Loader />}
-                    Update product
+                    Import goods
                   </button>
                 ) : (
                   <button
@@ -354,8 +463,7 @@ class ProductDetail extends Component {
                     className="btn btn-primary btn-block mt-5 btn-lg"
                     disabled={submitting || invalid || error}
                   >
-                    {submitting && <Loader />}
-                    Add new product
+                    {submitting ? <Loader /> : "Add new product"}
                   </button>
                 )}
               </div>
@@ -371,9 +479,11 @@ const mapStateToProps = (state, props) => {
   const { match } = props;
   const { detail: product } = state.product;
   const { id } = match.params;
+  const { token } = state.user;
 
   return {
     id,
+    token,
     isLoading: product.isLoading,
     isError: product.err !== null,
     initialValues: !id

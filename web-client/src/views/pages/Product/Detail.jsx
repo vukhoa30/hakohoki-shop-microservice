@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { loadProductData, loadProductFeedback } from "../../../api";
-import { currencyFormat, formatTime } from "../../../utils";
+import { loadProductData, loadProductFeedback, toast } from "../../../api";
+import { currencyFormat, formatTime, request } from "../../../utils";
 import { transform } from "lodash";
 import Loader from "../../components/Loader";
 import { Modal } from "react-bootstrap";
@@ -9,7 +9,9 @@ class ProductDetail extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showReview: false
+      showReview: false,
+      importing: false,
+      importRequesting: false
     };
     this.loadData(this.props);
   }
@@ -51,7 +53,15 @@ class ProductDetail extends Component {
     return stars;
   }
   render() {
-    const { product, history, feedback, role } = this.props;
+    const {
+      product,
+      history,
+      feedback,
+      role,
+      token,
+      toast,
+      loadProductData
+    } = this.props;
     const { reviews } = feedback;
     const statistic = transform(
       feedback.reviews,
@@ -119,15 +129,79 @@ class ProductDetail extends Component {
               >
                 View comments
               </button>
-              {role === "manager" && (
+              {role === "manager" && this.state.importing ? (
+                <form
+                  className="form-inline"
+                  style={{ display: "inline-block", marginLeft: 10 }}
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    const amount = e.target.amount.value;
+                    if (amount === "" || amount < 0) return;
+                    this.setState({ importRequesting: true });
+                    let error = "Undefined error! Try again later";
+                    try {
+                      const { status, data } = await request(
+                        "/products/specific",
+                        "POST",
+                        { Authorization: "JWT " + token },
+                        {
+                          productId: product._id,
+                          amount
+                        }
+                      );
+                      if (status === 200) {
+                        loadProductData(product._id);
+                        toast("Import goods successfully!", "success");
+                        return this.setState({
+                          importRequesting: false,
+                          importing: false
+                        });
+                      } else if (status === 401)
+                        error = "You are not authorized!";
+                      else error = "Internal server error!";
+                    } catch (err) {
+                      if (err === "CONNECTION_ERROR")
+                        error = "Connection error!";
+                    }
+                    toast(error, "error");
+                    this.setState({ importRequesting: false });
+                  }}
+                >
+                  <div className="form-group">
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="amount"
+                      placeholder="Enter quantity"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-fill"
+                    disabled={this.state.importRequesting}
+                  >
+                    {this.state.importRequesting ? (
+                      <i className="fa fa-circle-notch-o fa-spin" style={{ color: 'white' }}/>
+                    ) : (
+                      "Import"
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-default btn-fill"
+                    style={{ marginLeft: 5 }}
+                    onClick={() => this.setState({ importing: false })}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              ) : (
                 <button
                   className="btn btn-primary"
-                  onClick={() =>
-                    history.push("/main/product/update-product/" + product._id)
-                  }
                   style={{ marginRight: 10 }}
+                  onClick={() => this.setState({ importing: true })}
                 >
-                  Update product
+                  Import goods
                 </button>
               )}
             </div>
@@ -162,6 +236,19 @@ class ProductDetail extends Component {
                         : ""}
                     </p>
                     <hr className="my-4" />
+                    <div className="form-group row">
+                      <label className="col-sm-2 col-form-label font-weight-bold">
+                        Quantity
+                      </label>
+                      <div className="col-sm-10">
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control-plaintext"
+                          defaultValue={product.quantity}
+                        />
+                      </div>
+                    </div>
                     <div className="form-group row">
                       <label
                         htmlFor="staticEmail"
@@ -352,10 +439,12 @@ class ProductDetail extends Component {
 const mapStateToProps = state => ({
   product: state.product.detail,
   feedback: state.product.feedback,
-  role: state.user.role
+  role: state.user.role,
+  token: state.user.token
 });
 const mapDispatchToProps = dispatch => ({
   loadProductData: productId => dispatch(loadProductData(productId)),
-  loadProductFeedback: productId => dispatch(loadProductFeedback(productId))
+  loadProductFeedback: productId => dispatch(loadProductFeedback(productId)),
+  toast: (message, level) => dispatch(toast(message, level))
 });
 export default connect(mapStateToProps, mapDispatchToProps)(ProductDetail);

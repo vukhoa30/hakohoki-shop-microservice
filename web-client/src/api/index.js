@@ -195,8 +195,30 @@ export const selectProduct = product => {
 };
 /* */
 
-export const addProduct = values => {
-  console.log(values);
+export const addProduct = (product, token) => {
+  return new Promise(async (resolve, reject) => {
+    let _error = "Undefined error. Try again later!";
+    try {
+      console.log(product)
+      const { status, data } = await request(
+        "/products",
+        "POST",
+        { Authorization: "JWT " + token },
+        product
+      );
+      if (status === 200) {
+        return resolve(data);
+      } else if (status === 401) {
+        _error = "You are not authorized to add new product";
+      } else {
+        _error = "Internal server error";
+      }
+    } catch (error) {
+      console.log(error);
+      if (error === "CONNECTION_ERROR") _error = "Connection error";
+    }
+    return reject(new SubmissionError({ _error }));
+  });
 };
 
 export const toast = (message, level) => dispatch =>
