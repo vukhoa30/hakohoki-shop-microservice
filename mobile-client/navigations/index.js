@@ -9,10 +9,12 @@ import React, { Component } from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import Home from "../views/screens/Home";
 import Profile from "../views/screens/Profile";
+import Setting from "../views/screens/Setting";
 import LogIn from "../views/screens/LogIn";
 import SignUp from "../views/screens/SignUp";
 import Activation from "../views/screens/Activation";
 import Search from "../views/screens/Search";
+import ServerAddressForm from "../views/screens/ServerAddressForm";
 import ProductInformation from "../views/screens/ProductInformation";
 import ProductReviews from "../views/screens/ProductReviews";
 import ProductComments from "../views/screens/ProductComments";
@@ -98,6 +100,9 @@ const mainNavigator = TabNavigator(
     },
     Notification: {
       screen: NotificationComponent
+    },
+    Setting: {
+      screen: Setting
     }
   },
   {
@@ -200,6 +205,13 @@ const rootNavigator = StackNavigator(
 
     Search: {
       screen: Search
+    },
+
+    ServerAddressForm: {
+      screen: ServerAddressForm,
+      navigationOptions: {
+        title: 'Server address'
+      }
     },
 
     PromotionDetail: {

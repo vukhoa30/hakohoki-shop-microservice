@@ -1,4 +1,5 @@
 import { combineReducers } from "redux"
+import app from './app'
 import buffer from './buffer'
 import user from './user'
 import product from './product'
@@ -12,6 +13,7 @@ import category from './category'
 import { reducer as form } from 'redux-form';
 
 const appReducer = combineReducers({
+    app,
     user,
     buffer,
     product,

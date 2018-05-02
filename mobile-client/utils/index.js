@@ -1,7 +1,13 @@
-import { gatewayAddress } from "../config";
+import { gatewayHost, gatewayPort } from "../config";
 import { stringify } from "query-string";
 import { AlertAndroid, Alert, Platform } from "react-native";
 import io from "socket.io-client";
+
+var gatewayAddress = "http://" + gatewayHost + ":" + gatewayPort;
+
+function updateGateway(host, port) {
+  gatewayAddress = "http://" + host + ":" + port;
+}
 
 function createSocketConnection(
   onConnect,
@@ -105,7 +111,7 @@ function getAction(type, obj) {
 }
 
 function reduceString(string) {
-  return string.length > 20 ? string.slice(0, 17) + '...' : string;
+  return string.length > 20 ? string.slice(0, 17) + "..." : string;
 }
 
 function delay(ms) {
@@ -113,6 +119,7 @@ function delay(ms) {
 }
 
 module.exports = {
+  updateGateway,
   request,
   currencyFormat,
   validateEmail,

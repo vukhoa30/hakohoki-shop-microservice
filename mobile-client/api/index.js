@@ -3,11 +3,13 @@ import {
   parseToQueryString,
   delay,
   alert,
-  createSocketConnection
+  createSocketConnection,
+  updateGateway
 } from "../utils";
 import navigator from "../navigations";
 import {
   getAction,
+  UPDATE_SERVER_ADDRESS,
   USER_LOG_IN,
   USER_LOG_OUT,
   CATEGORY_LOADING,
@@ -50,6 +52,15 @@ import { NavigationActions } from "react-navigation";
 import { AsyncStorage } from "react-native";
 
 var socket = null;
+
+function updateServerAddress(host, port) {
+  return dispatch => {
+    updateGateway(host, port);
+    dispatch(
+      getAction(UPDATE_SERVER_ADDRESS, { gatewayHost: host, gatewayPort: port })
+    );
+  };
+}
 
 function navigate(path, params) {
   return dispatch =>
@@ -883,6 +894,7 @@ function makeOrder(productList, token) {
 }
 
 module.exports = {
+  updateServerAddress,
   navigate,
   connectToServer,
   authenticate,

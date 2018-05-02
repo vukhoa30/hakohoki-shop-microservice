@@ -45,20 +45,7 @@ const { width, height } = Dimensions.get("window");
 
 class Home extends Component {
   static navigationOptions = ({ navigation }) => ({
-    title: "HKShop",
-    headerLeft: (
-      <Image
-        source={require("../../resources/images/logoTitle.png")}
-        style={{ width: 30, height: 30, resizeMode: "stretch", marginLeft: 20 }}
-      />
-    ),
-    headerRight: (
-      <Icon
-        name="search"
-        style={{ marginRight: 20, color: "white" }}
-        onPress={() => navigation.navigate("Search")}
-      />
-    )
+    title: "Home"
   });
 
   constructor(props) {

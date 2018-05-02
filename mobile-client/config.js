@@ -1,5 +1,4 @@
 module.exports = {
-
-    gatewayAddress: "http://192.168.1.42:8080"
-
-}
+  gatewayHost: "192.168.1.42",
+  gatewayPort: "8080"
+};
