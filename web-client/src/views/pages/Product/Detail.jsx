@@ -177,11 +177,11 @@ class ProductDetail extends Component {
                   </div>
                   <button
                     type="submit"
-                    className="btn btn-primary btn-fill"
+                    className="btn btn-primary"
                     disabled={this.state.importRequesting}
                   >
                     {this.state.importRequesting ? (
-                      <i className="fa fa-circle-notch-o fa-spin" style={{ color: 'white' }}/>
+                      <i className="fa fa fa-circle-o-notch fa-spin"/>
                     ) : (
                       "Import"
                     )}

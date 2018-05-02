@@ -170,9 +170,9 @@ class ProductDetail extends Component {
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <button type="submit" className="btn btn-primary btn-fill">
+              <button type="submit" className="btn btn-primary">
                 {this.state.importRequesting ? (
-                  <i className="fa fa-circle-notch-o fa-spin" style={{ color: 'white' }} />
+                  <i className="fa fa fa-circle-o-notch fa-spin"/>
                 ) : (
                   "Import"
                 )}{" "}
