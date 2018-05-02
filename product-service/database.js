@@ -15,7 +15,7 @@ var handleCallback = (err, rslt) => {
 var parseRslt = (rslts) => { 
   return rslts.map(rslt => { 
     return {
-      "additionPicture": rslt.additionalPicture,
+      "additionPicture": rslt.additionPicture,
       "addedAt": rslt.addedAt,
       "_id": rslt._id,
       "mainPicture": rslt.mainPicture,
