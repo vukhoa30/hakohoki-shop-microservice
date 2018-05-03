@@ -27,7 +27,9 @@ class ServerAddressForm extends Component {
   }
 
   update() {
-    const { updateServerAddress } = this.props;
+    const { updateServerAddress, user } = this.props;
+    const { isLoggedIn, account } = user;
+    const { accountId } = account;
     const { host, port } = this.state;
     if (Number.isInteger(port)) return alert("Invalid port");
     if (
@@ -36,11 +38,12 @@ class ServerAddressForm extends Component {
       ).test(host)
     )
       return alert("Invalid host");
-    alert('Updated gateway address')
-    return updateServerAddress(host, port);
+    alert("Updated gateway address");
+    return updateServerAddress(host, port, isLoggedIn, accountId);
   }
 
   render() {
+    const { user } = this.props;
     return (
       <Container>
         <Content style={{ paddingHorizontal: 10 }}>
@@ -75,11 +78,13 @@ class ServerAddressForm extends Component {
 
 const mapStateToProps = state => ({
   host: state.app.gateway.host,
-  port: state.app.gateway.port
+  port: state.app.gateway.port,
+  user: state.user
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateServerAddress: (host, port) => dispatch(updateServerAddress(host, port))
+  updateServerAddress: (host, port, isLoggedIn, accountId) =>
+    dispatch(updateServerAddress(host, port, isLoggedIn, accountId))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ServerAddressForm);
