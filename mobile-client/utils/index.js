@@ -84,9 +84,9 @@ function request(url, method, header, data) {
 }
 
 function currencyFormat(currency) {
-  return (
-    currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
-  );
+  return currency
+    ? currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
+    : "0 VND";
 }
 
 function validateEmail(email) {

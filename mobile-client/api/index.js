@@ -53,9 +53,13 @@ import { AsyncStorage } from "react-native";
 
 var socket = null;
 
-function updateServerAddress(host, port) {
+function updateServerAddress(host, port, isLoggedIn, accountId) {
   return dispatch => {
     updateGateway(host, port);
+    if (socket !== null) {
+      socket.disconnect();
+      dispatch(connectToServer(accountId));
+    }
     dispatch(
       getAction(UPDATE_SERVER_ADDRESS, { gatewayHost: host, gatewayPort: port })
     );
