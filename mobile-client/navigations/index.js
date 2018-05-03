@@ -156,7 +156,7 @@ const rootNavigator = StackNavigator(
   {
     Main: {
       screen: mainNavigator,
-      navigationOptions: {
+      navigationOptions: ({ navigation }) => ({
         title: "HKShop",
         headerLeft: (
           <Image
@@ -176,7 +176,7 @@ const rootNavigator = StackNavigator(
             onPress={() => navigation.navigate("Search")}
           />
         )
-      }
+      })
     },
 
     Account: {
@@ -210,7 +210,7 @@ const rootNavigator = StackNavigator(
     ServerAddressForm: {
       screen: ServerAddressForm,
       navigationOptions: {
-        title: 'Server address'
+        title: "Server address"
       }
     },
 
