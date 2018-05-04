@@ -13,7 +13,7 @@ module.exports = {
       })
       .returning('id')
       .then(id => {
-        return db('products').insert(
+        return db('products_prices').insert(
           promotion.products.map(product => {
             product.promotion_id = id[0];
             return product;
@@ -31,7 +31,7 @@ module.exports = {
         var promotions = await db('promotions')
           .whereRaw('CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??',
             ['start_at', 'end_at'])
-        var products = await db('products')
+        var products = await db('products_prices')
           .whereRaw('?? = any(?)',
             ['promotion_id', promotions.map(p => p.id)])
         
@@ -41,7 +41,7 @@ module.exports = {
   },
   GetPromotionPrices: (ids) => {
     return new Promise((resolve, reject) => {
-      db({ a: 'promotions', b: 'products' })
+      db({ a: 'promotions', b: 'products_prices' })
       .select({
         bproduct_id: 'b.product_id',
         bnew_price: 'b.new_price'
