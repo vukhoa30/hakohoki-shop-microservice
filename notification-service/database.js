@@ -60,5 +60,47 @@ module.exports = {
         }
       )
     })
+  },
+  GetSubscribedAccountIds: (type, query) => {
+    return new Promise((resolve, reject) => {
+      models.Subscription
+      .find({ type, ...query })
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt.map(r => r.accountId))
+      })
+    })
+  },
+  GetSubscriptions: (type, query) => {
+    return new Promise((resolve, reject) => {
+      models.Subscription
+      .find({ type, ...query })
+      .exec((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt.map(r => r.productId))
+      })
+    })
+  },
+  AddSubscription: (type, accountId, subscriptionData) => {
+    return new Promise((resolve, reject) => {
+      var newSubscription = models.Subscription({ 
+        type, 
+        accountId, 
+        ...subscriptionData 
+      })
+      newSubscription.save((err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt)
+      })
+    })
+  },
+  RemoveSubscription: (type, accountId, subscriptionQuery) => {
+    return new Promise((resolve, reject) => {
+      models.Subscription
+      .remove({ type, accountId, ...subscriptionQuery }, (err, rslt) => {
+        if (err) { return reject(err) }
+        resolve(rslt)
+      })
+    })
   }
 }

@@ -66,6 +66,16 @@ module.exports = {
   addNotification:  (notifications) => {
     return new Promise(async (resolve, reject) => {
       try {
+        if (notifications[0] && notifications[0].type === 'commentPosted') {
+          var subscriptions = await db.GetSubscribedAccountIds('commentPosted', {
+            productId: notifications[0].productId
+          })
+          notifications = notifications.filter(n => 
+            subscriptions.indexOf(n.accountId.toString()) >= 0)
+          console.log(subscriptions)
+          console.log(notifications)
+        }
+        
         var rslt = await db.AddNotifications(notifications.map(n => {
           return {
             ...n,
@@ -107,6 +117,38 @@ module.exports = {
     try {
       var rslt = await db.ReadNotifications(req.body, req.authentication.accountId)
       res.json({ok: true})
+    } catch (e) { catchError(res, e) }
+  },
+  getSubscriptionsCommentPosted: async (req, res) => {
+    try {
+      if (req.authentication.role === 'customer') { 
+        return catchUnauthorized(res) 
+      }
+      var rslt = await db.GetSubscriptions('commentPosted',
+        { accountId: req.authentication.accountId })
+      res.json(rslt)
+    } catch (e) { catchError(res, e) }
+  },
+  subscribeCommentPosted: async (req, res) => {
+    try {
+      if (req.authentication.role === 'customer') { 
+        return catchUnauthorized(res) 
+      }
+      var rslt = await db.AddSubscription('commentPosted', 
+        req.authentication.accountId, 
+        { productId: req.body.productId })
+      res.json({ ok: true })
+    } catch (e) { catchError(res, e) }
+  },
+  unsubscribeCommentPosted: async (req, res) => {
+    try {
+      if (req.authentication.role === 'customer') { 
+        return catchUnauthorized(res) 
+      }
+      var rslt = await db.RemoveSubscription('commentPosted',
+        req.authentication.accountId,
+        { productId: req.body.productId })
+      res.json({ ok: true })
     } catch (e) { catchError(res, e) }
   }
 }
