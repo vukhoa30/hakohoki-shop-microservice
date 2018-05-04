@@ -235,9 +235,14 @@ module.exports = {
       if (bills.length < 1) {
         throw 'data not found'
       }
-      var employeeIds = bills.map(b => b.seller)
-      var employees = await msgBroker.requestGetEmployees(employeeIds)
-      var employeeIds = bills.map(b => b.seller)
+
+      var customerIds = []
+      var employeeIds = bills.map(b => {
+        if (b.buyer.accountId) { 
+          customerIds.push(b.buyer.accountId)
+        }
+        return b.seller
+      })
       var employees = await msgBroker.requestGetEmployees(employeeIds)
 
       var specificIds = [];

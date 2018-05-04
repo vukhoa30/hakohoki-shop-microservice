@@ -62,6 +62,9 @@ module.exports = {
   requestGetEmployees: (ids) => {
     return requestAmqp(ids, 'getEmployees')
   },
+  requestGetCustomers: (ids) => {
+    return requestAmqp(ids, 'getCustomers')
+  },
   requestGetSpecificProducts: (specificIds) => {
     return requestAmqp(specificIds, 'getSpecificProducts')
   },
