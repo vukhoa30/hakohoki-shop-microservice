@@ -18,9 +18,9 @@ app.use(morgan('combined'));
 //REST API ------------------------------------------------------------------
 app.get('/', core.authenticate, core.getNotification)
 
-app.get('/subscribe-comment-posted', core.authenticate, core.getSubscriptionsCommentPosted)
-app.post('/subscribe-comment-posted', core.authenticate, core.subscribeCommentPosted)
-app.delete('/subscribe-comment-posted', core.authenticate, core.unsubscribeCommentPosted)
+app.get('/subscription-comment-posted', core.authenticate, core.getSubscriptionsCommentPosted)
+app.post('/subscription-comment-posted', core.authenticate, core.subscribeCommentPosted)
+app.delete('/subscription-comment-posted', core.authenticate, core.unsubscribeCommentPosted)
 
 app.put('/read', core.authenticate, core.readNotifications)
 
