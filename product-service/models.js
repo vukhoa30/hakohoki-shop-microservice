@@ -10,7 +10,8 @@ module.exports = (mongoose) => {
     description: String,
     specifications: Object,
     price: Number,
-    guarantee: Number
+    guarantee: Number,
+    forSale: Boolean
   });
   productSchema.index({'name': 'text'});
   productSchema.plugin(uniqueValidator, { type: 'mongoose-unique-validator' });

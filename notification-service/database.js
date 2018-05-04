@@ -20,6 +20,7 @@ var parseRslt = (rslt) => {
       type: r.type,
       productId: r.productId,
       promotionId: r.promotionId,
+      billId: r.billId,
       amount: r.amount,
       commentId: r.commentId
     }

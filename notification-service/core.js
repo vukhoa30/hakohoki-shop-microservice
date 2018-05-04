@@ -72,8 +72,6 @@ module.exports = {
           })
           notifications = notifications.filter(n => 
             subscriptions.indexOf(n.accountId.toString()) >= 0)
-          console.log(subscriptions)
-          console.log(notifications)
         }
         
         var rslt = await db.AddNotifications(notifications.map(n => {
@@ -105,6 +103,7 @@ module.exports = {
             productId: r.productId,
             id: r._id,
             commentId: r.commentId,
+            billId: r.billId,
             productName: r.productName,
             promotionName: r.promotionName
           }

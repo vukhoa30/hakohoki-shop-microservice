@@ -33,9 +33,12 @@ module.exports = {
           break
         case 'productBought':
           title = `Thank you for shopping at our store!`
-          body = `<p>You have just bought ${request.productName} at our store.</p>
+          var productList = ''
+          request.productsName.map(p => productList += `<li>${p}</li>`)
+          body = `<p>You have just bought these products at our store:</p>
+            <ul>${productList}</ul>
             <p>Please review the product on the app or reply to this email to 
-            let us know if you have any problem with the perchase.</p>
+            let us know if you have any problem with the purchase.</p>
             <p>Sincerely.</p>`
           break
       }

@@ -44,14 +44,12 @@ module.exports = {
       var products = await msgBroker.requestGetSpecificProducts(
         req.body.specificProducts.map(p => p.id))
       if (req.body.buyer.accountId) {
-        msgBroker.produceNotificationRequest(products.map(p => {
-          return {
-            type: 'productBought',
-            accountId: req.body.buyer.accountId,
-            productId: p.productId,
-            productName: p.productName
-          }
-        }))
+        msgBroker.produceNotificationRequest([{
+          type: 'productBought',
+          accountId: req.body.buyer.accountId,
+          billId: rslt._id
+          //productsName: products.map(p => p.productName)
+        }])
       }
       if (req.body.buyer.accountId || req.body.buyer.email) {
         var email
@@ -61,13 +59,11 @@ module.exports = {
         } else {
           email = req.body.buyer.email
         }
-        msgBroker.produceEmailRequest(products.map(p => {
-          return {
-            type: 'productBought',
-            email,
-            productName: p.productName
-          }
-        }))
+        msgBroker.produceEmailRequest([{
+          type: 'productBought',
+          email,
+          productsName: products.map(p => p.productName)
+        }])
       }
 
       var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
