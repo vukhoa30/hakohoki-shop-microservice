@@ -128,15 +128,13 @@ module.exports = {
       subscriptionProductIds.forEach(id => {
         var finder = products.find(p => p._id.toString() == id.toString())
         if (finder) {
-          //console.log(finder.name)
-          
           rslt.push({
             productId: id,
             productName: finder.name,
             mainPicture: finder.mainPicture
           })
         }
-        else { rslt.push({ productId: r }) }
+        else { rslt.push({ productId: id }) }
       })
       res.json(rslt)
     } catch (e) { catchError(res, e) }
