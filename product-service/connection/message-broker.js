@@ -75,8 +75,8 @@ var produceAmqp = (msgObject, queue) => {
 }
 
 module.exports = {
-  requestPromotionPrices: (productIds) => {
-    return requestAmqp(productIds, 'getPromotionPrices')
+  requestPromotionInfos: (productIds) => {
+    return requestAmqp(productIds, 'getPromotionInfos')
   },
   responseGetProducts: () => {
     var core = require('../core.js')

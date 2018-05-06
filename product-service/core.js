@@ -28,7 +28,9 @@ module.exports = {
       .then(async (specifics) => {
         try {
           var productIds = rslt.map(r => r._id)
-          var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
+          var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+          var giftIds = promotionInfos.filter(i => i.giftId).map(i => i.giftId)
+          var gifts = await db.GetProductsByIds(giftIds)
           var reviewScores = await msgBroker.requestReviewScores(productIds)
           var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
           rslt.map(r => {
@@ -44,10 +46,23 @@ module.exports = {
             if (item) { r.sold5OrOver = item.count >= 5 }
             else { r.sold5OrOver = false }
 
-            item = promotionPrices.find(e => {
+            var items = promotionInfos.filter(e => {
               return e.productId.toString() == r._id.toString()
             })
-            if (item) { r.promotionPrice = item.promotionPrice }
+            if (items.length > 0) { 
+              r.promotionPrice = items[0].promotionPrice 
+              items.map(i => {
+                if (i.giftId) {
+                  var gift = gifts.find(g => 
+                    g._id.toString() == i.giftId.toString())
+                  if (!r.giftProducts) {
+                    r.giftProducts = [ gift ]
+                  } else {
+                    r.giftProducts.push(gift)
+                  }
+                }
+              })
+            }
 
             item = reviewScores.find(e => 
               e._id.toString() == r._id.toString())
@@ -96,12 +111,15 @@ module.exports = {
           var specificsSold = await db.GetSpecificProductsSold(req.params.id)
           rslt.sold5OrOver = specificsSold.specificProducts.length >= 5
 
-          var promotionPrices = await msgBroker.requestPromotionPrices(
+          var promotionInfos = await msgBroker.requestPromotionInfos(
             [ rslt._id ])
+          var gifts = await db.GetProductsByIds(promotionInfos
+            .filter(p => p.giftId).map(p => p.giftId))
           var reviewScores = await msgBroker.requestReviewScores(
             [ rslt._id ])
-          if (promotionPrices[0]) {
-            rslt.promotionPrice = promotionPrices[0].promotionPrice
+          if (promotionInfos.length > 0) {
+            rslt.promotionPrice = promotionInfos[0].promotionPrice
+            rslt.giftProducts = gifts
           }
           if (reviewScores[0]) {
             rslt.reviewScore = reviewScores[0].avgScore
@@ -120,7 +138,9 @@ module.exports = {
       return db.GetMultipleSpecificProducts(ids, 'inStock')
       .then(async specifics => {
         var productIds = rslt.map(r => r._id)
-        var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
+        var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+        var gifts = await db.GetProductsByIds(promotionInfos
+          .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(productIds)
         var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
         rslt.map(r => {
@@ -136,10 +156,23 @@ module.exports = {
           if (item) { r.sold5OrOver = item.count >= 5 }
           else { r.sold5OrOver = false }
 
-          item = promotionPrices.find(e => {
+          var items = promotionInfos.filter(e => {
             return e.productId.toString() == r._id.toString()
           })
-          if (item) { r.promotionPrice = item.promotionPrice }
+          if (items.length > 0) { 
+            r.promotionPrice = items[0].promotionPrice 
+            items.map(i => {
+              if (i.giftId) {
+                var gift = gifts.find(g => 
+                  g._id.toString() == i.giftId.toString())
+                if (!r.giftProducts) {
+                  r.giftProducts = [ gift ]
+                } else {
+                  r.giftProducts.push(gift)
+                }
+              }
+            })
+          }
           
           item = reviewScores.find(e => 
             e._id.toString() == r._id.toString())
@@ -162,7 +195,9 @@ module.exports = {
       .then(async rslts => {
         var [ products, specifics ] = rslts
         var productIds = products.map(r => r._id)
-        var promotionPrices = await msgBroker.requestPromotionPrices(productIds)
+        var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+        var gifts = await db.GetProductsByIds(promotionInfos
+          .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(productIds)
         products.map(p => {
           var item = specifics.find(e => {
@@ -171,10 +206,23 @@ module.exports = {
           if (!item) { p.quantity = 0 }
           else { p.quantity = item.count }
   
-          item = promotionPrices.find(e => {
-            return e.productId.toString() == p._id.toString()
+          var items = promotionInfos.filter(e => {
+            return e.productId.toString() == r._id.toString()
           })
-          if (item) { p.promotionPrice = item.promotionPrice }
+          if (items.length > 0) { 
+            r.promotionPrice = items[0].promotionPrice 
+            items.map(i => {
+              if (i.giftId) {
+                var gift = gifts.find(g => 
+                  g._id.toString() == i.giftId.toString())
+                if (!r.giftProducts) {
+                  r.giftProducts = [ gift ]
+                } else {
+                  r.giftProducts.push(gift)
+                }
+              }
+            })
+          }
 
           item = reviewScores.find(e => 
             e._id.toString() == p._id.toString())
@@ -224,12 +272,15 @@ module.exports = {
     .then(rslt => {
       return db.GetSpecificProductsInStock(rslt._id)
       .then(async specifics => {
-        var promotionPrices = await msgBroker.requestPromotionPrices(
+        var promotionInfos = await msgBroker.requestPromotionInfos(
           [ rslt._id ])
+        var gifts = await db.GetProductsByIds(promotionInfos
+          .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(
           [ rslt._id ])
-        if (promotionPrices[0]) {
-          rslt.promotionPrice = promotionPrices[0].promotionPrice
+        if (promotionInfos.length > 0) {
+          rslt.promotionPrice = promotionInfos[0].promotionPrice
+          rslt.giftProducts = gifts
         }
         if (reviewScores[0]) {
           rslt.reviewScore = reviewScores[0].avgScore
@@ -360,25 +411,36 @@ module.exports = {
     try {
       var products = await db.GetProductsByIds(productIdsAndAmounts.map(i => 
         i.productId))
-      var promotionPrices = await msgBroker.requestPromotionPrices(products.map(p =>
+      var promotionInfos = await msgBroker.requestPromotionInfos(products.map(p =>
         p._id))
-      products.map(p => {
-        var item = promotionPrices.find(e => {
-          return e.productId.toString() == p._id.toString()
+      var gifts = await db.GetProductsByIds(promotionInfos
+        .filter(p => p.giftId).map(p => p.giftId))
+      products.map(r => {
+        var items = promotionInfos.filter(e => {
+          return e.productId.toString() == r._id.toString()
         })
-        if (item) { p.price = item.promotionPrice }
+        if (items.length > 0) { 
+          r.promotionPrice = items[0].promotionPrice 
+          items.map(i => {
+            if (i.giftId) {
+              var gift = gifts.find(g => 
+                g._id.toString() == i.giftId.toString())
+              if (!r.giftProducts) { r.giftProducts = [ ] } 
+              r.giftProducts.push(gift)
+            }
+          })
+        }
       })
       var specifics = await db
         .GetPendingProducts(productIdsAndAmounts)
-      console.log(specifics)
       if (!specifics) { return false }
 
       specifics.forEach(s => {
         var finder = products.find(p => 
           p._id.toString() == s.productId.toString())
-        s.price = finder.price
+        s.price = finder.promotionPrice
       });
-
+      
       return specifics
     } catch(e) { console.log(e); return false }
   },

@@ -2,12 +2,6 @@ var db = require('./database')
 //var helper = require('../helper')
 var msgBroker = require('./connection/message-broker')
 
-//chỉ chạy 1 promise
-var typicalResponse = (res, func) => {
-  func.then(rslt => res.json(rslt))
-  .catch(err => catchError(res, err));
-}
-
 var catchError = (res, err) => {
   console.log(err)
   res.status(500);
@@ -38,8 +32,14 @@ module.exports = {
         createdAt: createTime,
         completedAt: createTime
       });
-      await msgBroker.requestUpdateSpecificsStatus(
-        req.body.specificProducts.map(p => p.id))
+      var specificIds = []
+      req.body.specificProducts.map(p => {
+        specificIds.push(p.id)
+        if (p.giftSpecificIds) {
+          specificIds = specificIds.concat(p.giftSpecificIds)
+        }
+      })
+      await msgBroker.requestUpdateSpecificsStatus(specificIds)
 
       var products = await msgBroker.requestGetSpecificProducts(
         req.body.specificProducts.map(p => p.id))
@@ -48,7 +48,6 @@ module.exports = {
           type: 'productBought',
           accountId: req.body.buyer.accountId,
           billId: rslt._id
-          //productsName: products.map(p => p.productName)
         }])
       }
       if (req.body.buyer.accountId || req.body.buyer.email) {
@@ -124,8 +123,9 @@ module.exports = {
         buyer: {
           accountId: authentication.accountId
         },
-        specificProducts: specificProducts.map(s => 
-          { return { id: s.specificId, price: s.price } }),
+        specificProducts: specificProducts.map(s => { 
+          return { id: s.specificId, price: s.price, giftSpecificIds: s.specificGiftIds }
+        }),
         createdAt: new Date(),
       })
       
@@ -187,7 +187,13 @@ module.exports = {
       var bill = await db.GetBillById(req.body.billId)
       if (!bill) { return catchError(res, 'bill not found') }
       console.log(bill)
-      await msgBroker.requestUpdateSpecificsStatus(bill.specificProducts.map(p => p.id))
+      var specificIds = []
+      bill.specificProducts.forEach(s => {
+        specificIds.push(s.id)
+        if (s.giftSpecificIds) { specificIds = specificIds.concat(s.giftSpecificIds) }
+      })
+      console.log(specificIds)
+      await msgBroker.requestUpdateSpecificsStatus(specificIds)
       
       var rslt = await db.CompleteBill(req.body.billId, authentication.accountId)
       res.json({ ok: true })
@@ -243,7 +249,12 @@ module.exports = {
 
       var specificIds = [];
       bills.forEach(b => {
-        specificIds = specificIds.concat(b.specificProducts.map(p => p.id))
+        b.specificProducts.map(p => {
+          specificIds.push(p.id)
+          if (p.giftSpecificIds) {
+            specificIds = specificIds.concat(p.giftSpecificIds)
+          }
+        })
       })
       var specificInfos = await msgBroker.requestGetSpecificInfos(specificIds)
 
@@ -257,6 +268,21 @@ module.exports = {
           if (finder) {
             p.productName = finder.productName
             p.mainPicture = finder.mainPicture
+          }
+          if (p.giftSpecificIds) {
+            p.giftSpecificIds.forEach(g => {
+              finder = specificInfos.find(s => 
+                s.specificId.toString() == g.toString())
+              if (finder) {
+                if (!p.specificGifts) { p.specificGifts = [] }
+                p.specificGifts.push({
+                  id: g,
+                  productName: finder.productName,
+                  mainPicture: finder.mainPicture
+                })
+              }
+            })
+            p.giftSpecificIds = undefined
           }
         })
       })

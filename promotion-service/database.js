@@ -39,29 +39,29 @@ module.exports = {
       } catch(e) { console.log(e); reject(e); }
     })
   },
-  GetPromotionPrices: (ids) => {
+  GetPromotionInfos: (productIds) => {
     return new Promise((resolve, reject) => {
-      db({ a: 'promotions', b: 'products_prices' })
-      .select({
-        bproduct_id: 'b.product_id',
-        bnew_price: 'b.new_price'
+      db('promotions as p')
+      .whereRaw('pp.product_id = ANY(?) and CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??', 
+        [ productIds, 'start_at', 'end_at' ])
+      .leftJoin('products_prices as pp', 'p.id', 'pp.promotion_id')
+      .leftJoin('products_gifts as pg', (q) => {
+        q.on('pg.promotion_id', '=', 'p.id')
+          .andOn('pg.product_id', '=', 'pp.product_id')
       })
-      .whereRaw('?? = ?? and ?? = any(?) and CURRENT_TIMESTAMP >= ?? and CURRENT_TIMESTAMP <= ??', [
-        'a.id', 'b.promotion_id',
-        'b.product_id', ids,
-        'a.start_at', 'a.end_at'
-      ])
+      .select('p.id', 'pp.product_id as product_id',
+        'pp.new_price as new_price', 'pg.gift_id')
       .then(rows => {
-        if (rows.length === 0) { reject({ new: false }) }
-        else { 
-          resolve(rows.map(row => { 
+        if (rows.length === 0) { return reject(false) }
+        resolve(rows.map(row => { 
           return {
-            productId: row.bproduct_id,
-            promotionPrice: row.bnew_price
-          }}
-        ))}
+            productId: row.product_id,
+            promotionPrice: row.new_price,
+            giftId: row.gift_id
+          }
+        }))
       })
-      .catch(e => { reject(e) })
+      .catch(e => { return reject(e) })
     })
   },
   GetPromotions: (promotionIds) => {

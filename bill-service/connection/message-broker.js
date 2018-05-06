@@ -94,5 +94,8 @@ module.exports = {
   },
   requestGetAllCategories: () => {
     return requestAmqp(null, 'getAllCategories')
+  },
+  requestPromotionInfos: (productIds) => {
+    return requestAmqp(productIds, 'getPromotionInfos')
   }
 }

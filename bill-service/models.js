@@ -5,7 +5,7 @@ module.exports = (mongoose) => {
       paymentMethod: { type: String, default: 'cash' },
       seller: Number,
       buyer: Object,
-      specificProducts: Array, //price, id
+      specificProducts: Array, //price, id, giftSpecificIds
       status: { type: String, default: 'completed' },
       completedAt: Date
     })

@@ -81,8 +81,8 @@ module.exports = {
   requestGetProducts: (productIds) => {
     return requestAmqp(productIds, 'getProducts')
   },
-  responsePromotionPrice: () => {
-    responseAmqp(db.GetPromotionPrices, 'getPromotionPrices')
+  responsePromotionInfos: () => {
+    responseAmqp(db.GetPromotionInfos, 'getPromotionInfos')
   },
   produceNotificationRequest: (requests) => {
     return produceAmqp(requests, 'notificationRequest')

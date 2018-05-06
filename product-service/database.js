@@ -24,7 +24,8 @@ var parseRslt = (rslts) => {
       "description": rslt.description,
       "price": rslt.price,
       "guarantee": rslt.guarantee,
-      "specifications": rslt.specifications
+      "specifications": rslt.specifications,
+      "forSale": rslt.forSale
     }
   }
 )}
@@ -370,29 +371,49 @@ module.exports = {
     })
   },
   GetPendingProducts: (productIdsAndAmounts) => {
+    var productIds = []
+    productIdsAndAmounts.forEach(p => {
+      productIds.push(p.productId)
+      if (p.giftIds) { productIds = productIds.concat(p.giftIds) }
+    })
     return new Promise((resolve, reject) => {
       models.SpecificProduct.find({ 
-        productId: { $in: productIdsAndAmounts.map(
-          i => mongoose.Types.ObjectId(i.productId)) },
+        productId: { $in: productIds.map(
+          id => mongoose.Types.ObjectId(id)) },
         status: 'inStock'
       })
       .exec((err, rslt) => {
         if (err) { return reject(err) }
-        var specifics = []
-        for (var i = 0; i < productIdsAndAmounts.length; i++) {
-          var matchedSpecifics = rslt.filter(r => 
-            r.productId.toString() == productIdsAndAmounts[i].productId.toString())
-          if (matchedSpecifics.length < productIdsAndAmounts[i].amount) {
-            return reject(false);
+        rslt = rslt.map(r => { return { productId: r.productId, _id: r._id }})
+        var specificProducts = []
+        productIdsAndAmounts.forEach(p => {
+          var finder = rslt.filter(r => 
+            r.productId.toString() == p.productId.toString())
+          if (finder.length < p.amount) { return reject('amount?') }
+          for (var i = 0; i < p.amount; i++) {
+            specificProducts.push(finder[i])
+            if (p.giftIds) {
+              var ptr = specificProducts[specificProducts.length - 1]
+              ptr.specificGiftIds = []
+              p.giftIds.forEach(g => {
+                var tmp = rslt.find(r => r.productId.toString() == g && !r.used)
+                if (!tmp) { return reject('shit') }
+                ptr.specificGiftIds.push(tmp._id)
+                tmp.used = true
+              })
+            }
           }
-          for (var j = 0; j < productIdsAndAmounts[i].amount; j++) {
-            specifics.push(matchedSpecifics[j])
-          }
-        }
+          resolve(specificProducts)
+        })
+        var specificIds = []
+        specificProducts.forEach(s => {
+          specificIds.push(s._id)
+          if (s.specificGiftIds) { specificIds = specificIds.concat(s.specificGiftIds) }
+        })
+        
         models.SpecificProduct
-
         .updateMany({ 
-          _id: {$in: specifics.map(s => s._id) }
+          _id: {$in: specificIds }
           }, { $set: {
             status: 'pending'
           } 

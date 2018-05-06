@@ -23,7 +23,7 @@ app.get('/', core.cacheCurrentPromotions, core.getCurrentPromotions)
 app.post('/', core.createPromotion)
 
 //Message response listener
-broker.responsePromotionPrice()
+broker.responsePromotionInfos()
 broker.responseGetPromotions()
 
 //Running server-------------------------------------------------------------
