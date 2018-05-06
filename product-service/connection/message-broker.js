@@ -8,8 +8,10 @@ var generateUuid = () => {
          Math.random().toString();
 }
 
+var timeOutMs = 5000
 var requestAmqp = (msgObject, queue) => {
   return new Promise((resolve, reject) => {
+    var timeOut = true
     amqp.connect(amqpAddress)
     .then(conn => {
       return conn.createChannel()
@@ -20,12 +22,20 @@ var requestAmqp = (msgObject, queue) => {
           ch.consume(q.queue, msg => {
             if (msg.properties.correlationId === corr) {
               resolve(JSON.parse(msg.content.toString()))
+              timeOut = false
               conn.close();
             }
           }, {noAck: true})
           ch.sendToQueue(queue,
             new Buffer(JSON.stringify(msgObject)),
             { correlationId: corr, replyTo: q.queue })
+          setTimeout(() => {
+            if (timeOut) {
+              console.log('request time out!')
+              conn.close()
+              return resolve(false)
+            }
+          }, timeOutMs)
         })
       })
     })

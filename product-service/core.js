@@ -29,9 +29,11 @@ module.exports = {
         try {
           var productIds = rslt.map(r => r._id)
           var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+          if (!promotionInfos) { promotionInfos = [] }
           var giftIds = promotionInfos.filter(i => i.giftId).map(i => i.giftId)
           var gifts = await db.GetProductsByIds(giftIds)
           var reviewScores = await msgBroker.requestReviewScores(productIds)
+          if (!reviewScores) { reviewScores = [] }
           var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
           rslt.map(r => {
             var item = specifics.find(e => {
@@ -113,10 +115,12 @@ module.exports = {
 
           var promotionInfos = await msgBroker.requestPromotionInfos(
             [ rslt._id ])
+          if (!promotionInfos) { promotionInfos = [] }
           var gifts = await db.GetProductsByIds(promotionInfos
             .filter(p => p.giftId).map(p => p.giftId))
           var reviewScores = await msgBroker.requestReviewScores(
             [ rslt._id ])
+          if (!reviewScores) { reviewScores = [] }
           if (promotionInfos.length > 0) {
             rslt.promotionPrice = promotionInfos[0].promotionPrice
             rslt.giftProducts = gifts
@@ -139,9 +143,11 @@ module.exports = {
       .then(async specifics => {
         var productIds = rslt.map(r => r._id)
         var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+        if (!promotionInfos) { promotionInfos = [] }
         var gifts = await db.GetProductsByIds(promotionInfos
           .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(productIds)
+        if (!reviewScores) { reviewScores = [] }
         var specificsSold = await db.GetMultipleSpecificProducts(ids, 'sold')
         rslt.map(r => {
           var item = specifics.find(e => {
@@ -196,9 +202,11 @@ module.exports = {
         var [ products, specifics ] = rslts
         var productIds = products.map(r => r._id)
         var promotionInfos = await msgBroker.requestPromotionInfos(productIds)
+        if (!promotionInfos) { promotionInfos = [] }
         var gifts = await db.GetProductsByIds(promotionInfos
           .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(productIds)
+        if (!reviewScores) { reviewScores = [] }
         products.map(p => {
           var item = specifics.find(e => {
             return e._id.toString() == p._id.toString()
@@ -274,10 +282,12 @@ module.exports = {
       .then(async specifics => {
         var promotionInfos = await msgBroker.requestPromotionInfos(
           [ rslt._id ])
+        if (!promotionInfos) { promotionInfos = [] }
         var gifts = await db.GetProductsByIds(promotionInfos
           .filter(p => p.giftId).map(p => p.giftId))
         var reviewScores = await msgBroker.requestReviewScores(
           [ rslt._id ])
+        if (!reviewScores) { reviewScores = [] }
         if (promotionInfos.length > 0) {
           rslt.promotionPrice = promotionInfos[0].promotionPrice
           rslt.giftProducts = gifts
@@ -344,6 +354,7 @@ module.exports = {
       var productQuantity = specificProducts.specificProducts.length
       if (productQuantity == 0) {
         var watchlistUsers = await msgBroker.requestGetWatchlistUsers([req.body.productId])
+        if (!watchlistUsers) { watchlistUsers = [] }
         var product = await db.GetProduct(req.body.productId)
         msgBroker.produceNotificationRequest(watchlistUsers.map(watchlistUser => {
           return {
