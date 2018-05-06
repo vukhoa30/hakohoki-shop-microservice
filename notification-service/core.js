@@ -120,8 +120,24 @@ module.exports = {
       if (req.authentication.role === 'customer') { 
         return catchUnauthorized(res) 
       }
-      var rslt = await db.GetSubscriptions('commentPosted',
+      var subscriptionProductIds = await db.GetSubscriptions('commentPosted',
         { accountId: req.authentication.accountId })
+      var products = await msgBroker.requestGetProducts(subscriptionProductIds)
+      console.log(products)
+      var rslt = []
+      subscriptionProductIds.forEach(id => {
+        var finder = products.find(p => p._id.toString() == id.toString())
+        if (finder) {
+          //console.log(finder.name)
+          
+          rslt.push({
+            productId: id,
+            productName: finder.name,
+            mainPicture: finder.mainPicture
+          })
+        }
+        else { rslt.push({ productId: r }) }
+      })
       res.json(rslt)
     } catch (e) { catchError(res, e) }
   },
