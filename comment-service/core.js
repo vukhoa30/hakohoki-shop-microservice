@@ -78,11 +78,7 @@ module.exports = {
           .map(e => parseInt(e)))
         var accounts = customers.concat(employees)
       } catch (e) {return catchError(res, e)}
-      //console.log(accounts)
-      //console.log(rslt.map(r=>r.accountId))
       res.json(rslt
-        //.filter(r => { return accounts.find(e => 
-          //e.accountId.toString() == r.accountId.toString()) })
         .map(r => {
           var accountInfo = accounts.find(e => 
             e.accountId.toString() == r.accountId.toString())

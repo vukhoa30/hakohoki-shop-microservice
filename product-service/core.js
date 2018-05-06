@@ -207,18 +207,18 @@ module.exports = {
           else { p.quantity = item.count }
   
           var items = promotionInfos.filter(e => {
-            return e.productId.toString() == r._id.toString()
+            return e.productId.toString() == p._id.toString()
           })
           if (items.length > 0) { 
-            r.promotionPrice = items[0].promotionPrice 
+            p.promotionPrice = items[0].promotionPrice 
             items.map(i => {
               if (i.giftId) {
                 var gift = gifts.find(g => 
                   g._id.toString() == i.giftId.toString())
-                if (!r.giftProducts) {
-                  r.giftProducts = [ gift ]
+                if (!p.giftProducts) {
+                  p.giftProducts = [ gift ]
                 } else {
-                  r.giftProducts.push(gift)
+                  p.giftProducts.push(gift)
                 }
               }
             })

@@ -36,7 +36,7 @@ module.exports = {
       next()
     } catch (e) { catchError(res, e) }
   },
-  getNotification: async (req, res) => {
+  getNotifications: async (req, res) => {
     try {
       var notifications = await db.GetNotifications(req.authentication.accountId)
       var productIds = []
@@ -47,9 +47,6 @@ module.exports = {
       })
       var products = await msgBroker.requestGetProducts(productIds)
       var promotions = await msgBroker.requestGetPromotions(promotionIds)
-      //console.log(products.map(e => e._id))
-      //console.log(notifications.map(e => e.productId))
-      //console.log(promotions)
       notifications.forEach(n => {
         if (n.productId) {
           var finder = products.find(p => p._id.toString() == n.productId.toString())

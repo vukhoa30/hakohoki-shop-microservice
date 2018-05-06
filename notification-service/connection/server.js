@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/', core.authenticate, core.getNotification)
+app.get('/', core.authenticate, core.getNotifications)
 
 app.get('/subscription-comment-posted', core.authenticate, core.getSubscriptionsCommentPosted)
 app.post('/subscription-comment-posted', core.authenticate, core.subscribeCommentPosted)
