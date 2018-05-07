@@ -84,12 +84,14 @@ module.exports = {
   },
   AddSubscription: (type, accountId, subscriptionData) => {
     return new Promise((resolve, reject) => {
-      var newSubscription = models.Subscription({ 
-        type, 
-        accountId, 
-        ...subscriptionData 
-      })
-      newSubscription.save((err, rslt) => {
+      models.Subscription
+      .insertMany(subscriptionData.map(s => {
+        return {
+          type,
+          accountId,
+          productId: s
+        }
+      }), (err, rslt) => {
         if (err) { return reject(err) }
         resolve(rslt)
       })

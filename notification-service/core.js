@@ -146,7 +146,7 @@ module.exports = {
       }
       var rslt = await db.AddSubscription('commentPosted', 
         req.authentication.accountId, 
-        { productId: req.body.productId })
+        req.body)
       res.json({ ok: true })
     } catch (e) { catchError(res, e) }
   },
