@@ -8,10 +8,22 @@ var generateUuid = () => {
          Math.random().toString();
 }
 
-var timeOutMs = 5000
+var timeOutMs = 80
+var checkAlive = async (serviceName) => {
+  return new Promise(r => {
+    return Promise.race([
+      requestAmqp(null, `checkAlive_${serviceName}`),
+      new Promise(r => setTimeout(() => r(false), timeOutMs))
+    ])
+    .then(rslt => { 
+      r(rslt)
+      if (!rslt) console.log(serviceName + ' request timeout.') 
+    })
+  })
+}
+
 var requestAmqp = (msgObject, queue) => {
   return new Promise((resolve, reject) => {
-    var timeOut = true
     amqp.connect(amqpAddress)
     .then(conn => {
       return conn.createChannel()
@@ -22,20 +34,12 @@ var requestAmqp = (msgObject, queue) => {
           ch.consume(q.queue, msg => {
             if (msg.properties.correlationId === corr) {
               resolve(JSON.parse(msg.content.toString()))
-              timeOut = false
               conn.close();
             }
           }, {noAck: true})
           ch.sendToQueue(queue,
             new Buffer(JSON.stringify(msgObject)),
             { correlationId: corr, replyTo: q.queue })
-          setTimeout(() => {
-            if (timeOut) {
-              console.log('request time out!')
-              conn.close()
-              return resolve(false)
-            }
-          }, timeOutMs)
         })
       })
     })
@@ -85,8 +89,10 @@ var produceAmqp = (msgObject, queue) => {
 }
 
 module.exports = {
-  requestPromotionInfos: (productIds) => {
-    return requestAmqp(productIds, 'getPromotionInfos')
+  requestPromotionInfos: async (productIds) => {
+    if (await checkAlive('promotion')) {
+      return requestAmqp(productIds, 'getPromotionInfos')
+    } else { return new Promise(r => r(false)) }
   },
   responseGetProducts: () => {
     var core = require('../core.js')
@@ -106,11 +112,15 @@ module.exports = {
     var db = require('../database.js')
     responseAmqp(db.UpdateSpecificsStatus, 'updateSpecificsStatus')
   },
-  requestReviewScores: (productIds) => {
-    return requestAmqp(productIds, 'getProductsScore')
+  requestReviewScores: async (productIds) => {
+    if (await checkAlive('comment')) {
+      return requestAmqp(productIds, 'getProductsScore')
+    } else { return new Promise(r => r(false)) }
   },
-  requestGetWatchlistUsers: (productIds) => {
-    return requestAmqp(productIds, 'getWatchlistUsers')
+  requestGetWatchlistUsers: async (productIds) => {
+    if (await checkAlive('watchlist')) {
+      return requestAmqp(productIds, 'getWatchlistUsers')
+    } else { return new Promise(r => r(false)) }
   },
   produceEmailRequest: (requests) => {
     return produceAmqp(requests, 'emailRequest')

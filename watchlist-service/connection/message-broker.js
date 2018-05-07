@@ -69,5 +69,8 @@ module.exports = {
   responseGetWatchlistUsers: () => {
     var db = require('../database')
     responseAmqp(db.GetWatchlistUsers, 'getWatchlistUsers')
+  },
+  responseCheckAlive: () => {
+    responseAmqp(() => { return new Promise(r => r(true)) }, 'checkAlive_watchlist')
   }
 }

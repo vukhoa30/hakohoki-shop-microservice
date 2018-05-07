@@ -95,5 +95,8 @@ module.exports = {
   },
   responseGetPromotions: (promotionIds) => {
     responseAmqp(db.GetPromotions, 'getPromotions')
+  },
+  responseCheckAlive: () => {
+    responseAmqp(() => { return new Promise(r => r(true)) }, 'checkAlive_promotion')
   }
 }

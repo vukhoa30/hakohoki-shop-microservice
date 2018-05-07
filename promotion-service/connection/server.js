@@ -25,6 +25,7 @@ app.post('/', core.createPromotion)
 //Message response listener
 broker.responsePromotionInfos()
 broker.responseGetPromotions()
+broker.responseCheckAlive()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

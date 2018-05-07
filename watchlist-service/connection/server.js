@@ -25,6 +25,7 @@ app.delete('/:productId', core.removeFromWatchlist)
 
 //response Amqp
 responseAmqp.responseGetWatchlistUsers()
+responseAmqp.responseCheckAlive()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {

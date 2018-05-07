@@ -102,5 +102,8 @@ module.exports = {
   responseCheckReviewed: () => {
     var db = require('../database')
     return responseAmqp(db.CheckReviewed, 'checkReviewed')
+  },
+  responseCheckAlive: () => {
+    responseAmqp(() => { return new Promise(r => r(true)) }, 'checkAlive_comment')
   }
 }

@@ -24,6 +24,7 @@ app.post('/', core.comment)
 //response amqp
 responseAmqp.responseReviewScores()
 responseAmqp.responseCheckReviewed()
+responseAmqp.responseCheckAlive()
 
 //Running server-------------------------------------------------------------
 server.listen(port, function () {
