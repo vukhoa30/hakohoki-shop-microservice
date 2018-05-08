@@ -389,22 +389,25 @@ module.exports = {
         productIdsAndAmounts.forEach(p => {
           var finder = rslt.filter(r => 
             r.productId.toString() == p.productId.toString())
-          if (finder.length < p.amount) { return reject('amount?') }
+          if (finder.length < p.amount) { return reject(false) }
           for (var i = 0; i < p.amount; i++) {
-            specificProducts.push(finder[i])
+            specificProducts.push({
+              specificId: finder[i]._id,
+              productId: finder[i].productId
+            })
             if (p.giftIds) {
               var ptr = specificProducts[specificProducts.length - 1]
               ptr.specificGiftIds = []
               p.giftIds.forEach(g => {
                 var tmp = rslt.find(r => r.productId.toString() == g && !r.used)
-                if (!tmp) { return reject('shit') }
+                if (!tmp) { return reject(false) }
                 ptr.specificGiftIds.push(tmp._id)
                 tmp.used = true
               })
             }
           }
-          resolve(specificProducts)
         })
+        console.log(specificProducts)
         var specificIds = []
         specificProducts.forEach(s => {
           specificIds.push(s._id)
@@ -421,10 +424,7 @@ module.exports = {
           if (err) { return reject(err) }
           else {
             console.log('updated: ' + rslt.n + ' ' + rslt.nModified)
-            resolve(specifics.map(s => { return {
-              productId: s.productId,
-              specificId: s._id
-            }}))
+            resolve(specificProducts)
           }
         })
       })

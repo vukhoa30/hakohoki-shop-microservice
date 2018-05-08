@@ -117,6 +117,7 @@ module.exports = {
 
       var specificProducts = await msgBroker.requestGetPendingProducts(req.body)
       if (!specificProducts) { return catchError(res, 'insufficient amount') }
+      console.log(specificProducts)
       
       var rslt = await db.CreateBill({
         status: "pending",
@@ -135,7 +136,7 @@ module.exports = {
         res.json({ ok: true, msg: 'cart cleared, order added' })
       }
 
-      var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
+      /*var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
         .filter(p => p.productQuantity >= 1 && p.productQuantity <= 2)
         .map(p => p.productId))
       if (req.body.buyer.accountId) {
@@ -172,7 +173,7 @@ module.exports = {
             amount: i.amount
           }
         }))
-      }
+      }*/
     } catch(e) { catchError(res, e) }
   },
   completeBill: async (req, res) => {
@@ -261,7 +262,6 @@ module.exports = {
       bills.forEach(b => { 
         var employee = employees.find(e => e.accountId === b.seller)
         b.seller = employee
-
         b.specificProducts.map(p => {
           var finder = specificInfos.find(s => 
             s.specificId.toString() == p.id.toString())

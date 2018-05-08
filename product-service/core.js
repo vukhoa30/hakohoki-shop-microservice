@@ -449,7 +449,7 @@ module.exports = {
       specifics.forEach(s => {
         var finder = products.find(p => 
           p._id.toString() == s.productId.toString())
-        s.price = finder.promotionPrice
+        s.price = finder.promotionPrice ? finder.promotionPrice : finder.price
       });
       
       return specifics
