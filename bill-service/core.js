@@ -113,17 +113,16 @@ module.exports = {
         token = req.headers.authorization.split(' ')[1]
       } else { return catchUnauthorized(res) }
       var authentication = await msgBroker.requestAuthenticateCustomer(token)
-      if (!authentication) { return catchUnauthorized(res) }
+      //if (!authentication) { return catchUnauthorized(res) }
 
       var specificProducts = await msgBroker.requestGetPendingProducts(req.body)
       if (!specificProducts) { return catchError(res, 'insufficient amount') }
-      console.log(specificProducts)
       
       var rslt = await db.CreateBill({
         status: "pending",
-        buyer: {
+        buyer: authentication ? {
           accountId: authentication.accountId
-        },
+        } : req.body.buyer,
         specificProducts: specificProducts.map(s => { 
           return { id: s.specificId, price: s.price, giftSpecificIds: s.specificGiftIds }
         }),
