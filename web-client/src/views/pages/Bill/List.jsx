@@ -92,7 +92,7 @@ class BillList extends Component {
             CREATE A BILL
           </button>
         )}
-        <form
+        {/* <form
           className="form-inline"
           style={{ marginTop: 10 }}
           onSubmit={async e => {
@@ -136,76 +136,73 @@ class BillList extends Component {
               <i className="fa fa-search" />
             )}
           </button>
-        </form>
-
+        </form> */}
         <div className="row mt-3">
-          <div
-            className="col-md-6 col-xs-12"
-            style={{ height: 600, overflowY: "auto" }}
-          >
+          <div className="col-md-6 col-xs-12">
             <h3>UPCOMING</h3>
-            {upcoming.err !== null && (
-              <div
-                className="alert alert-danger clickable"
-                role="alert"
-                onClick={() =>
-                  searchForBills("?status=pending", "pending", token)
-                }
-              >
-                COULD NOT LOAD DATA. CLICK TO TRY AGAIN
-              </div>
-            )}
-            {upcoming.isLoading ? (
-              <div className="d-flex justify-content-center mt-5">
-                <Loader />
-              </div>
-            ) : upcoming.data.length > 0 ? (
-              <div className="list-group mt-3">
-                {upcoming.data.map(bill => (
-                  <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
-                ))}
-              </div>
-            ) : (
-              upcoming.err === null && (
-                <div className="d-flex justify-content-center mt-5">
-                  <p style={{ color: "gray" }}>NO BILL FOUND</p>
+            <div style={{ height: 600, overflowY: "auto" }}>
+              {upcoming.err !== null && (
+                <div
+                  className="alert alert-danger clickable"
+                  role="alert"
+                  onClick={() =>
+                    searchForBills("?status=pending", "pending", token)
+                  }
+                >
+                  COULD NOT LOAD DATA. CLICK TO TRY AGAIN
                 </div>
-              )
-            )}
+              )}
+              {upcoming.isLoading ? (
+                <div className="d-flex justify-content-center mt-5">
+                  <Loader />
+                </div>
+              ) : upcoming.data.length > 0 ? (
+                <div className="list-group mt-3">
+                  {upcoming.data.map(bill => (
+                    <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
+                  ))}
+                </div>
+              ) : (
+                upcoming.err === null && (
+                  <div className="d-flex justify-content-center mt-5">
+                    <p style={{ color: "gray" }}>NO BILL FOUND</p>
+                  </div>
+                )
+              )}
+            </div>
           </div>
-          <div
-            className="col-md-6 col-xs-12"
-            style={{ height: 600, overflowY: "auto" }}
-          >
+          <div className="col-md-6 col-xs-12">
             <h3>COMPLETED</h3>
-            {completed.err !== null && (
-              <div
-                className="alert alert-danger clickable"
-                role="alert"
-                onClick={() =>
-                  searchForBills("?status=completed", "completed", token)
-                }
-              >
-                COULD NOT LOAD DATA. CLICK TO TRY AGAIN
-              </div>
-            )}
-            {completed.isLoading ? (
-              <div className="d-flex justify-content-center mt-5">
-                <Loader />
-              </div>
-            ) : completed.data.length > 0 ? (
-              <div className="list-group mt-3">
-                {completed.data.map(bill => (
-                  <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
-                ))}
-              </div>
-            ) : (
-              completed.err === null && (
-                <div className="d-flex justify-content-center mt-5">
-                  <p style={{ color: "gray" }}>NO BILL FOUND</p>
+            <div style={{ height: 600, overflowY: "auto" }}>
+              {completed.err !== null && (
+                <div
+                  className="alert alert-danger clickable"
+                  role="alert"
+                  onClick={() =>
+                    searchForBills("?status=completed", "completed", token)
+                  }
+                >
+                  COULD NOT LOAD DATA. CLICK TO TRY AGAIN
                 </div>
-              )
-            )}
+              )}
+              {completed.isLoading ? (
+                <div className="d-flex justify-content-center mt-5">
+                  <Loader />
+                </div>
+              ) : completed.data.length > 0 ? (
+                <div className="list-group mt-3">
+                  {completed.data.map(bill => (
+                    <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
+                  ))}
+                </div>
+              ) : (
+                completed.err === null && (
+                  <div className="d-flex justify-content-center mt-5">
+                    <p style={{ color: "gray" }}>NO BILL FOUND</p>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
         <div className="row mt-3">

@@ -87,7 +87,7 @@ class ProductList extends Component {
 
     return (
       <div className="container-fluid">
-        <form
+        {/* <form
           className="form-inline"
           style={{ marginTop: 10 }}
           onSubmit={async e => {
@@ -139,7 +139,7 @@ class ProductList extends Component {
               Add product
             </button>
           )}
-        </form>
+        </form> */}
         <div className="card" style={{ padding: 10, marginTop: 10 }}>
           <div className="content">
             <form

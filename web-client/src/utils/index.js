@@ -2,6 +2,15 @@ import { gatewayAddress } from "../config";
 import { stringify } from "query-string";
 import io from "socket.io-client";
 import { chain, transform, reduce } from "lodash";
+import { code as errCode } from "../api/err-code";
+
+const {
+  UNKNOWN_ERROR,
+  CONNECTION_ERROR,
+  FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
+  DATA_NOT_FOUND
+} = errCode;
 
 export const request = (url, method, header, data) => {
   const fullUrl = gatewayAddress + url;
@@ -102,4 +111,21 @@ export const createSocketConnection = (
   socket.on("disconnect", onDisconnect);
 
   return socket;
+};
+
+export const buildNotificationText = (notificationType, additionalData) => {
+  switch (notificationType) {
+    case UNKNOWN_ERROR:
+      return "UNKNOWN ERRORS! TRY AGAIN LATER";
+    case FORBIDDEN:
+      return "YOU ARE NOT AUTHORIZED TO " + additionalData.functionName;
+    case CONNECTION_ERROR:
+      return "COULD NOT CONNECT TO SERVER! PLEASE CHECK YOUR CONNECTION";
+    case DATA_NOT_FOUND:
+      return `NO ${
+        additionalData.dataName ? additionalData.dataName : ""
+      } DATA FOUND`;
+    default:
+      return "UNDEFINED ERRORS! TRY AGAIN LATER";
+  }
 };

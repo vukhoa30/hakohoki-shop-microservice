@@ -82,6 +82,8 @@ const mapStateToProps = state => {
     routes = [{ name: "Bill" }, { name: "Detail" }];
   } else if (pathname.includes("promotion")) {
     routes = [{ name: "Promotion" }];
+  } else if (pathname.includes("subscribe-product")) {
+    routes = [{ name: "Subscription" }];
   } else {
     routes = [{ name: "Page not found" }];
   }

@@ -329,7 +329,7 @@ class Promotion extends Component {
                     <a
                       key={"promotion-" + index}
                       href="javascript:;"
-                      className={`list-group-item list-group-item-action flex-column align-items-start ${
+                      className={`row list-group-item list-group-item-action flex-column align-items-start ${
                         this.state.selectedPromotion === promotion
                           ? "active"
                           : ""
@@ -338,14 +338,23 @@ class Promotion extends Component {
                         this.setState({ selectedPromotion: promotion })
                       }
                     >
-                      <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1" style={{ fontWeight: "bold" }}>
-                          {promotion.name}
-                        </h5>
-                        <small>
-                          {formatTime(promotion.start_at)} -{" "}
-                          {formatTime(promotion.end_at)}
-                        </small>
+                      <div className="col-xs-3">
+                        <img
+                          src="assets/img/promotion.png"
+                          alt=""
+                          style={{ width: "100%", height: "auto" }}
+                        />
+                      </div>
+                      <div className="col-xs-9">
+                        <div className="d-flex w-100 justify-content-between">
+                          <h5 className="mb-1" style={{ fontWeight: "bold" }}>
+                            {promotion.name}
+                          </h5>
+                          <small>
+                            {formatTime(promotion.start_at)} -{" "}
+                            {formatTime(promotion.end_at)}
+                          </small>
+                        </div>
                       </div>
                     </a>
                   ))}

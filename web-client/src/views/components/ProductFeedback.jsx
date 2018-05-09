@@ -1,11 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { formatTime, parseToObject } from "../../../utils";
-import ProductShowcase from "../../components/ProductShowcase";
-import Input from "../../components/Input";
-import Loader from "../../components/Loader";
+import { formatTime, parseToObject } from "../../utils";
+import { withRouter } from "react-router";
+import ProductShowcase from "./ProductShowcase";
+import Input from "./Input";
+import Loader from "./Loader";
+import Comment from "./Comment";
 import { Field, reduxForm } from "redux-form";
-import { loadProductFeedback, giveAnswer, toast } from "../../../api";
+import { loadProductFeedback, giveAnswer, toast } from "../../api";
 class ProductFeedback extends Component {
   constructor(props) {
     super(props);
@@ -26,8 +28,9 @@ class ProductFeedback extends Component {
       this.props.location !== nextProps.location
     ) {
       const { feedback, loadProductFeedback, id, location, search } = nextProps;
-      const { selected, reload } = search;
-      if (this.props.id !== nextProps.id || reload) loadProductFeedback(id);
+      const { selected, reloadFeedback } = search;
+      if (this.props.id !== nextProps.id || reloadFeedback)
+        loadProductFeedback(id);
       if (selected) this.setState({ selectedCommentId: selected });
     }
   }
@@ -208,7 +211,7 @@ class ProductFeedback extends Component {
           </div>
         </div>
 
-        <button
+        {/* <button
           className="btn btn-primary mb-3"
           onClick={() =>
             history.push({
@@ -217,9 +220,9 @@ class ProductFeedback extends Component {
           }
         >
           View details
-        </button>
+        </button> */}
         <div className="row">
-          <div className="col-md-5 col-xs-12">
+          <div className="col-md-6 col-xs-12">
             <h3 className="mt-2 mb-2">COMMENTS</h3>
             <div className="list-group">
               <div
@@ -246,38 +249,20 @@ class ProductFeedback extends Component {
                     .filter(comment => !comment.parentId)
                     .reverse()
                     .map((comment, index) => (
-                      <a
-                        ref={ref => (this.comments[comment.id] = ref)}
-                        key={"comment-" + index}
-                        href="javascript:;"
-                        className={`list-group-item list-group-item-action flex-column align-items-start ${
-                          this.state.selectedCommentId === comment.id
-                            ? "active"
-                            : ""
-                        }`}
-                        onClick={
-                          () =>
-                            history.push({
-                              ...location,
-                              search: "?selected=" + comment.id
-                            })
-                          //this.setState({ selectedCommentId: comment.id })
+                      <Comment
+                        comment={comment}
+                        key={"comment-" + comment.id}
+                        selected={comment.id === this.state.selectedCommentId}
+                        select={() =>
+                          this.setState({ selectedCommentId: comment.id })
                         }
-                      >
-                        <div className="d-flex w-100 justify-content-between">
-                          <h5 className="mb-1" style={{ fontWeight: "bold" }}>
-                            {comment.userName}
-                          </h5>
-                          <small>{formatTime(comment.createdAt)}</small>
-                        </div>
-                        <p className="mb-1">{comment.content}</p>
-                      </a>
+                      />
                     ))}
                 </div>
               )}
             </div>
           </div>
-          <div className="col-md-7 col-xs-12">
+          <div className="col-md-6 col-xs-12">
             <div>
               <h3 className="mt-2 mb-2">ANSWERS</h3>
               <div
@@ -299,7 +284,7 @@ class ProductFeedback extends Component {
                   <div
                     className="card card-body border-0"
                     style={{
-                      height: 550,
+                      height: 600,
                       overflowY: "auto",
                       opacity:
                         isFeedbackLoading || this.state.submittingAnswer
@@ -314,57 +299,17 @@ class ProductFeedback extends Component {
                             comment.parentId === this.state.selectedCommentId
                         )
                         .map(comment => (
-                          <li
+                          <Comment
+                            comment={comment}
                             key={"comment-" + comment.id}
-                            className="list-group-item list-group-item-action flex-column align-items-start"
-                            style={{
-                              borderRadius: 0,
-                              borderWidth: 0,
-                              borderLeftWidth: 2,
-                              borderColor:
-                                comment.userRole === "customer"
-                                  ? "blue"
-                                  : "green"
-                            }}
-                          >
-                            <div className="d-flex w-100 justify-content-between">
-                              <div className="row">
-                                <div className="col-xs-6">
-                                  <h5
-                                    className="mb-1"
-                                    style={{ fontWeight: "bold" }}
-                                  >
-                                    {comment.userName}
-                                  </h5>
-                                </div>
-                                <div className="col-xs-6 text-right">
-                                  <h5
-                                    style={{
-                                      color:
-                                        comment.userRole === "manager"
-                                          ? "red"
-                                          : comment.userRole === "receptionist"
-                                            ? "orange"
-                                            : comment.userRole === "employee"
-                                              ? "lightblue"
-                                              : "green"
-                                    }}
-                                  >
-                                    {comment.userRole}
-                                  </h5>
-                                </div>
-                              </div>
-                              <small>{formatTime(comment.createdAt)}</small>
-                            </div>
-                            <p className="mb-1">{comment.content}</p>
-                          </li>
+                          />
                         ))}
                       {/* <div className="d-flex justify-content-center">
                             <i className="fa fa-spinner fa-spin" />
                           </div> */}
                     </div>
                   </div>
-                  <form
+                  {/* <form
                     onSubmit={async e => {
                       e.preventDefault();
                       this.setState({ submittingAnswer: true });
@@ -390,7 +335,7 @@ class ProductFeedback extends Component {
                         disabled={this.state.submittingAnswer}
                       />
                     </div>
-                  </form>
+                  </form> */}
                 </div>
               )}
             </div>
@@ -501,4 +446,6 @@ const mapDispatchToProps = dispatch => ({
   loadProductFeedback: productId => dispatch(loadProductFeedback(productId)),
   toast: (message, level) => dispatch(toast(message, level))
 });
-export default connect(mapStateToProps, mapDispatchToProps)(ProductFeedback);
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(ProductFeedback)
+);

@@ -4,7 +4,7 @@ import { ConnectedRouter } from "react-router-redux";
 import { Redirect, Switch } from "react-router-dom";
 import { Route } from "react-router";
 import { loadUserInfo } from "../../api";
-import Toast from "../components/Notification";
+import Toast from "../components/Toast";
 import Main from "./Main";
 import Login from "./Login";
 import Forbidden from "./Forbidden";

@@ -346,7 +346,7 @@ class AccountManager extends Component {
                       <option defaultValue value="employee">
                         Employee
                       </option>
-                      <option value="receptionist">Receiptionist</option>
+                      <option value="receptionist">Receptionist</option>
                       <option value="manager">Manager</option>
                     </Field>
                   </div>
@@ -373,7 +373,10 @@ class AccountManager extends Component {
 }
 const mapStateToProps = state => ({
   token: state.user.token,
-  account: state.account
+  account: state.account,
+  initialValues: {
+    role: 'employee'
+  }
 });
 const mapDispatchToProps = dispatch => ({
   toast: (message, level) => dispatch(toast(message, level)),

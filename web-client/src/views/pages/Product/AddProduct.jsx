@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Field, reduxForm, FieldArray } from "redux-form";
 import { connect } from "react-redux";
 import Input from "../../components/Input";
-import Notification from "../../components/Notification";
 import { addProduct, toast, loadProductData } from "../../../api";
 import { parseToObject, request } from "../../../utils";
 import Loader from "../../components/Loader";
