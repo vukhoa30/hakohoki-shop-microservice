@@ -29,7 +29,7 @@ function reducer(state = initialState, action) {
       };
       break;
     case REMOVE_ALL:
-      nextState = { ...state, list: [] };
+      nextState = { ...state, list: [], status: 'INIT' };
       break;
     case MODIFY_CART_PRODUCT:
       const cartProductIndex = state.list.findIndex(

@@ -17,11 +17,14 @@ import {
   CATEGORY_LOADING_FAILED,
   SELECT_PRODUCT,
   SELECT_CATEGORY,
+  REMOVE_PRODUCT_SESSION,
   PRODUCT_DATA_LOADING,
   PRODUCT_DATA_LOADED,
   PRODUCT_DATA_LOADING_FAILED,
   PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
   REVIEW_PRODUCT,
+  PUSH_NEW_FEEDBACK,
+  REMOVE_FEEDBACK_SESSION,
   FEEDBACK_LOADING,
   FEEDBACK_LOADED,
   FEEDBACK_LOADING_FAILED,
@@ -64,6 +67,19 @@ function updateServerAddress(host, port, isLoggedIn, accountId) {
       getAction(UPDATE_SERVER_ADDRESS, { gatewayHost: host, gatewayPort: port })
     );
   };
+}
+
+function removeSession(type){
+  return dispatch => {
+    switch(type){
+      case 'product_detail':
+        dispatch(getAction(REMOVE_PRODUCT_SESSION));
+        break;
+      case 'answer':
+        dispatch(getAction(REMOVE_FEEDBACK_SESSION));
+        break;
+    }
+  }
 }
 
 function navigate(path, params) {
@@ -386,7 +402,9 @@ function selectProduct(productId) {
   return dispatch => {
     dispatch(getAction(SELECT_PRODUCT, { productId }));
     dispatch(
-      navigator.router.getActionForPathAndParams("ProductDetail/Information")
+      navigator.router.getActionForPathAndParams(
+        "ProductDetail/Information"
+      )
     );
   };
 }
@@ -900,6 +918,7 @@ function makeOrder(productList, token) {
 module.exports = {
   updateServerAddress,
   navigate,
+  removeSession,
   connectToServer,
   authenticate,
   enroll,

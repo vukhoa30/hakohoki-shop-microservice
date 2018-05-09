@@ -68,12 +68,12 @@ class Notification extends Component {
         break;
       case "goodsReceipt":
         title = "Product available";
-        content = `The product ${productName} is available now`;
+        content = `The product "${productName}" is available now`;
         callback = () => selectProduct(productId);
         break;
       case "commentReplied":
         title = "Comment replied!";
-        content = `Your comment about product ${productName} with ID "${productId}" has been replied`;
+        content = `Your comment about product "${productName}" has been replied`;
         callback = () => viewAnswers(productId, commentId);
         break;
       case "promotionCreated":
@@ -82,19 +82,19 @@ class Notification extends Component {
         break;
       case "productBought":
         title = "New order has been made!";
-        content = `You have made an order for product ${productName}`;
+        content = `You have made an order for product "${productName}"`;
         break;
     }
 
     return (
-      <Body>
-        <TouchableOpacity
-          onPress={() => {
-            callback();
-            if (!notification.read)
-              makeNotificationAsRead(token, notification.id);
-          }}
-        >
+      <TouchableOpacity
+        onPress={() => {
+          callback();
+          if (!notification.read)
+            makeNotificationAsRead(token, notification.id);
+        }}
+      >
+        <Body>
           <View style={{ flexDirection: "row" }}>
             <Icon name="ios-notifications" style={{ color: "orange" }} />
             <AppText style={notification.read ? {} : { fontWeight: "bold" }}>
@@ -111,8 +111,8 @@ class Notification extends Component {
           >
             {formatTime(notification.createdAt)}
           </AppText>
-        </TouchableOpacity>
-      </Body>
+        </Body>
+      </TouchableOpacity>
     );
   }
 

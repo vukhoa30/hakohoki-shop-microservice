@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, Dimensions } from "react-native";
 import {
   Container,
   Header,
@@ -28,6 +28,9 @@ import AppButton from "../components/AppButton";
 import AppProductFooter from "../components/AppProductFooter";
 import { loadProductInformation } from "../../api";
 import { currencyFormat, alert, confirm } from "../../utils";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+
+const { width } = Dimensions.get("window");
 
 class ProductInformation extends Component {
   static navigationOptions = {
@@ -36,8 +39,74 @@ class ProductInformation extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      activeSlide: 0,
+      pictures: []
+    };
     const { loadProductInformation, token, productId } = this.props;
     loadProductInformation(productId, token);
+  }
+
+  _renderItem = ({ item, index }) => {
+    return (
+      <Image
+        source={{
+          uri:
+            item && item !== ""
+              ? item
+              : "https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801"
+        }}
+        style={{
+          height: "100%",
+          width: "100%",
+          resizeMode: "stretch"
+        }}
+      />
+    );
+  };
+
+  componentWillReceiveProps(nextProps) {
+    if (
+      this.props.status !== nextProps.status &&
+      nextProps.status === "LOADED"
+    ) {
+      const { data } = nextProps;
+      const { mainPicture, additionPicture } = data;
+      console.log(data);
+      this.setState({
+        pictures: [mainPicture].concat(additionPicture ? additionPicture : [])
+      });
+    }
+  }
+
+  get pagination() {
+    const { activeSlide, pictures } = this.state;
+    return (
+      <Pagination
+        carouselRef={this._carousel}
+        dotsLength={pictures.length}
+        activeDotIndex={activeSlide}
+        containerStyle={{
+          backgroundColor: "transparent",
+          position: "absolute",
+          bottom: 0,
+          right: 30
+        }}
+        dotStyle={{
+          width: 10,
+          height: 10,
+          borderRadius: 25,
+          backgroundColor: "red"
+        }}
+        inactiveDotStyle={{
+          width: 10,
+          height: 10,
+          backgroundColor: "white"
+        }}
+        inactiveDotOpacity={1}
+        inactiveDotScale={1}
+      />
+    );
   }
 
   render() {
@@ -85,8 +154,71 @@ class ProductInformation extends Component {
 
     return (
       <Container>
-        <Content>
-          <Card style={{ flex: 1 }}>
+        <Content style={{ backgroundColor: "#eee" }}>
+          {data !== null && (
+            <View
+              style={[
+                {
+                  width: width,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 300
+                }
+              ]}
+            >
+              <Carousel
+                ref={c => {
+                  this._carousel = c;
+                }}
+                data={this.state.pictures}
+                renderItem={this._renderItem.bind(this)}
+                sliderWidth={width}
+                itemWidth={width / 2}
+                onSnapToItem={slideIndex =>
+                  this.setState({ activeSlide: slideIndex })
+                }
+                layout={"default"}
+                firstItem={0}
+                autoplay={true}
+                loop={true}
+                autoplayInterval={2000}
+              />
+              {this.pagination}
+            </View>
+          )}
+          <Card
+            style={{
+              width: "100%",
+              padding: 10,
+              backgroundColor: "white",
+              borderRadius: 0,
+              shadowOffset: {
+                width: 1,
+                height: 1
+              },
+              marginTop: 0
+            }}
+          >
+            {/* 
+            <Text note>Guarantee {data.guarantee} months</Text>
+            <AppText note small style={{ opacity: data.quantity > 0 ? 1 : 0 }}>
+              Quantity: {data.quantity}
+            </AppText> */}
+            <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+              {data.name}
+            </Text>
+            <Text
+              style={{
+                fontSize: 20,
+                color: "red"
+              }}
+            >
+              {currencyFormat(data.price)}
+            </Text>
+            {/* <Text style={{ fontWeight: "bold" }}>Description</Text>
+            <Text>{data.description}</Text> */}
+          </Card>
+          {/* <Card style={{ flex: 1 }}>
             {data.sold5OrOver && (
               <Image
                 source={require("../../resources/images/hot-sale.png")}
@@ -114,60 +246,8 @@ class ProductInformation extends Component {
                 }}
               />
             )}
-            <CardItem>
-              <Left>
-                <Body>
-                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-                    {data.name}
-                  </Text>
-                  <Text note>Guarantee {data.guarantee} months</Text>
-                  <AppText
-                    note
-                    small
-                    style={{ opacity: data.quantity > 0 ? 1 : 0 }}
-                  >
-                    Quantity: {data.quantity}
-                  </AppText>
-                </Body>
-              </Left>
-            </CardItem>
-            <CardItem>
-              <Body>
-                <Image
-                  source={{
-                    uri:
-                      data.mainPicture && data.mainPicture !== ""
-                        ? data.mainPicture
-                        : "https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801"
-                  }}
-                  style={{
-                    height: 350,
-                    width: "100%",
-                    flex: 1,
-                    resizeMode: "stretch"
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 30,
-                    fontWeight: "bold",
-                    alignSelf: "center",
-                    marginTop: 20,
-                    color: "red"
-                  }}
-                >
-                  {currencyFormat(data.price)}
-                </Text>
-              </Body>
-            </CardItem>
-            <CardItem>
-              <Body>
-                <Text style={{ fontWeight: "bold" }}>Description</Text>
-                <Text>{data.description}</Text>
-              </Body>
-            </CardItem>
-          </Card>
-          {data.additionPicture && data.additionPicture.length > 0 ? (
+          </Card> */}
+          {/* {data.additionPicture && data.additionPicture.length > 0 ? (
             <Card>
               <CardItem header>
                 <Text>Other pictures</Text>
@@ -193,35 +273,55 @@ class ProductInformation extends Component {
                 </Body>
               </CardItem>
             </Card>
-          ) : null}
-          {data.specifications && (
-            <Card>
-              <CardItem header>
-                <Text>Specifications</Text>
-              </CardItem>
-              <CardItem>
-                <Body>
-                  <View style={{ width: "100%" }}>
-                    {Object.keys(data.specifications).map(key => (
-                      <Grid
-                        key={"specification-item-" + key}
-                        style={{ marginVertical: 5 }}
+          ) : null} */}
+          <Card
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              marginTop: 10,
+              borderRadius: 0,
+              padding: 10
+            }}
+          >
+            <AppText style={{ fontWeight: "bold" }}>PRODUCT DETAIL</AppText>
+            <AppText small color="gray">
+              {data.description}
+            </AppText>
+            {data.specifications && (
+              <View>
+                <View style={{ width: "100%", marginTop: 10, borderWidth: 1 }}>
+                  {Object.keys(data.specifications).map(key => (
+                    <Grid
+                      key={"specification-item-" + key}
+                      style={{
+                        padding: 0,
+                        margin: 0
+                      }}
+                    >
+                      <Col
+                        style={{
+                          borderRightWidth: 1,
+                          borderBottomWidth: 1,
+                          backgroundColor: "#eee",
+                          padding: 10,
+                          margin: 0
+                        }}
                       >
-                        <Col>
-                          <AppText small style={{ fontWeight: "bold" }}>
-                            {key}
-                          </AppText>
-                        </Col>
-                        <Col>
-                          <AppText small>{data.specifications[key]}</AppText>
-                        </Col>
-                      </Grid>
-                    ))}
-                  </View>
-                </Body>
-              </CardItem>
-            </Card>
-          )}
+                        <AppText small style={{ fontWeight: "bold" }}>
+                          {key}
+                        </AppText>
+                      </Col>
+                      <Col
+                        style={{ padding: 10, margin: 0, borderBottomWidth: 1 }}
+                      >
+                        <AppText small>{data.specifications[key]}</AppText>
+                      </Col>
+                    </Grid>
+                  ))}
+                </View>
+              </View>
+            )}
+          </Card>
         </Content>
         <AppProductFooter />
       </Container>

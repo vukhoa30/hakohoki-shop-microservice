@@ -25,6 +25,8 @@ import PromotionDetail from "../views/screens/PromotionDetail";
 import WatchList from "../views/screens/WatchList";
 import NotificationComponent from "../views/screens/Notification";
 import TabBarIcon from "../views/components/TabBarIcon";
+import CartIcon from "../views/components/CartIcon";
+import BackButton from "../views/components/BackButton";
 import { Icon } from "native-base";
 
 const themeColor = "#BE2E11";
@@ -42,6 +44,7 @@ const ProductDetail = TabNavigator(
     }
   },
   {
+    initialRouteName: "Information",
     tabBarComponent: TabBarTop,
     tabBarPosition: "top",
     tabBarOptions: {
@@ -236,13 +239,10 @@ const rootNavigator = StackNavigator(
         headerTintColor: "white",
         headerRight: (
           <View style={{ flexDirection: "row" }}>
-            <Icon
-              name="cart"
-              style={{ marginRight: 20, color: "white" }}
-              onPress={() => navigation.navigate("Cart")}
-            />
+            <CartIcon />
           </View>
-        )
+        ),
+        headerLeft: <BackButton type="product_detail" navigation={navigation} />
       })
     },
 
