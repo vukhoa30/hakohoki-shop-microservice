@@ -14,12 +14,31 @@ module.exports = {
       .returning('id')
       .then(id => {
         return db('products_prices').insert(
-          promotion.products.map(product => {
-            product.promotion_id = id[0];
-            return product;
+          promotion.products
+          .filter(product => product.new_price)
+          .map(product => {
+            return {
+              promotion_id: id[0],
+              product_id: product.product_id,
+              new_price: product.new_price
+            }
           })
-        ).then(rslt => {
+        )
+        .then(() => {
+          var gifts = []
+          promotion.products.forEach(product => {
+            if (product.gift_ids) {
+              product.gift_ids.forEach(giftId => {
+                gifts.push({
+                  promotion_id: id[0],
+                  product_id: product.product_id,
+                  gift_id: giftId
+                })
+              })
+            }
+          });
           resolve(id[0])
+          return db('products_gifts').insert(gifts)
         })
       })
       .catch(e => { console.log(e);reject(e) });

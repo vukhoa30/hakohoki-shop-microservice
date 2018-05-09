@@ -8,12 +8,6 @@ var client = redis.createClient(redisConnection)
 
 const CACHE_CURRENT_PROMOTION = 'currentPromotion'
 
-//chỉ chạy 1 promise
-var typicalResponse = (res, func) => {
-  func.then(rslt => res.json(rslt))
-  .catch(err => catchError(res, err));
-}
-
 var catchError = (res, err) => {
   console.log(err)
   res.status(500);
@@ -41,29 +35,29 @@ module.exports = {
       var allCustomers
       if (req.body.sendNotification || req.body.sendEmail) {
         allCustomers = await msgBroker.requestGetAllCustomers()
-      }
-      if (req.body.sendNotification) {
-        msgBroker.produceNotificationRequest(
-          allCustomers.map(customer => {
-            return {
-              type: 'promotionCreated',
-              accountId: customer.accountId,
-              promotionId,
-              promotionName: req.body.name
-            }
-          })
-        )
-      }
-      if (req.body.sendEmail) {
-        msgBroker.produceEmailRequest(
-          allCustomers.map(customer => {
-            return {
-              type: 'promotionCreated',
-              email: customer.email,
-              promotionName: req.body.name
-            }
-          })
-        )
+        if (req.body.sendNotification) {
+          msgBroker.produceNotificationRequest(
+            allCustomers.map(customer => {
+              return {
+                type: 'promotionCreated',
+                accountId: customer.accountId,
+                promotionId,
+                promotionName: req.body.name
+              }
+            })
+          )
+        }
+        if (req.body.sendEmail) {
+          msgBroker.produceEmailRequest(
+            allCustomers.map(customer => {
+              return {
+                type: 'promotionCreated',
+                email: customer.email,
+                promotionName: req.body.name
+              }
+            })
+          )
+        }
       }
 
       res.json({ok: true})
@@ -101,8 +95,5 @@ module.exports = {
       res.json(promotions);
     })
     .catch(e => catchError(res, e))
-  },
-  getNewPrices: (req, res) => {
-    typicalResponse(res, db.GetNewPrice(req.body.productIds));
   }
 }
