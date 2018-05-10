@@ -115,7 +115,7 @@ module.exports = {
       var authentication = await msgBroker.requestAuthenticateCustomer(token)
       //if (!authentication) { return catchUnauthorized(res) }
 
-      var specificProducts = await msgBroker.requestGetPendingProducts(req.body)
+      var specificProducts = await msgBroker.requestGetPendingProducts(req.body.products)
       if (!specificProducts) { return catchError(res, 'insufficient amount') }
       
       var rslt = await db.CreateBill({
