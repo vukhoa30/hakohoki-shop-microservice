@@ -9,6 +9,7 @@ import {
   FINISH_MAKING_ORDER
 } from "../actions";
 import { remove } from "lodash";
+import store from "../utils/cache-store";
 
 const initialState = {
   status: "INIT",
@@ -18,10 +19,13 @@ const initialState = {
 function reducer(state = initialState, action) {
   let nextState = state;
   const { type, data, productId, number, list, addMore } = action;
-
+  let needValidateCart = true;
   switch (type) {
     case ADD_TO_CART:
-      nextState = { list: state.list.concat({ ...data, amount: number }) };
+      nextState = {
+        ...state,
+        list: state.list.concat({ ...data, amount: number })
+      };
       break;
     case REMOVE_FROM_CART:
       nextState = {
@@ -29,7 +33,7 @@ function reducer(state = initialState, action) {
       };
       break;
     case REMOVE_ALL:
-      nextState = { ...state, list: [], status: 'INIT' };
+      nextState = { ...state, list: [], status: "INIT" };
       break;
     case MODIFY_CART_PRODUCT:
       const cartProductIndex = state.list.findIndex(
@@ -63,6 +67,13 @@ function reducer(state = initialState, action) {
         status: "LOADED"
       };
       break;
+    default:
+      needValidateCart = false;
+  }
+  if (needValidateCart) {
+    console.log('Saved to cache')
+    console.log(JSON.stringify(nextState.list))
+    store.setCartList(nextState.list);
   }
 
   return nextState;

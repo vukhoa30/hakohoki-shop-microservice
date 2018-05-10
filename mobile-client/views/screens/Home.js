@@ -249,7 +249,7 @@ class Home extends Component {
               height: 500
             }}
           >
-            <List>
+            <List style={{ marginBottom: 0 }}>
               <ListItem itemHeader first>
                 <Body>
                   <AppText note>LATEST PRODUCT</AppText>

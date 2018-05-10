@@ -79,7 +79,7 @@ class Catalog extends Component {
 
   async search(keyWords) {
     if (this.state.selectedCategory === "none")
-      return alert("Error", "Please select a category");
+      return alert("error", "Please select a category");
     const { selectedCategory: category } = this.state;
     const q = keyWords === "" ? undefined : keyWords;
     this.setState({ productStatus: "LOADING", list: [], q });

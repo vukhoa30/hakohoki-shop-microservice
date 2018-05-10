@@ -22,14 +22,22 @@ class CartIcon extends Component {
           onPress={() => navigate("Cart")}
         />
         {productCount > 0 && (
-          <Badge
-            warning
-            style={{ position: "absolute", right: 5, top: -10, padding: 0, zIndex: 100 }}
+          <View
+            style={{
+              position: "absolute",
+              right: 5,
+              top: -10,
+              padding: 2,
+              paddingHorizontal: 7,
+              zIndex: 100,
+              backgroundColor: "orange",
+              borderRadius: 25
+            }}
           >
             <AppText style={{ fontSize: 10, color: "red", fontWeight: "bold" }}>
               {productCount}
             </AppText>
-          </Badge>
+          </View>
         )}
       </View>
     );
@@ -37,12 +45,14 @@ class CartIcon extends Component {
 }
 
 const mapStateToProps = state => ({
-  productCount: state.cart.list.length
+  productCount: state.cart.list.reduce(
+    (result, cart) => result + cart.amount,
+    0
+  )
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  navigate: (path) => dispatch(navigate(path))
+const mapDispatchToProps = dispatch => ({
+  navigate: path => dispatch(navigate(path))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(CartIcon)
-
+export default connect(mapStateToProps, mapDispatchToProps)(CartIcon);

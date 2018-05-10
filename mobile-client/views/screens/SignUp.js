@@ -24,11 +24,11 @@ class SignUp extends Component {
 
         if (submitSucceeded) {
 
-            alert('Success', 'Account created! Activation code was sent to your email')
+            alert('success', 'Account created! Activation code was sent to your email')
 
         } else if (submitFailed && error) {
 
-            alert('Error', error)
+            alert('error', error)
             clearSubmitErrors()
 
         }

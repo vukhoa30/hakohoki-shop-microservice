@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { View, ScrollView, Dimensions } from "react-native";
-import { setCart, loadCart, makeOrder } from "../../api";
+import { setCart, loadCart, makeOrder, selectProduct } from "../../api";
 import {
   Container,
   Content,
@@ -16,7 +16,8 @@ import {
   FooterTab,
   Footer,
   Spinner,
-  Header
+  Header,
+  Badge
 } from "native-base";
 import AppText from "../components/AppText";
 import NumberPicker from "../components/NumberPicker";
@@ -37,14 +38,14 @@ class Cart extends Component {
   }
 
   render() {
-    const { setCart, totalPrice, list, token, status, makeOrder } = this.props;
+    const { setCart, totalPrice, list, token, status, makeOrder, selectProduct } = this.props;
     return (
       <Container>
-        {status === "LOADING" && (
+        {/* {status === "LOADING" && (
           <View style={{ width: "100%", alignItems: "center" }}>
             <Spinner />
           </View>
-        )}
+        )} */}
         <Content>
           <NumberPicker
             product={this.state.modifiedProduct}
@@ -60,10 +61,7 @@ class Cart extends Component {
               renderRow={product => (
                 <ListItem
                   onPress={() =>
-                    this.setState({
-                      showPickerDialog: true,
-                      modifiedProduct: product
-                    })
+                    selectProduct(product._id)
                   }
                 >
                   <Thumbnail
@@ -76,9 +74,38 @@ class Cart extends Component {
                     <AppText color="red">
                       {currencyFormat(product.price)}
                     </AppText>
-                    <AppText small note>
+                    {/* <AppText small note>
                       Quantity: {product.amount}
-                    </AppText>
+                    </AppText> */}
+                    <View style={{ flexDirection: "row", marginLeft: 20 }}>
+                      <AppText
+                        style={{ fontSize: 20 }}
+                        note
+                        onPress={() => {
+                          setCart(token, product, "UPDATE", product.amount + 1);
+                        }}
+                      >
+                        +
+                      </AppText>
+                      <AppText style={{ fontSize: 20 }}>
+                        {product.amount}
+                      </AppText>
+                      <AppText
+                        style={{ fontSize: 20 }}
+                        note
+                        onPress={() => {
+                          if (product.amount > 1)
+                            setCart(
+                              token,
+                              product,
+                              "UPDATE",
+                              product.amount - 1
+                            );
+                        }}
+                      >
+                        -
+                      </AppText>
+                    </View>
                   </Body>
                   <Right>
                     <Icon
@@ -129,24 +156,20 @@ class Cart extends Component {
               <Button
                 full
                 primary
-                disabled={list.length === 0 || status === 'ORDERING'}
+                disabled={list.length === 0 || status === "ORDERING"}
                 small
                 iconLeft
                 onPress={() =>
                   makeOrder(
-                    list.map(
-                      product => ({
-                        productId: product._id,
-                        amount: product.amount
-                      }),
-                    ),
+                    list.map(product => ({
+                      productId: product._id,
+                      amount: product.amount
+                    })),
                     token
                   )
                 }
               >
-                {
-                  status === 'ORDERING' && <Spinner />
-                }
+                {status === "ORDERING" && <Spinner />}
                 <AppText>CHECK OUT</AppText>
               </Button>
             </View>
@@ -173,7 +196,8 @@ const mapDispatchToProps = dispatch => ({
   setCart: (token, product, type, amount) =>
     dispatch(setCart(token, product, type, amount)),
   loadCart: token => dispatch(loadCart(token)),
-  makeOrder: (productList, token) => dispatch(makeOrder(productList, token))
+  makeOrder: (productList, token) => dispatch(makeOrder(productList, token)),
+  selectProduct: productId => dispatch(selectProduct(productId))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cart);

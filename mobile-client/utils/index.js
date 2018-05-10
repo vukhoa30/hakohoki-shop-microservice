@@ -1,6 +1,7 @@
 import { gatewayHost, gatewayPort } from "../config";
 import { stringify } from "query-string";
 import { AlertAndroid, Alert, Platform } from "react-native";
+import { Toast } from "native-base";
 import io from "socket.io-client";
 
 var gatewayAddress = "http://" + gatewayHost + ":" + gatewayPort;
@@ -30,9 +31,13 @@ function createSocketConnection(
   return socket;
 }
 
-function alert(title, content) {
-  if (Platform.OS === "ios") AlertIOS.alert(title, content);
-  else Alert.alert(title, content);
+function alert(type, content) {
+  Toast.show({
+    text: content,
+    buttonText: "OK",
+    position: "bottom",
+    type: type === 'error' ? 'danger' : type
+  });
 }
 
 function confirm(title, content, callback) {

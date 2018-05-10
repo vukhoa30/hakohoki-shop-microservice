@@ -2,33 +2,21 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import thunk from "redux-thunk";
 import { reactNavigationReduxMiddleware } from "./api/middleware";
-import AppNavigation from "./views/screens/AppNavigation";
-import Loading from "./views/screens/Loading";
+import Container from "./views/screens/Container";
 import appReducer from "./reducers";
 import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import { createLogger } from "redux-logger";
 import { disconnect } from "./api";
+import { Root } from "native-base";
 
 const store = createStore(
   appReducer,
-  //applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.cart }))
-  applyMiddleware(reactNavigationReduxMiddleware, thunk)
+  applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.product }))
+  //applyMiddleware(reactNavigationReduxMiddleware, thunk)
 );
 
 export default class App extends React.Component {
-  state = {
-    appLoaded: false
-  };
-
-  async componentWillMount() {
-    await Expo.Font.loadAsync({
-      Roboto: require("native-base/Fonts/Roboto.ttf"),
-      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf")
-    });
-    this.setState({ appLoaded: true });
-  }
-
   componentWillUnmount() {
     disconnect();
   }
@@ -36,7 +24,9 @@ export default class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        {this.state.appLoaded ? <AppNavigation /> : <Loading />}
+        <Root>
+          <Container />
+        </Root>
       </Provider>
     );
   }

@@ -18,7 +18,7 @@ import {
   Grid,
   Col,
   Icon,
-  Spinner
+  Spinner,
 } from "native-base";
 import AppText from "./AppText";
 import NumberPicker from "./NumberPicker";
@@ -52,16 +52,41 @@ class AppProductFooter extends Component {
           product={product}
           isVisible={this.state.showPickerDialog}
           closeDialog={() => this.setState({ showPickerDialog: false })}
-          submit={number =>
+          submit={number => {
             setCart(
               token,
               product,
-              productQuantityInCart > 1 ? "UPDATE" : "ADD",
+              productQuantityInCart > 0 ? "UPDATE" : "ADD",
               number + productQuantityInCart
-            )
-          }
+            );
+            alert("success", "ADDED PRODUCT TO CART");
+          }}
         />
         <FooterTab>
+          <View style={{ width: "100%" }}>
+            <Button
+              disabled={product.quantity === 0 || cartStatus === "LOADING"}
+              success
+              full
+              small
+              iconLeft
+              style={{ flexDirection: "row" }}
+              onPress={() => {
+                if (productQuantityInCart > 1)
+                  confirm(
+                    "Product existed",
+                    `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
+                    () => this.setState({ showPickerDialog: true })
+                  );
+                else this.setState({ showPickerDialog: true });
+              }}
+            >
+              <Icon name="add" />
+              <Icon name="cart" style={{ fontSize: 30 }} />
+            </Button>
+          </View>
+        </FooterTab>
+        {/* <FooterTab>
           {isLoggedIn ? (
             <View style={{ width: "100%" }}>
               <Grid>
@@ -156,7 +181,7 @@ class AppProductFooter extends Component {
               <AppText>LOG IN TO BUY THIS PRODUCT</AppText>
             </Button>
           )}
-        </FooterTab>
+        </FooterTab> */}
       </Footer>
     );
   }
@@ -190,7 +215,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch(loadWatchList(token, offset, length)),
   updateWatchListStateOfProduct: existsInWatchlist =>
     dispatch(updateWatchListStateOfProduct(existsInWatchlist)),
-  navigate: (path, params) => dispatch(navigate(path,params))
+  navigate: (path, params) => dispatch(navigate(path, params))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppProductFooter);
