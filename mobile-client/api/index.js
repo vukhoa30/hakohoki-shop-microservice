@@ -205,7 +205,7 @@ function logIn(token, account) {
 function logOut() {
   return dispatch => {
     if (socket !== null) socket.disconnect();
-    store.clear()
+    store.clear();
     dispatch(getAction(USER_LOG_OUT));
     dispatch(navigator.router.getActionForPathAndParams("Account/LogIn"));
   };
@@ -714,8 +714,8 @@ function setCart(token, product, type, amount) {
   };
 }
 
-function saveCartToCache(cartList){
-  store.setCartList(cartList)
+function saveCartToCache(cartList) {
+  store.setCartList(cartList);
 }
 
 function updateWatchListStateOfProduct(existsInWatchlist) {
@@ -935,17 +935,42 @@ function loadPromotion() {
   };
 }
 
-function makeOrder(productList, token) {
+function makeOrder(productList, buyer) {
   return async dispatch => {
     dispatch(getAction(MAKING_ORDER));
+    const { isLoggedIn, token, fullName, phoneNumber, email } = buyer;
     let err = "Could not make order now! Try again later";
     try {
-      const { status } = await request(
-        "/bills/order",
-        "POST",
-        { Authorization: "JWT " + token },
-        productList
-      );
+      const { status } = isLoggedIn
+        ? await request(
+            "/bills/order",
+            "POST",
+            { Authorization: "JWT " + token },
+            {
+              products: productList
+            }
+          )
+        : await request(
+            "/bills/order",
+            "POST",
+            {},
+            {
+              products: productList,
+              buyer: {
+                fullName,
+                phoneNumber,
+                email
+              }
+            }
+          );
+      console.log({
+        products: productList,
+        buyer: {
+          fullName,
+          phoneNumber,
+          email
+        }
+      });
       if (status === 200) {
         alert(
           "Success",

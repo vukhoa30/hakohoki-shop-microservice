@@ -137,7 +137,7 @@ class Home extends Component {
               showsHorizontalScrollIndicator={false}
             >
               <AppIconButton
-                smallSize={categoryMinimized}
+                //smallSize={categoryMinimized}
                 name="md-apps"
                 buttonName="All"
                 color="white"
@@ -180,7 +180,7 @@ class Home extends Component {
 
                   return (
                     <AppIconButton
-                      smallSize={categoryMinimized}
+                      //smallSize={categoryMinimized}
                       key={"category-" + category}
                       name={icon}
                       buttonName={category}
@@ -195,25 +195,13 @@ class Home extends Component {
         <Content
           style={{ paddingTop: 70 }}
           onScroll={({ nativeEvent }) => {
-            const { contentOffset } = nativeEvent;
-            let fadingBanner = true;
-            let categoryFixedMode = true;
-            let categoryMinimized = true;
-            if (contentOffset.y < 150) categoryMinimized = false;
-            if (this.state.categoryMinimized !== categoryMinimized)
-              this.setState({ categoryMinimized });
-            // if (contentOffset.y < this.state.fadingOffset) {
-            //   fadingBanner = false;
-            // }
-            // if (contentOffset.y < this.state.categoryOffset) {
-            //   categoryFixedMode = false;
-            // }
-            // if (this.state.fadingBanner !== fadingBanner) {
-            //   this.setState({ fadingBanner });
-            // }
-            // if (this.state.categoryFixedMode !== categoryFixedMode) {
-            //   this.setState({ categoryFixedMode });
-            // }
+            // const { contentOffset } = nativeEvent;
+            // let fadingBanner = true;
+            // let categoryFixedMode = true;
+            // let categoryMinimized = true;
+            // if (contentOffset.y < 150) categoryMinimized = false;
+            // if (this.state.categoryMinimized !== categoryMinimized)
+            //   this.setState({ categoryMinimized });
           }}
         >
           {/* <SearchBar

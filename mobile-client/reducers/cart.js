@@ -71,8 +71,6 @@ function reducer(state = initialState, action) {
       needValidateCart = false;
   }
   if (needValidateCart) {
-    console.log('Saved to cache')
-    console.log(JSON.stringify(nextState.list))
     store.setCartList(nextState.list);
   }
 

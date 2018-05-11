@@ -12,8 +12,8 @@ import { Root } from "native-base";
 
 const store = createStore(
   appReducer,
-  applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.product }))
-  //applyMiddleware(reactNavigationReduxMiddleware, thunk)
+  //applyMiddleware(reactNavigationReduxMiddleware, thunk, createLogger({ stateTransformer: state => state.product }))
+  applyMiddleware(reactNavigationReduxMiddleware, thunk)
 );
 
 export default class App extends React.Component {

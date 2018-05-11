@@ -18,7 +18,7 @@ import {
   Grid,
   Col,
   Icon,
-  Spinner,
+  Spinner
 } from "native-base";
 import AppText from "./AppText";
 import NumberPicker from "./NumberPicker";
@@ -43,7 +43,8 @@ class AppProductFooter extends Component {
       cartStatus,
       product,
       setCart,
-      navigate
+      navigate,
+      quantity
     } = this.props;
 
     return (
@@ -64,26 +65,33 @@ class AppProductFooter extends Component {
         />
         <FooterTab>
           <View style={{ width: "100%" }}>
-            <Button
-              disabled={product.quantity === 0 || cartStatus === "LOADING"}
-              success
-              full
-              small
-              iconLeft
-              style={{ flexDirection: "row" }}
-              onPress={() => {
-                if (productQuantityInCart > 1)
-                  confirm(
-                    "Product existed",
-                    `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
-                    () => this.setState({ showPickerDialog: true })
-                  );
-                else this.setState({ showPickerDialog: true });
-              }}
-            >
-              <Icon name="add" />
-              <Icon name="cart" style={{ fontSize: 30 }} />
-            </Button>
+            {quantity > 0 ? (
+              <Button
+                disabled={product.quantity === 0 || cartStatus === "LOADING"}
+                success
+                full
+                small
+                iconLeft
+                style={{ flexDirection: "row" }}
+                onPress={() => {
+                  if (productQuantityInCart > 1)
+                    confirm(
+                      "Product existed",
+                      `You have ${productQuantityInCart} of this product in your cart. Want to add more?`,
+                      () => this.setState({ showPickerDialog: true })
+                    );
+                  else this.setState({ showPickerDialog: true });
+                }}
+              >
+                <Icon name="add" />
+                <Icon name="cart" style={{ fontSize: 30 }} />
+                <AppText>({quantity} left)</AppText>
+              </Button>
+            ) : (
+              <Button block disabled>
+                <AppText large>PRODUCT WAS SOLD OUT</AppText>
+              </Button>
+            )}
           </View>
         </FooterTab>
         {/* <FooterTab>
@@ -197,6 +205,7 @@ const mapStateToProps = state => {
   const productQuantityInCart = productInCart ? productInCart.amount : 0;
 
   return {
+    quantity: data.quantity,
     isLoggedIn,
     watchList,
     token,

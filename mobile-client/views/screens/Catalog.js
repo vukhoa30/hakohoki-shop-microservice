@@ -168,7 +168,7 @@ class Catalog extends Component {
               showsHorizontalScrollIndicator={false}
             >
               <AppIconButton
-                smallSize={categoryMinimized}
+                //smallSize={categoryMinimized}
                 name="md-aperture"
                 buttonName="Latest"
                 color="white"
@@ -178,7 +178,7 @@ class Catalog extends Component {
                 }
               />
               <AppIconButton
-                smallSize={categoryMinimized}
+                //smallSize={categoryMinimized}
                 name="md-apps"
                 buttonName="All"
                 color="white"
@@ -225,7 +225,7 @@ class Catalog extends Component {
                   return (
                     <AppIconButton
                       key={"category-" + category}
-                      smallSize={categoryMinimized}
+                      //smallSize={categoryMinimized}
                       name={icon}
                       buttonName={category}
                       color="white"
@@ -247,11 +247,11 @@ class Catalog extends Component {
         </View>
         <Content
           onScroll={({ nativeEvent }) => {
-            const { contentOffset } = nativeEvent;
-            let categoryMinimized = true;
-            if (contentOffset.y < 100) categoryMinimized = false;
-            if (this.state.categoryMinimized !== categoryMinimized)
-              this.setState({ categoryMinimized });
+            // const { contentOffset } = nativeEvent;
+            // let categoryMinimized = true;
+            // if (contentOffset.y < 100) categoryMinimized = false;
+            // if (this.state.categoryMinimized !== categoryMinimized)
+            //   this.setState({ categoryMinimized });
           }}
         >
           {selectedCategory === "none" ? (

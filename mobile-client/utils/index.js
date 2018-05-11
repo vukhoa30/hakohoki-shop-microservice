@@ -31,12 +31,14 @@ function createSocketConnection(
   return socket;
 }
 
-function alert(type, content) {
+function alert(type, content, position = 'bottom') {
+  const toastType = type === 'success' ? 'default' : type === 'error' ? 'danger' : 'warning'
   Toast.show({
     text: content,
     buttonText: "OK",
     position: "bottom",
-    type: type === 'error' ? 'danger' : type
+    type: toastType,
+    position
   });
 }
 

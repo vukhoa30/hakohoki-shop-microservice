@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View, Image, StyleSheet, Dimensions } from "react-native";
+import { View, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
 import {
   Container,
   Header,
@@ -26,9 +26,11 @@ import AppContainer from "../components/AppContainer";
 import FeatureList from "../components/FeatureList";
 import AppButton from "../components/AppButton";
 import AppProductFooter from "../components/AppProductFooter";
-import { loadProductInformation } from "../../api";
+import { loadProductInformation, selectProduct } from "../../api";
 import { currencyFormat, alert, confirm } from "../../utils";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import ProductShowcase from "../components/ProductShowcase";
+var unknown = require("../../resources/images/unknown.png");
 
 const { width } = Dimensions.get("window");
 
@@ -50,12 +52,13 @@ class ProductInformation extends Component {
   _renderItem = ({ item, index }) => {
     return (
       <Image
-        source={{
-          uri:
-            item && item !== ""
-              ? item
-              : "https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801"
-        }}
+        source={
+          item && item !== ""
+            ? {
+                uri: item
+              }
+            : unknown
+        }
         style={{
           width: "100%",
           height: "100%",
@@ -135,7 +138,7 @@ class ProductInformation extends Component {
   }
 
   renderAsStatus() {
-    const { token, status, data, productId } = this.props;
+    const { token, status, data, productId, selectProduct } = this.props;
     const outOfOrder = require("../../resources/images/sold-out.png");
 
     switch (status) {
@@ -293,14 +296,55 @@ class ProductInformation extends Component {
             ) : null} */}
               {(data.promotionPrice ||
                 (data.giftProducts && data.giftProducts.length > 0)) && (
-                <Card style={{ padding: 10 }}>
-                  <AppText>PROMOTION</AppText>
-                  {data.promotionPrice && (
-                    <AppText small color="gray">
-                      * Discount: {currencyFormat(data.price)} ->{" "}
-                      {currencyFormat(data.promotionPrice)}
-                    </AppText>
-                  )}
+                <Card>
+                  <View
+                    style={{
+                      width: "100%",
+                      padding: 5,
+                      backgroundColor: "blue",
+                      flexDirection: "row"
+                    }}
+                  >
+                    <Icon
+                      name="md-color-wand"
+                      style={{ color: "white", marginRight: 10, fontSize: 15 }}
+                    />
+                    <AppText color="white">PROMOTION</AppText>
+                  </View>
+                  <View style={{ width: "100%", padding: 5 }}>
+                    {data.promotionPrice && (
+                      <AppText small color="gray">
+                        * Discount: {currencyFormat(data.price)} ->{" "}
+                        {currencyFormat(data.promotionPrice)}
+                      </AppText>
+                    )}
+                    {data.giftProducts &&
+                      data.giftProducts.length > 0 && (
+                        <View>
+                          <AppText small color="gray">
+                            * Get these products free when buying this one
+                          </AppText>
+                          <ScrollView
+                            horizontal={true}
+                            style={{ width: "100%" }}
+                          >
+                            {data.giftProducts.map(product => (
+                              <View
+                                key={product._id}
+                                style={{ width: width / 2 }}
+                              >
+                                <ProductShowcase
+                                  onSelected={productId =>
+                                    selectProduct(productId)
+                                  }
+                                  item={product}
+                                />
+                              </View>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+                  </View>
                 </Card>
               )}
               <Card
@@ -399,7 +443,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     loadProductInformation: (productId, token) =>
-      dispatch(loadProductInformation(productId, token))
+      dispatch(loadProductInformation(productId, token)),
+    selectProduct: productId => dispatch(selectProduct(productId))
   };
 };
 
