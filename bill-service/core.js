@@ -129,7 +129,7 @@ module.exports = {
         createdAt: new Date(),
       })
       
-      if (await !msgBroker.requestClearCart(authentication.accountId)) {
+      if (authentication && await !msgBroker.requestClearCart(authentication.accountId)) {
         res.json({ ok: false, msg: 'clearing cart failed' })
       } else {
         res.json({ ok: true, msg: 'cart cleared, order added' })
