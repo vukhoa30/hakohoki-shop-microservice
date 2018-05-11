@@ -109,11 +109,11 @@ module.exports = {
   createPendingBill: async (req, res) => {
     try {
       var token;
+      var authentication = null
       if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
         token = req.headers.authorization.split(' ')[1]
-      } else { return catchUnauthorized(res) }
-      var authentication = await msgBroker.requestAuthenticateCustomer(token)
-      //if (!authentication) { return catchUnauthorized(res) }
+        authentication = await msgBroker.requestAuthenticateCustomer(token)
+      }
 
       var specificProducts = await msgBroker.requestGetPendingProducts(req.body.products)
       if (!specificProducts) { return catchError(res, 'insufficient amount') }
