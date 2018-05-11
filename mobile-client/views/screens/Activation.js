@@ -18,12 +18,12 @@ class Activation extends Component {
 
         if (submitSucceeded) {
 
-            alert('Success', 'Account activated! You can log in right now!')
+            alert('success', 'Account activated! You can log in right now!')
             saveToBuffer({ email: navigation.state.params.email })
 
         } else if (submitFailed && error) {
 
-            alert('Error', error)
+            alert('error', error)
             clearSubmitErrors()
         }
 

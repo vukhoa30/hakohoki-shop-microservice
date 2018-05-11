@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Field, reduxForm, SubmissionError } from "redux-form";
+import { alert } from "../../utils";
 import { View } from "react-native";
 import { updateServerAddress } from "../../api";
 import {
@@ -31,14 +32,14 @@ class ServerAddressForm extends Component {
     const { isLoggedIn, account } = user;
     const { accountId } = account;
     const { host, port } = this.state;
-    if (Number.isInteger(port)) return alert("Invalid port");
+    if (Number.isInteger(port)) return alert("error","Invalid port");
     if (
       !new RegExp(
         /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
       ).test(host)
     )
-      return alert("Invalid host");
-    alert("Updated gateway address");
+      return alert("error","Invalid host");
+    alert("error","Updated gateway address");
     return updateServerAddress(host, port, isLoggedIn, accountId);
   }
 

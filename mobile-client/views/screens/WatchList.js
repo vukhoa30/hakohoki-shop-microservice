@@ -22,7 +22,7 @@ class WatchList extends Component {
         }
         const { token, isLoggedIn, navigation, loadWatchList, status } = this.props
         if (!isLoggedIn) {
-            alert('User not logged in', 'You need to log in first')
+            alert('error', 'You need to log in first')
             navigation.navigate('LogIn')
         }
         else if (status !== 'LOADED') loadWatchList(token, 0, 10)

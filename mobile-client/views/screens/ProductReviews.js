@@ -234,7 +234,7 @@ const mapStateToProps = (state) => {
     return {
 
         userId: isLoggedIn ? account.accountId : null,
-        isReviewed: data.reviewedBySelf,
+        isReviewed: data !== null ? data.reviewedBySelf : false,
         isLoggedIn,
         token,
         productId,

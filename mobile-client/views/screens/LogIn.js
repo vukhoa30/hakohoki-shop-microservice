@@ -28,7 +28,7 @@ class LogIn extends Component {
 
         } else if (submitFailed && error) {
 
-            alert('Error', error)
+            alert('error', error)
             clearSubmitErrors()
         }
 

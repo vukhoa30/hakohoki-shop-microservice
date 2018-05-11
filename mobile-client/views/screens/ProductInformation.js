@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
 import {
   Container,
   Header,
@@ -26,8 +26,13 @@ import AppContainer from "../components/AppContainer";
 import FeatureList from "../components/FeatureList";
 import AppButton from "../components/AppButton";
 import AppProductFooter from "../components/AppProductFooter";
-import { loadProductInformation } from "../../api";
+import { loadProductInformation, selectProduct } from "../../api";
 import { currencyFormat, alert, confirm } from "../../utils";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import ProductShowcase from "../components/ProductShowcase";
+var unknown = require("../../resources/images/unknown.png");
+
+const { width } = Dimensions.get("window");
 
 class ProductInformation extends Component {
   static navigationOptions = {
@@ -36,12 +41,104 @@ class ProductInformation extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      activeSlide: 0,
+      pictures: []
+    };
     const { loadProductInformation, token, productId } = this.props;
     loadProductInformation(productId, token);
   }
 
-  render() {
-    const { token, status, data, productId } = this.props;
+  _renderItem = ({ item, index }) => {
+    return (
+      <Image
+        source={
+          item && item !== ""
+            ? {
+                uri: item
+              }
+            : unknown
+        }
+        style={{
+          width: "100%",
+          height: "100%",
+          resizeMode: "stretch"
+        }}
+      />
+    );
+  };
+
+  // getPictureObject(pictureURI) {
+  //   return new Promise((resolve, reject) => {
+  //     Image.getSize(
+  //       pictureURI,
+  //       (imgWidth, imgHeight) => {
+  //         const height = imgHeight * (imgWidth / width);
+  //         resolve({
+  //           uri: pictureURI,
+  //           width: "100%",
+  //           height
+  //         });
+  //       },
+  //       error =>
+  //         resolve({
+  //           uri:
+  //             "https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801",
+  //           width: "100%",
+  //           height: "100%"
+  //         })
+  //     );
+  //   });
+  // }
+
+  async componentWillReceiveProps(nextProps) {
+    if (nextProps.data !== null) {
+      if (
+        (this.props.status !== nextProps.status &&
+          nextProps.status === "LOADED") ||
+        this.props.productId !== nextProps.productId
+      ) {
+        const { data } = nextProps;
+        const { mainPicture, additionPicture } = data;
+        this.setState({
+          pictures: [mainPicture].concat(additionPicture ? additionPicture : [])
+        });
+      }
+    }
+  }
+
+  get pagination() {
+    const { activeSlide, pictures } = this.state;
+    return (
+      <Pagination
+        carouselRef={this._carousel}
+        dotsLength={pictures.length}
+        activeDotIndex={activeSlide}
+        containerStyle={{
+          backgroundColor: "transparent",
+          position: "absolute",
+          bottom: 0,
+          right: 30
+        }}
+        dotStyle={{
+          width: 10,
+          height: 10,
+          borderRadius: 25,
+          backgroundColor: "red"
+        }}
+        inactiveDotStyle={{
+          width: 10,
+          height: 10,
+          backgroundColor: "white"
+        }}
+        inactiveDotOpacity={1}
+        inactiveDotScale={1}
+      />
+    );
+  }
+
+  renderAsStatus() {
+    const { token, status, data, productId, selectProduct } = this.props;
     const outOfOrder = require("../../resources/images/sold-out.png");
 
     switch (status) {
@@ -81,151 +178,240 @@ class ProductInformation extends Component {
             </AppButton>
           </View>
         );
-    }
-
-    return (
-      <Container>
-        <Content>
-          <Card style={{ flex: 1 }}>
-            {data.sold5OrOver && (
-              <Image
-                source={require("../../resources/images/hot-sale.png")}
+      default:
+        return data !== null ? (
+          <Container>
+            <Content style={{ backgroundColor: "#eee" }}>
+              {data !== null && (
+                <View
+                  style={[
+                    {
+                      width: width,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: width - 50
+                    }
+                  ]}
+                >
+                  <Carousel
+                    ref={c => {
+                      this._carousel = c;
+                    }}
+                    data={this.state.pictures}
+                    renderItem={this._renderItem.bind(this)}
+                    sliderWidth={width}
+                    itemWidth={width}
+                    onSnapToItem={slideIndex =>
+                      this.setState({ activeSlide: slideIndex })
+                    }
+                    layout={"default"}
+                    firstItem={0}
+                    loop={true}
+                  />
+                  {this.pagination}
+                </View>
+              )}
+              <Card
                 style={{
-                  right: 0,
-                  zIndex: 100,
-                  width: 100,
-                  height: 100,
-                  position: "absolute",
-                  resizeMode: "stretch"
+                  width: "100%",
+                  padding: 10,
+                  backgroundColor: "white",
+                  borderRadius: 0,
+                  shadowOffset: {
+                    width: 1,
+                    height: 1
+                  },
+                  marginTop: 0
                 }}
-              />
-            )}
-            {data.quantity === 0 && (
-              <Image
-                source={outOfOrder}
-                style={{
-                  width: "80%",
-                  height: 200,
-                  position: "absolute",
-                  zIndex: 100,
-                  resizeMode: "stretch",
-                  top: 140,
-                  left: 20
-                }}
-              />
-            )}
-            <CardItem>
-              <Left>
-                <Body>
-                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-                    {data.name}
-                  </Text>
-                  <Text note>Guarantee {data.guarantee} months</Text>
-                  <AppText
-                    note
-                    small
-                    style={{ opacity: data.quantity > 0 ? 1 : 0 }}
-                  >
-                    Quantity: {data.quantity}
-                  </AppText>
-                </Body>
-              </Left>
-            </CardItem>
-            <CardItem>
-              <Body>
+              >
+                {/* 
+              <Text note>Guarantee {data.guarantee} months</Text>
+              <AppText note small style={{ opacity: data.quantity > 0 ? 1 : 0 }}>
+                Quantity: {data.quantity}
+              </AppText> */}
+                <AppText>{data.name}</AppText>
+                <AppText color="red">
+                  {currencyFormat(
+                    data.promotionPrice ? data.promotionPrice : data.price
+                  )}
+                </AppText>
+                {/* <Text style={{ fontWeight: "bold" }}>Description</Text>
+              <Text>{data.description}</Text> */}
+              </Card>
+              {/* <Card style={{ flex: 1 }}>
+              {data.sold5OrOver && (
                 <Image
-                  source={{
-                    uri:
-                      data.mainPicture && data.mainPicture !== ""
-                        ? data.mainPicture
-                        : "https://vignette.wikia.nocookie.net/yade/images/d/dd/Unknown.png/revision/latest?cb=20070619224801"
-                  }}
+                  source={require("../../resources/images/hot-sale.png")}
                   style={{
-                    height: 350,
-                    width: "100%",
-                    flex: 1,
+                    right: 0,
+                    zIndex: 100,
+                    width: 100,
+                    height: 100,
+                    position: "absolute",
                     resizeMode: "stretch"
                   }}
                 />
-                <Text
+              )}
+              {data.quantity === 0 && (
+                <Image
+                  source={outOfOrder}
                   style={{
-                    fontSize: 30,
-                    fontWeight: "bold",
-                    alignSelf: "center",
-                    marginTop: 20,
-                    color: "red"
+                    width: "80%",
+                    height: 200,
+                    position: "absolute",
+                    zIndex: 100,
+                    resizeMode: "stretch",
+                    top: 140,
+                    left: 20
                   }}
-                >
-                  {currencyFormat(data.price)}
-                </Text>
-              </Body>
-            </CardItem>
-            <CardItem>
-              <Body>
-                <Text style={{ fontWeight: "bold" }}>Description</Text>
-                <Text>{data.description}</Text>
-              </Body>
-            </CardItem>
-          </Card>
-          {data.additionPicture && data.additionPicture.length > 0 ? (
-            <Card>
-              <CardItem header>
-                <Text>Other pictures</Text>
-              </CardItem>
-              <CardItem>
-                <Body>
-                  <List
-                    dataArray={data.additionPicture}
-                    horizontal={true}
-                    renderRow={(item, index) => (
-                      <ListItem key={"picture-" + index}>
-                        <Image
-                          source={{
-                            uri: item,
-                            width: 200,
-                            height: 170,
-                            resizeMode: "stretch"
-                          }}
-                        />
-                      </ListItem>
-                    )}
-                  />
-                </Body>
-              </CardItem>
-            </Card>
-          ) : null}
-          {data.specifications && (
-            <Card>
-              <CardItem header>
-                <Text>Specifications</Text>
-              </CardItem>
-              <CardItem>
-                <Body>
-                  <View style={{ width: "100%" }}>
-                    {Object.keys(data.specifications).map(key => (
-                      <Grid
-                        key={"specification-item-" + key}
-                        style={{ marginVertical: 5 }}
-                      >
-                        <Col>
-                          <AppText small style={{ fontWeight: "bold" }}>
-                            {key}
-                          </AppText>
-                        </Col>
-                        <Col>
-                          <AppText small>{data.specifications[key]}</AppText>
-                        </Col>
-                      </Grid>
-                    ))}
+                />
+              )}
+            </Card> */}
+              {/* {data.additionPicture && data.additionPicture.length > 0 ? (
+              <Card>
+                <CardItem header>
+                  <Text>Other pictures</Text>
+                </CardItem>
+                <CardItem>
+                  <Body>
+                    <List
+                      dataArray={data.additionPicture}
+                      horizontal={true}
+                      renderRow={(item, index) => (
+                        <ListItem key={"picture-" + index}>
+                          <Image
+                            source={{
+                              uri: item,
+                              width: 200,
+                              height: 170,
+                              resizeMode: "stretch"
+                            }}
+                          />
+                        </ListItem>
+                      )}
+                    />
+                  </Body>
+                </CardItem>
+              </Card>
+            ) : null} */}
+              {(data.promotionPrice ||
+                (data.giftProducts && data.giftProducts.length > 0)) && (
+                <Card>
+                  <View
+                    style={{
+                      width: "100%",
+                      padding: 5,
+                      backgroundColor: "blue",
+                      flexDirection: "row"
+                    }}
+                  >
+                    <Icon
+                      name="md-color-wand"
+                      style={{ color: "white", marginRight: 10, fontSize: 15 }}
+                    />
+                    <AppText color="white">PROMOTION</AppText>
                   </View>
-                </Body>
-              </CardItem>
-            </Card>
-          )}
-        </Content>
-        <AppProductFooter />
-      </Container>
-    );
+                  <View style={{ width: "100%", padding: 5 }}>
+                    {data.promotionPrice && (
+                      <AppText small color="gray">
+                        * Discount: {currencyFormat(data.price)} ->{" "}
+                        {currencyFormat(data.promotionPrice)}
+                      </AppText>
+                    )}
+                    {data.giftProducts &&
+                      data.giftProducts.length > 0 && (
+                        <View>
+                          <AppText small color="gray">
+                            * Get these products free when buying this one
+                          </AppText>
+                          <ScrollView
+                            horizontal={true}
+                            style={{ width: "100%" }}
+                          >
+                            {data.giftProducts.map(product => (
+                              <View
+                                key={product._id}
+                                style={{ width: width / 2 }}
+                              >
+                                <ProductShowcase
+                                  onSelected={productId =>
+                                    selectProduct(productId)
+                                  }
+                                  item={product}
+                                />
+                              </View>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+                  </View>
+                </Card>
+              )}
+              <Card
+                style={{
+                  width: "100%",
+                  backgroundColor: "white",
+                  marginTop: 10,
+                  borderRadius: 0,
+                  padding: 10
+                }}
+              >
+                <AppText>PRODUCT DETAIL</AppText>
+                <AppText small color="gray">
+                  {data.description}
+                </AppText>
+                {data.specifications && (
+                  <View>
+                    <View
+                      style={{ width: "100%", marginTop: 10, borderWidth: 1 }}
+                    >
+                      {Object.keys(data.specifications).map(key => (
+                        <Grid
+                          key={"specification-item-" + key}
+                          style={{
+                            padding: 0,
+                            margin: 0
+                          }}
+                        >
+                          <Col
+                            style={{
+                              borderRightWidth: 1,
+                              borderBottomWidth: 1,
+                              backgroundColor: "#eee",
+                              padding: 10,
+                              margin: 0
+                            }}
+                          >
+                            <AppText small style={{ fontWeight: "bold" }}>
+                              {key}
+                            </AppText>
+                          </Col>
+                          <Col
+                            style={{
+                              padding: 10,
+                              margin: 0,
+                              borderBottomWidth: 1
+                            }}
+                          >
+                            <AppText small>{data.specifications[key]}</AppText>
+                          </Col>
+                        </Grid>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </Card>
+            </Content>
+            <AppProductFooter />
+          </Container>
+        ) : (
+          <View />
+        );
+    }
+  }
+
+  render() {
+    return this.renderAsStatus();
   }
 }
 
@@ -257,7 +443,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     loadProductInformation: (productId, token) =>
-      dispatch(loadProductInformation(productId, token))
+      dispatch(loadProductInformation(productId, token)),
+    selectProduct: productId => dispatch(selectProduct(productId))
   };
 };
 

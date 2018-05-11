@@ -9,6 +9,7 @@ import {
 import navigator from "../navigations";
 import {
   getAction,
+  APP_LOADED,
   UPDATE_SERVER_ADDRESS,
   USER_LOG_IN,
   USER_LOG_OUT,
@@ -17,11 +18,14 @@ import {
   CATEGORY_LOADING_FAILED,
   SELECT_PRODUCT,
   SELECT_CATEGORY,
+  REMOVE_PRODUCT_SESSION,
   PRODUCT_DATA_LOADING,
   PRODUCT_DATA_LOADED,
   PRODUCT_DATA_LOADING_FAILED,
   PRODUCT_DATA_UPDATE_WATCH_LIST_STATE,
   REVIEW_PRODUCT,
+  PUSH_NEW_FEEDBACK,
+  REMOVE_FEEDBACK_SESSION,
   FEEDBACK_LOADING,
   FEEDBACK_LOADED,
   FEEDBACK_LOADING_FAILED,
@@ -49,7 +53,7 @@ import {
 import { SubmissionError } from "redux-form";
 import { reduce, assign, transform } from "lodash";
 import { NavigationActions } from "react-navigation";
-import { AsyncStorage } from "react-native";
+import store from "../utils/cache-store";
 
 var socket = null;
 
@@ -63,6 +67,19 @@ function updateServerAddress(host, port, isLoggedIn, accountId) {
     dispatch(
       getAction(UPDATE_SERVER_ADDRESS, { gatewayHost: host, gatewayPort: port })
     );
+  };
+}
+
+function removeSession(type) {
+  return dispatch => {
+    switch (type) {
+      case "product_detail":
+        dispatch(getAction(REMOVE_PRODUCT_SESSION));
+        break;
+      case "answer":
+        dispatch(getAction(REMOVE_FEEDBACK_SESSION));
+        break;
+    }
   };
 }
 
@@ -127,43 +144,51 @@ function connectToServer(accountId) {
 
 function loadUserInfo() {
   return dispatch => {
-    AsyncStorage.multiGet(["@User:token", "@User:account"], (err, values) => {
-      console.log(values);
-      if (values[0][1] === null) return;
+    // AsyncStorage.multiGet(["@User:token", "@User:account"], (err, values) => {
+    //   console.log(values);
+    //   if (values[0][1] === null) return;
 
-      const { token, accountString } = reduce(
-        values,
-        (result, item) => {
-          switch (item[0]) {
-            case "@User:token":
-              result["token"] = item[1];
-              break;
-            case "@User:account":
-              result["accountString"] = item[1];
-              break;
-          }
+    //   const { token, accountString } = reduce(
+    //     values,
+    //     (result, item) => {
+    //       switch (item[0]) {
+    //         case "@User:token":
+    //           result["token"] = item[1];
+    //           break;
+    //         case "@User:account":
+    //           result["accountString"] = item[1];
+    //           break;
+    //       }
 
-          return result;
-        },
-        {
-          token: null,
-          accountString: null
-        }
-      );
+    //       return result;
+    //     },
+    //     {
+    //       token: null,
+    //       accountString: null
+    //     }
+    //   );
 
-      let account = {
-        name: "Unknown",
-        email: "Unknown",
-        phoneNumber: "Unknown"
-      };
+    //   let account = {
+    //     name: "Unknown",
+    //     email: "Unknown",
+    //     phoneNumber: "Unknown"
+    //   };
 
-      try {
-        account = JSON.parse(accountString);
-      } catch (error) {
-        console.log(error);
-      }
+    //   try {
+    //     account = JSON.parse(accountString);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
 
-      dispatch(logIn(token, account));
+    //   dispatch(logIn(token, account));
+    // });
+    store.loadFromCache().then(({ token, account, watchList, cart }) => {
+      dispatch(getAction(FINISH_LOADING_CART, { list: cart }));
+      // dispatch(
+      //   getAction(WATCH_LIST_LOADING, { status: "LOADED", data: watchList })
+      // );
+      if (token !== null) dispatch(logIn(token, account));
+      dispatch(getAction(APP_LOADED));
     });
   };
 }
@@ -180,7 +205,7 @@ function logIn(token, account) {
 function logOut() {
   return dispatch => {
     if (socket !== null) socket.disconnect();
-    AsyncStorage.multiRemove(["@User:token", "@User:account"]);
+    store.clear();
     dispatch(getAction(USER_LOG_OUT));
     dispatch(navigator.router.getActionForPathAndParams("Account/LogIn"));
   };
@@ -599,8 +624,9 @@ function loadCart(token) {
       const { status, data } = await request("/carts", "GET", {
         Authorization: "JWT " + token
       });
-      if (status === 200)
+      if (status === 200) {
         return dispatch(getAction(FINISH_LOADING_CART, { list: data }));
+      }
     } catch (error) {}
 
     dispatch(getAction(FINISH_LOADING_CART));
@@ -609,47 +635,87 @@ function loadCart(token) {
 
 function setCart(token, product, type, amount) {
   return async dispatch => {
-    try {
-      dispatch(getAction(CART_LOADING));
-      const method =
-        type === "ADD" ? "POST" : type === "REMOVE" ? "DELETE" : "PUT";
-      const actionKey =
-        type === "ADD"
-          ? ADD_TO_CART
-          : type === "REMOVE"
-            ? REMOVE_FROM_CART
-            : MODIFY_CART_PRODUCT;
-      const data = {
-        productId: product._id,
-        amount
-      };
-      if (token === null)
-        dispatch(
-          getAction(actionKey, {
-            productId: product._id,
-            number: amount,
-            data: product
-          })
-        );
-      else {
+    // try {
+    //   dispatch(getAction(CART_LOADING));
+    //   const method =
+    //     type === "ADD" ? "POST" : type === "REMOVE" ? "DELETE" : "PUT";
+    //   const actionKey =
+    //     type === "ADD"
+    //       ? ADD_TO_CART
+    //       : type === "REMOVE"
+    //         ? REMOVE_FROM_CART
+    //         : MODIFY_CART_PRODUCT;
+    //   const data = {
+    //     productId: product._id,
+    //     amount
+    //   };
+    //   if (token === null)
+    //     dispatch(
+    //       getAction(actionKey, {
+    //         productId: product._id,
+    //         number: amount,
+    //         data: product
+    //       })
+    //     );
+    //   else {
+    //     const { status } = await request(
+    //       "/carts",
+    //       method,
+    //       { Authorization: "JWT " + token },
+    //       data
+    //     );
+    //     if (status === 200)
+    //       dispatch(
+    //         getAction(actionKey, {
+    //           productId: product._id,
+    //           number: amount,
+    //           data: product
+    //         })
+    //       );
+    //   }
+    // } catch (error) {}
+    // dispatch(getAction(FINISH_LOADING_CART));
+    let method = null;
+    if (type === "ADD") {
+      dispatch(getAction(ADD_TO_CART, { data: product, number: amount }));
+      method = "POST";
+    } else if (type === "UPDATE") {
+      dispatch(
+        getAction(MODIFY_CART_PRODUCT, {
+          productId: product._id,
+          number: amount
+        })
+      );
+      method = "PUT";
+    } else {
+      dispatch(
+        getAction(REMOVE_FROM_CART, {
+          productId: product._id
+        })
+      );
+      method = "DELETE";
+    }
+    if (token !== null) {
+      try {
         const { status } = await request(
           "/carts",
           method,
-          { Authorization: "JWT " + token },
-          data
+          {
+            Authorization: "JWT " + token
+          },
+          {
+            productId: product._id,
+            amount
+          }
         );
-        if (status === 200)
-          dispatch(
-            getAction(actionKey, {
-              productId: product._id,
-              number: amount,
-              data: product
-            })
-          );
-      }
-    } catch (error) {}
-    dispatch(getAction(FINISH_LOADING_CART));
+        if (status === 200) dispatch(loadCart(token));
+      } catch (error) {}
+    }
   };
+}
+
+function saveCartToCache(cartList) {
+  store.setCartList(cartList);
 }
 
 function updateWatchListStateOfProduct(existsInWatchlist) {
@@ -869,17 +935,42 @@ function loadPromotion() {
   };
 }
 
-function makeOrder(productList, token) {
+function makeOrder(productList, buyer) {
   return async dispatch => {
     dispatch(getAction(MAKING_ORDER));
+    const { isLoggedIn, token, fullName, phoneNumber, email } = buyer;
     let err = "Could not make order now! Try again later";
     try {
-      const { status } = await request(
-        "/bills/order",
-        "POST",
-        { Authorization: "JWT " + token },
-        productList
-      );
+      const { status } = isLoggedIn
+        ? await request(
+            "/bills/order",
+            "POST",
+            { Authorization: "JWT " + token },
+            {
+              products: productList
+            }
+          )
+        : await request(
+            "/bills/order",
+            "POST",
+            {},
+            {
+              products: productList,
+              buyer: {
+                fullName,
+                phoneNumber,
+                email
+              }
+            }
+          );
+      console.log({
+        products: productList,
+        buyer: {
+          fullName,
+          phoneNumber,
+          email
+        }
+      });
       if (status === 200) {
         alert(
           "Success",
@@ -900,6 +991,7 @@ function makeOrder(productList, token) {
 module.exports = {
   updateServerAddress,
   navigate,
+  removeSession,
   connectToServer,
   authenticate,
   enroll,
