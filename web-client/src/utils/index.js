@@ -49,13 +49,27 @@ export const request = (url, method, header, data) => {
 
 export const currencyFormat = currency => {
   return currency && currency !== null
-    ? currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
-    : "0 VND";
+    ? currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VNĐ"
+    : "0 VNĐ";
 };
 
 export const formatTime = time => {
   const dateObj = new Date(time);
   return dateObj.toLocaleTimeString() + " - " + dateObj.toLocaleDateString();
+};
+
+export const getToday = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const date = today.getDate();
+  return (
+    year +
+    "-" +
+    (month < 10 ? "0" + month : month) +
+    "-" +
+    (date < 10 ? "0" + date : date)
+  );
 };
 
 export const parseToQueryString = obj => {

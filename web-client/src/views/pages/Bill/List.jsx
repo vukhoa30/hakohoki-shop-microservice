@@ -158,7 +158,7 @@ class BillList extends Component {
                 </div>
               ) : upcoming.data.length > 0 ? (
                 <div className="list-group mt-3">
-                  {upcoming.data.map(bill => (
+                  {upcoming.data.reverse().map(bill => (
                     <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
                   ))}
                 </div>
@@ -191,7 +191,7 @@ class BillList extends Component {
                 </div>
               ) : completed.data.length > 0 ? (
                 <div className="list-group mt-3">
-                  {completed.data.map(bill => (
+                  {completed.data.reverse().map(bill => (
                     <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
                   ))}
                 </div>

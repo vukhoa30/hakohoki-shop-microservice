@@ -140,70 +140,80 @@ class AccountManager extends Component {
                         className="list-group-item list-group-item-action flex-column align-items-start pt-3 pb-5 mt-2"
                       >
                         <div className="row">
-                          <div className="col-xs-6">
-                            {account.active ? (
-                              <p style={{ color: "green" }}>ACTIVE</p>
-                            ) : (
-                              <p style={{ color: "gray" }}>DEACTIVE</p>
-                            )}
+                          <div className="col-xs-2">
+                            <img
+                              src={`assets/img/${account.role ? account.role : 'employee'}.png`}
+                              style={{ width: '100%', height: 'auto' }}
+                            />
                           </div>
-                          <div className="col-xs-6 text-right">
-                            {this.state.selectedAccount !== null &&
-                              this.state.selectedAccount.email ==
-                                account.email && (
-                                <i
-                                  className="fa fa-circle"
-                                  style={{ color: "red" }}
+                          <div className="col-xs-10">
+                            <div className="row">
+                              <div className="col-xs-6">
+                                {account.active ? (
+                                  <p style={{ color: "green" }}>ACTIVE</p>
+                                ) : (
+                                  <p style={{ color: "gray" }}>DEACTIVE</p>
+                                )}
+                              </div>
+                              <div className="col-xs-6 text-right">
+                                {this.state.selectedAccount !== null &&
+                                  this.state.selectedAccount.email ==
+                                    account.email && (
+                                    <i
+                                      className="fa fa-circle"
+                                      style={{ color: "red" }}
+                                    />
+                                  )}
+                              </div>
+                            </div>
+                            <div className="form-group row clickable">
+                              <label
+                                htmlFor="staticEmail"
+                                className="col-sm-5 col-form-label font-weight-bold"
+                              >
+                                Name
+                              </label>
+                              <div className="col-sm-7">
+                                <input
+                                  type="text"
+                                  readOnly
+                                  className="form-control-plaintext"
+                                  defaultValue={account.fullName}
                                 />
-                              )}
-                          </div>
-                        </div>
-                        <div className="form-group row clickable">
-                          <label
-                            htmlFor="staticEmail"
-                            className="col-sm-5 col-form-label font-weight-bold"
-                          >
-                            Name
-                          </label>
-                          <div className="col-sm-7">
-                            <input
-                              type="text"
-                              readOnly
-                              className="form-control-plaintext"
-                              defaultValue={account.fullName}
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row clickable">
-                          <label
-                            htmlFor="staticEmail"
-                            className="col-sm-5 col-form-label font-weight-bold"
-                          >
-                            Email
-                          </label>
-                          <div className="col-sm-7">
-                            <input
-                              type="text"
-                              readOnly
-                              className="form-control-plaintext"
-                              defaultValue={account.email}
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row clickable">
-                          <label
-                            htmlFor="staticEmail"
-                            className="col-sm-5 col-form-label font-weight-bold"
-                          >
-                            Phone number
-                          </label>
-                          <div className="col-sm-7">
-                            <input
-                              type="text"
-                              readOnly
-                              className="form-control-plaintext"
-                              defaultValue={account.phoneNumber}
-                            />
+                              </div>
+                            </div>
+                            <div className="form-group row clickable">
+                              <label
+                                htmlFor="staticEmail"
+                                className="col-sm-5 col-form-label font-weight-bold"
+                              >
+                                Email
+                              </label>
+                              <div className="col-sm-7">
+                                <input
+                                  type="text"
+                                  readOnly
+                                  className="form-control-plaintext"
+                                  defaultValue={account.email}
+                                />
+                              </div>
+                            </div>
+                            <div className="form-group row clickable">
+                              <label
+                                htmlFor="staticEmail"
+                                className="col-sm-5 col-form-label font-weight-bold"
+                              >
+                                Phone number
+                              </label>
+                              <div className="col-sm-7">
+                                <input
+                                  type="text"
+                                  readOnly
+                                  className="form-control-plaintext"
+                                  defaultValue={account.phoneNumber}
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </a>
@@ -375,7 +385,7 @@ const mapStateToProps = state => ({
   token: state.user.token,
   account: state.account,
   initialValues: {
-    role: 'employee'
+    role: "employee"
   }
 });
 const mapDispatchToProps = dispatch => ({

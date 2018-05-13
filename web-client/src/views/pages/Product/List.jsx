@@ -140,6 +140,16 @@ class ProductList extends Component {
             </button>
           )}
         </form> */}
+        {role === "manager" && (
+          <button
+            className="btn btn-success"
+            style={{ marginLeft: 20 }}
+            onClick={() => history.push("/main/product/add-product")}
+          >
+            <i className="fa fa-plus" />
+            Add product
+          </button>
+        )}
         <div className="card" style={{ padding: 10, marginTop: 10 }}>
           <div className="content">
             <form

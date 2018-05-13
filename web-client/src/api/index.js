@@ -113,6 +113,9 @@ export const loadProductData = productId => {
       );
       if (status === 200) {
         data.specifications = convertObjectToArray(data.specifications);
+        data.pictures = [data.mainPicture].concat(
+          data.additionPicture ? data.additionPicture : []
+        );
         return dispatch(getAction(LOADING_PRODUCT, { isLoading: false, data }));
       }
       err = "Internal server error";
@@ -339,6 +342,32 @@ export const searchForBills = (query, billType, token) => {
             isLoading: false,
             data: data.map(bill => ({
               ...bill,
+              buyer: bill.buyer
+                ? reduce(
+                    bill.buyer,
+                    (result, value, key) => {
+                      result.push({
+                        name: key,
+                        value
+                      });
+                      return result;
+                    },
+                    []
+                  )
+                : [],
+              seller: bill.seller
+                ? reduce(
+                    bill.seller,
+                    (result, value, key) => {
+                      result.push({
+                        name: key,
+                        value
+                      });
+                      return result;
+                    },
+                    []
+                  )
+                : [],
               totalPrice: bill.specificProducts.reduce(
                 (total, product) => total + product.price,
                 0
@@ -450,7 +479,7 @@ export const confirmBill = async (billId, token) => {
 export const giveAnswer = async (productId, content, parentId, token) => {
   let _error = "Undefined error. Try again later!";
   try {
-    console.log('Content:' + content)
+    console.log("Content:" + content);
     const { status, data } = await request(
       "/comments",
       "POST",

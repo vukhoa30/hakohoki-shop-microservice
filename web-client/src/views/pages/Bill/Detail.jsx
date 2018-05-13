@@ -15,15 +15,15 @@ class BillDetail extends Component {
   getInfoName(infoKey) {
     switch (infoKey) {
       case "accountId":
-        return "User Id";
+        return "ID";
       case "fullName":
-        return "Name";
+        return "NAME";
       case "email":
-        return "Email";
+        return "EMAIL";
       case "role":
-        return "Role";
+        return "ROLE";
       default:
-        return "Phone number";
+        return "PHONE NUMBER";
     }
   }
   loadData(props) {
@@ -76,11 +76,25 @@ class BillDetail extends Component {
             <div className="row">
               <div className="col-xs-4">
                 <img
-                  src="assets/img/bill.png"
+                  src={`assets/img/${
+                    selectedBill.status === "completed"
+                      ? "bill_complete"
+                      : "bill"
+                  }.png`}
                   alt=""
                   style={{ width: "100%", height: "auto" }}
                 />
-                <h3>Status: <b style={{ color: selectBill.status === 'pending' ? 'orange' : 'green' }}>{selectedBill.status}</b></h3>
+                <h3>
+                  Status:{" "}
+                  <b
+                    style={{
+                      color:
+                        selectBill.status === "pending" ? "orange" : "green"
+                    }}
+                  >
+                    {selectedBill.status}
+                  </b>
+                </h3>
                 {role === "receptionist" &&
                   selectedBill.status === "pending" && (
                     <div className="text-right" style={{ width: "100%" }}>
@@ -134,18 +148,25 @@ class BillDetail extends Component {
                     </div>
                   )}
               </div>
-              <div className="col-xs-8" style={{ borderLeft: '1px solid gray', height: 700, overflowY: "auto" }}>
+              <div
+                className="col-xs-8"
+                style={{
+                  borderLeft: "1px solid gray",
+                  height: 700,
+                  overflowY: "auto"
+                }}
+              >
                 <div>
                   <div className="d-flex w-100 justify-content-between">
                     <h3>
-                      User information
+                      BUYER INFORMATION
                       <small className="pull-right" style={{ color: "gray" }}>
                         order at {formatTime(selectedBill.createdAt)}
                       </small>
                     </h3>
                   </div>
-                  <div className="mt-3 card">
-                    <div className="content">
+                  <div className="panel panel-default">
+                    <div className="panel-body">
                       {Object.keys(selectedBill.buyer).map((infoKey, index) => (
                         <div
                           key={"user-info" + index}
@@ -173,13 +194,18 @@ class BillDetail extends Component {
                   {selectedBill.seller && (
                     <div className="mt-3">
                       <div className="d-flex w-100 justify-content-between">
-                        <h3>Seller information</h3>
-                        <p className="float-right" style={{ color: "gray" }}>
-                          confirm at: {formatTime(selectedBill.completedAt)}
-                        </p>
+                        <h3>
+                          SELLER INFORMATION
+                          <small
+                            className="pull-right"
+                            style={{ color: "gray" }}
+                          >
+                            confirm at: {formatTime(selectedBill.completedAt)}
+                          </small>
+                        </h3>
                       </div>
-                      <div className="mt-3 card">
-                        <div className="content">
+                      <div className="panel panel-default">
+                        <div className="panel-body">
                           {Object.keys(selectedBill.seller).map(
                             (infoKey, index) => (
                               <div

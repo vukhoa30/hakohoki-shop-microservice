@@ -86,7 +86,6 @@ class Subscribe extends Component {
     const { query, selectedProduct } = this.state;
     const { query: prevQuery } = prevState;
     if (isLoading !== prevLoading && !isLoading) {
-      console.log(query);
       this.selectProduct(
         subscriptions.find(
           subscription => subscription.productId === query.productId
@@ -250,7 +249,7 @@ class Subscribe extends Component {
                       )
                       .map(subscription => (
                         <div
-                          className="clickable"
+                          className="clickable product-showcase"
                           key={"subscription-" + subscription.productId}
                           style={{
                             marginBottom: 20,
@@ -289,7 +288,7 @@ class Subscribe extends Component {
                               style={{ width: 50, height: "auto" }}
                             />
                           </div>
-                          <div style={{ flex: 3 }}>
+                          <div style={{ flex: 3, padding: 10 }}>
                             <p style={{ marginBottom: 0 }}>
                               <b style={{ color: "red" }}>
                                 {subscription.productName}
@@ -381,19 +380,27 @@ class Subscribe extends Component {
                             marginTop: 10
                           }}
                         >
-                          {currentProductData.additionPicture.map(picture => (
-                            <img
-                              key={"addition-picture-" + picture}
-                              src={picture}
-                              alt=""
-                              style={{
-                                width: 100,
-                                height: "auto",
-                                marginRight: 50
-                              }}
-                            />
-                          ))}
+                          {currentProductData.pictures &&
+                            currentProductData.pictures.map(picture => (
+                              <img
+                                key={"picture-" + picture}
+                                src={picture}
+                                alt=""
+                                style={{
+                                  width: 100,
+                                  height: "auto",
+                                  marginRight: 50
+                                }}
+                              />
+                            ))}
                         </div>
+                        <hr
+                          style={{
+                            borderWidth: 1,
+                            borderColor: "gray",
+                            width: "50%"
+                          }}
+                        />
                         <div className="row" style={{ marginTop: 20 }}>
                           <div className="col-md-6 col-xs-12">
                             <h3 style={{ marginTop: 0, color: "orange" }}>
@@ -473,157 +480,185 @@ class Subscribe extends Component {
                             </div>
                           </div>
                           <div className="col-md-6 col-xs-12">
-                            <h4 style={{ marginTop: 0 }}>
-                              <b>SPECIFICATIONS</b>
-                            </h4>
-                            {currentProductData.specifications.map(
-                              specification => (
-                                <div className="form-group row">
-                                  <label className="col-sm-5 col-form-label font-weight-bold">
-                                    {specification.name}
-                                  </label>
-                                  <div className="col-sm-7">
-                                    <input
-                                      type="text"
-                                      readOnly
-                                      className="form-control-plaintext"
-                                      defaultValue={specification.value}
-                                    />
-                                  </div>
-                                </div>
-                              )
-                            )}
+                            <div className="panel panel-default">
+                              <div className="panel-heading">
+                                <b>SPECIFICATIONS</b>
+                              </div>
+                              <div className="panel-body">
+                                {currentProductData.specifications.length ===
+                                0 ? (
+                                  <p
+                                    className="text-center"
+                                    style={{ color: "gray" }}
+                                  >
+                                    <small>NO SPECIFICATIONS</small>
+                                  </p>
+                                ) : (
+                                  currentProductData.specifications.map(
+                                    specification => (
+                                      <div className="form-group row">
+                                        <label className="col-sm-5 col-form-label font-weight-bold">
+                                          {specification.name}
+                                        </label>
+                                        <div className="col-sm-7">
+                                          <input
+                                            type="text"
+                                            readOnly
+                                            className="form-control-plaintext"
+                                            defaultValue={specification.value}
+                                          />
+                                        </div>
+                                      </div>
+                                    )
+                                  )
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     )}
                   </Collapse>
                 </Well>
-                <div className="row">
+                <h3 style={{ marginTop: 0 }}>
+                  <b>COMMENTS</b>
+                </h3>
+                {currentProductFeedback.isLoading ? (
                   <div
-                    className="col-md-6 col-xs-12 card"
                     style={{
-                      height: 600,
-                      overflowY: "auto",
-                      paddingTop: 20
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center"
                     }}
                   >
-                    <div className="card-body">
-                      {currentProductFeedback.isLoading ? (
-                        <div className="text-center" style={{ width: "100%" }}>
-                          <Loader />
-                        </div>
-                      ) : currentProductFeedback.err !== null ? (
-                        <div
-                          className="alert alert-danger clickable"
-                          onClick={() =>
-                            loadProductFeedback(selectedProduct.productId)
-                          }
-                        >
-                          COULD NOT LOAD COMMENTS! CLICK TO TRY AGAIN
-                        </div>
-                      ) : (
-                        currentProductFeedback.comments
-                          .filter(comment => !comment.parentId)
-                          .reverse()
-                          .map(comment => (
-                            <Comment
-                              comment={comment}
-                              key={"comment-" + comment.id}
-                              selected={comment.id === selectedCommentId}
-                              select={() =>
-                                this.setState({ selectedCommentId: comment.id })
+                    <Loader />
+                  </div>
+                ) : currentProductFeedback.err !== null ? (
+                  <div
+                    className="alert alert-danger clickable"
+                    onClick={() =>
+                      loadProductFeedback(selectedProduct.productId)
+                    }
+                  >
+                    COULD NOT LOAD COMMENTS! CLICK TO TRY AGAIN
+                  </div>
+                ) : currentProductFeedback.comments.length === 0 ? (
+                  <p className="text-center" style={{ color: "gray" }}>
+                    NO COMMENTS
+                  </p>
+                ) : (
+                  <div className="row">
+                    <div
+                      className="col-md-6 col-xs-12"
+                      style={{
+                        height: 600,
+                        overflowY: "auto",
+                        paddingTop: 20
+                      }}
+                    >
+                      {currentProductFeedback.comments
+                        .filter(comment => !comment.parentId)
+                        .reverse()
+                        .map(comment => (
+                          <Comment
+                            comment={comment}
+                            key={"comment-" + comment.id}
+                            selected={comment.id === selectedCommentId}
+                            select={() =>
+                              this.setState({
+                                selectedCommentId: comment.id
+                              })
+                            }
+                          />
+                        ))}
+                    </div>
+                    <div
+                      className="col-md-6 col-xs-12"
+                      style={{ paddingTop: 20 }}
+                    >
+                      {selectedCommentId !== null && (
+                        <div>
+                          <div
+                            style={{
+                              height: 550,
+                              overflowY: "auto",
+                              width: "100%"
+                            }}
+                          >
+                            {currentProductFeedback.comments
+                              .filter(
+                                comment =>
+                                  comment.parentId === selectedCommentId
+                              )
+                              .reverse()
+                              .map(comment => (
+                                <Comment
+                                  key={"comment-" + comment.id}
+                                  comment={comment}
+                                />
+                              ))}
+                          </div>
+                          <form
+                            ref={ref => (this.commentForm = ref)}
+                            onSubmit={async e => {
+                              e.preventDefault();
+                              if (submittingAnswer) return;
+                              this.setState({ submittingAnswer: true });
+                              const { comment } = e.target;
+                              const content = comment.value;
+                              this.commentForm.reset();
+                              const { ok, _error } = await giveAnswer(
+                                selectedProduct.productId,
+                                content,
+                                selectedCommentId,
+                                token
+                              );
+                              if (ok) {
+                                loadProductFeedback(selectedProduct.productId);
+                              } else {
+                                toast(_error, "error");
                               }
-                            />
-                          ))
+                              this.setState({ submittingAnswer: false });
+                            }}
+                          >
+                            <div className="row">
+                              <div
+                                className="col-xs-10"
+                                style={{ paddingRight: 0, paddingLeft: 0 }}
+                              >
+                                <div className="form-group">
+                                  <input
+                                    name="comment"
+                                    type="text"
+                                    className="form-control border-input"
+                                    placeholder="Enter comment"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                              <div
+                                className="col-xs-2"
+                                style={{ paddingLeft: 0 }}
+                              >
+                                <button
+                                  type="submit"
+                                  disabled={submittingAnswer}
+                                  className="btn btn-default btn-fill btn-full"
+                                >
+                                  {submittingAnswer ? (
+                                    <i className="fa fa-circle-o-notch fa-spin" />
+                                  ) : (
+                                    "Send"
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
                       )}
                     </div>
                   </div>
-                  <div
-                    className="col-md-6 col-xs-12"
-                    style={{ paddingTop: 20 }}
-                  >
-                    {selectedCommentId !== null && (
-                      <div>
-                        <div
-                          style={{
-                            height: 550,
-                            overflowY: "auto",
-                            width: "100%"
-                          }}
-                        >
-                          {currentProductFeedback.comments
-                            .filter(
-                              comment => comment.parentId === selectedCommentId
-                            )
-                            .reverse()
-                            .map(comment => (
-                              <Comment
-                                key={"comment-" + comment.id}
-                                comment={comment}
-                              />
-                            ))}
-                        </div>
-                        <form
-                          ref={ref => (this.commentForm = ref)}
-                          onSubmit={async e => {
-                            e.preventDefault();
-                            if (submittingAnswer) return;
-                            this.setState({ submittingAnswer: true });
-                            const { comment } = e.target;
-                            const content = comment.value;
-                            this.commentForm.reset();
-                            const { ok, _error } = await giveAnswer(
-                              selectedProduct.productId,
-                              content,
-                              selectedCommentId,
-                              token
-                            );
-                            if (ok) {
-                              loadProductFeedback(selectedProduct.productId);
-                            } else {
-                              toast(_error, "error");
-                            }
-                            this.setState({ submittingAnswer: false });
-                          }}
-                        >
-                          <div className="row">
-                            <div
-                              className="col-xs-10"
-                              style={{ paddingRight: 0, paddingLeft: 0 }}
-                            >
-                              <div className="form-group">
-                                <input
-                                  name="comment"
-                                  type="text"
-                                  className="form-control border-input"
-                                  placeholder="Enter comment"
-                                  required
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className="col-xs-2"
-                              style={{ paddingLeft: 0 }}
-                            >
-                              <button
-                                type="submit"
-                                disabled={submittingAnswer}
-                                className="btn btn-default btn-fill btn-full"
-                              >
-                                {submittingAnswer ? (
-                                  <i className="fa fa-circle-o-notch fa-spin" />
-                                ) : (
-                                  "Send"
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             )}
             {/* <div

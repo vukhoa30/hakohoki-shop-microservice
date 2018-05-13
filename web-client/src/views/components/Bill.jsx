@@ -8,53 +8,87 @@ class Bill extends Component {
     super(props);
     this.state = {};
   }
+  renderInformation(info) {
+    let name = "";
+    switch (info.name) {
+      case "accountId":
+        name = "ID";
+        break;
+      case "fullName":
+        name = "Name";
+        break;
+      case "email":
+        name = "Email";
+        break;
+      case "phoneNumber":
+        name = "Phone";
+        break;
+    }
+    return (
+      <div key={"info-" + info.name} style={{ display: "flex" }}>
+        <p style={{ flex: 1, fontWeight: "bold" }}>{name}</p>
+        <p style={{ flex: 5 }}>{info.value}</p>
+      </div>
+    );
+  }
   render() {
     const { bill, selectBill } = this.props;
     return (
-      <li className="row list-group-item list-group-item-action flex-column align-items-start pt-3 pb-5">
+      <li className="row list-group-item clickable" onClick={() => selectBill(bill)}>
         <div className="col-xs-3">
           <img
-            src="assets/img/bill.png"
+            src={`assets/img/${
+              bill.status === "completed" ? "bill_complete" : "bill"
+            }.png`}
             alt=""
             style={{ width: "100%", height: "auto" }}
           />
+          <div
+            style={{
+              marginTop: 10,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center"
+            }}
+          >
+            {bill.status === "pending" ? (
+              <p style={{ color: "orange" }}>PENDING</p>
+            ) : (
+              <p style={{ color: "green" }}>COMPLETED</p>
+            )}
+          </div>
         </div>
         <div className="col-xs-9">
-          {bill.status === "pending" ? (
-            <p style={{ color: "orange" }}>PENDING</p>
-          ) : (
-            <p style={{ color: "green" }}>COMPLETED</p>
-          )}
           <div style={{ display: "flex" }}>
             <h5 style={{ fontWeight: "bold", marginTop: 0, flex: 1 }}>
               Total price: {currencyFormat(bill.totalPrice)}
             </h5>
-            <div className="text-right" style={{ flex: 1 }}>
-              <small>created at: {formatTime(bill.createdAt)}</small>
-              {bill.status === "completed" && (
-                <small style={{ display: "block" }}>
-                  confirmed at: {formatTime(bill.completedAt)}
-                </small>
-              )}
+          </div>
+          <div className="panel panel-default">
+            <div className="panel-heading">
+              <b>Buyer information</b>
+            </div>
+            <div className="panel-body">
+              {bill.buyer.map(info => this.renderInformation(info))}
             </div>
           </div>
-          <p className="mb-1 mt-3">
-            <b>Buyer:</b> {bill.buyer.fullName} (<a href="javascript:;">
-              {bill.buyer.accountId}
-            </a>)
-          </p>
-          {bill.seller && (
-            <p className="mb-1 mt-3">
-              <b>Seller:</b> {bill.seller.fullName} (<a href="javascript:;">
-                {bill.seller.accountId}
-              </a>)
-            </p>
+          {bill.status === "completed" && (
+            <div className="panel panel-default">
+              <div className="panel-heading">
+                <b>Seller information</b>
+              </div>
+              <div className="panel-body">
+                {bill.seller.map(
+                  info =>
+                    info.name === "role" ? (
+                      <div />
+                    ) : (
+                      this.renderInformation(info)
+                    )
+                )}
+              </div>
+            </div>
           )}
-          <div className="d-flex flex-row-reverse">
-            <a href="javascript:;" onClick={() => selectBill(bill)}>
-              View detail
-            </a>
-          </div>
         </div>
       </li>
     );

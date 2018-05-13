@@ -6,85 +6,136 @@ import {
   formatTime,
   currencyFormat,
   request,
-  parseToQueryString
+  parseToQueryString,
+  getToday
 } from "../../utils";
-import { loadPromotions, toast } from "../../api";
+import { loadPromotions, toast, selectProduct } from "../../api";
 import DatePicker from "react-datepicker";
 import { Checkbox, Modal } from "react-bootstrap";
 import { differenceWith, uniqWith } from "lodash";
 import moment from "moment";
+import ProductSelector from "../components/ProductSelector";
+import ImagePicker from "../components/ImagePicker.jsx";
+
 class Promotion extends Component {
   constructor(props) {
     super(props);
-    this.form = {
-      selectedProductIds: []
-    };
+    this.prices = {};
     this.state = {
       selectedPromotion: null,
-      start: moment(),
-      end: null,
-      showProductPicker: false,
+      showDialog: false,
       selectedProducts: [],
-      promotionRate: 30,
-      currentPicture: "",
-      search: {
-        q: undefined,
-        category: undefined,
-        isSearching: false,
-        products: [],
-        err: null
-      },
-      isSubmittingForm: false
+      promotionPoster: null,
+      productSelectorMode: "all",
+      currentProcessingProduct: null,
+      submitting: false
     };
     const { loadPromotions } = this.props;
     loadPromotions();
   }
-  async search(productName, category) {
-    const query = parseToQueryString({
-      q: productName.value === "" ? undefined : productName.value,
-      category: category.value === "all" ? undefined : category.value
-    });
-    try {
-      this.setState({ search: { ...query, isSearching: true, products: [] } });
-      const { status, data } = await request(
-        "/products/search?" + query + "&offset=0&limit=10",
-        "GET"
-      );
-      if (status === 200)
-        return this.setState({
-          search: { isSearching: false, err: null, products: data, ...query }
-        });
-    } catch (error) {}
-    this.setState({
-      search: { isSearching: false, err: "Error", products: [], ...query }
-    });
+  // async search(productName, category) {
+  //   const query = parseToQueryString({
+  //     q: productName.value === "" ? undefined : productName.value,
+  //     category: category.value === "all" ? undefined : category.value
+  //   });
+  //   try {
+  //     this.setState({ search: { ...query, isSearching: true, products: [] } });
+  //     const { status, data } = await request(
+  //       "/products/search?" + query + "&offset=0&limit=10",
+  //       "GET"
+  //     );
+  //     if (status === 200)
+  //       return this.setState({
+  //         search: { isSearching: false, err: null, products: data, ...query }
+  //       });
+  //   } catch (error) {}
+  //   this.setState({
+  //     search: { isSearching: false, err: "Error", products: [], ...query }
+  //   });
+  // }
+  // async loadMore() {
+  //   const oldArray = this.state.search.products;
+  //   this.setState({ search: { ...this.state.search, isSearching: true } });
+  //   try {
+  //     const query = parseToQueryString({
+  //       q: this.state.search.q,
+  //       category: this.state.search.category
+  //     });
+  //     const { status, data } = await request(
+  //       "/products/search?" + query + `&offset=${oldArray.length}&limit=10`,
+  //       "GET"
+  //     );
+  //     if (status === 200)
+  //       return this.setState({
+  //         search: {
+  //           ...this.state.search,
+  //           isSearching: false,
+  //           err: null,
+  //           products: oldArray.concat(data)
+  //         }
+  //       });
+  //   } catch (error) {}
+  //   this.setState({
+  //     search: { ...this.state.search, isSearching: false, err: "Error" }
+  //   });
+  // }
+
+  validate(data) {
+    console.log(data);
+    const { toast } = this.props;
+    const start = new Date(data.start);
+    const end = new Date(data.end);
+
+    if (data.poster_url === null) {
+      toast("PLEASE SELECT POSTER IMAGE", "error");
+      return false;
+    }
+
+    if (start.getTime() >= end.getTime()) {
+      toast("INVALID PROMOTION DURATION TIME", "error");
+      return false;
+    }
+
+    for (let index = 0; index < data.products.length; index++) {
+      const element = data.products[index];
+      if (element.new_price && Number(element.new_price) <= 0) {
+        toast("INVALID PRODUCT PRICE! PLEASE CHECK YOUR INPUT AGAIN", "error");
+        return false;
+      }
+    }
+
+    return true;
   }
-  async loadMore() {
-    const oldArray = this.state.search.products;
-    this.setState({ search: { ...this.state.search, isSearching: true } });
+
+  async submit(data) {
+    const { toast, loadPromotions, token } = this.props;
+    this.setState({ submitting: true });
     try {
-      const query = parseToQueryString({
-        q: this.state.search.q,
-        category: this.state.search.category
-      });
-      const { status, data } = await request(
-        "/products/search?" + query + `&offset=${oldArray.length}&limit=10`,
-        "GET"
+      const { status } = await request(
+        "/promotions",
+        "POST",
+        { Authorization: "JWT " + token },
+        data
       );
-      if (status === 200)
-        return this.setState({
-          search: {
-            ...this.state.search,
-            isSearching: false,
-            err: null,
-            products: oldArray.concat(data)
-          }
+      if (status === 200) {
+        toast("NEW PROMOTION CREATED!", "success");
+        this.setState({
+          selectedProducts: [],
+          promotionPoster: null
         });
-    } catch (error) {}
-    this.setState({
-      search: { ...this.state.search, isSearching: false, err: "Error" }
-    });
+        this.createPromotionForm.reset();
+        loadPromotions();
+      } else if (status === 401)
+        toast("YOU ARE NOT AUTHORIZED TO CREATE PROMOTION", "error");
+      else toast("INTERNAL SERVER ERROR! TRY AGAIN LATER", "error");
+    } catch (error) {
+      if (error === "CONNECTION_ERROR")
+        toast("CONNECTION ERROR! TRY AGAIN LATER", "error");
+      else toast("UNDEFINED ERROR! TRY AGAIN LATER", "error");
+    }
+    this.setState({ submitting: false });
   }
+
   render() {
     const {
       isLoading,
@@ -96,18 +147,64 @@ class Promotion extends Component {
       submitting,
       toast,
       token,
-      role
+      role,
+      selectProduct
     } = this.props;
     const {
       selectedPromotion,
-      search,
-      showProductPicker,
-      selectedProducts
+      selectedProducts,
+      showDialog,
+      productSelectorMode,
+      currentProcessingProduct
+      // search,
+      // showProductPicker,
+      // selectedProducts
     } = this.state;
-    const { isSearching, products, err: searchErr } = search;
     return (
       <div className="container-fluid">
-        <Modal width={800} show={showProductPicker}>
+        <ProductSelector
+          open={showDialog}
+          close={() => this.setState({ showDialog: false })}
+          displayCondition={product =>
+            productSelectorMode === "all"
+              ? !selectedProducts.find(
+                  selectedProduct => selectedProduct._id === product._id
+                )
+              : currentProcessingProduct._id !== product._id &&
+                !currentProcessingProduct.giftProducts.find(
+                  selectedProduct => selectedProduct._id === product._id
+                )
+          }
+          jobName="SELECT PRODUCTS"
+          doJob={products => {
+            if (productSelectorMode === "all")
+              this.setState({
+                selectedProducts: this.state.selectedProducts.concat(
+                  products.map(product => ({ ...product, giftProducts: [] }))
+                )
+              });
+            else {
+              const giftProducts = currentProcessingProduct.giftProducts.concat(
+                products
+              );
+              const currentProductIndex = selectedProducts.findIndex(
+                product => product._id === currentProcessingProduct._id
+              );
+              if (currentProductIndex > -1) {
+                const newSelectedProducts = selectedProducts;
+                newSelectedProducts[
+                  currentProductIndex
+                ].giftProducts = giftProducts;
+                this.setState({
+                  selectedProduct: newSelectedProducts,
+                  productSelectorMode: "all",
+                  currentProcessingProduct: null
+                });
+              }
+            }
+          }}
+        />
+        {/* <Modal width={800} show={showProductPicker}>
           <Modal.Header>
             <Modal.Title>PRODUCTS</Modal.Title>
           </Modal.Header>
@@ -302,7 +399,7 @@ class Promotion extends Component {
               Close
             </button>
           </Modal.Footer>
-        </Modal>
+        </Modal> */}
         <div className="row">
           <div className="col-md-5 col-xs-12">
             <h3>PROMOTIONS</h3>
@@ -395,37 +492,119 @@ class Promotion extends Component {
                   </h3>
                   {selectedPromotion.products.map(product => (
                     <div
-                      className="row clickable"
+                      className="clickable product-showcase"
+                      onClick={() => selectProduct(product)}
                       key={"product-" + product._id}
-                      onClick={() =>
-                        history.push("/main/product/detail/" + product._id)
-                      }
+                      style={{
+                        marginBottom: 20,
+                        paddingTop: 20,
+                        paddingBottom: 20,
+                        width: "100%",
+                        display: "flex"
+                      }}
                     >
-                      <div
-                        className="col-xs-4"
-                        style={{ paddingTop: 10, paddingBottom: 10 }}
-                      >
+                      <div style={{ flex: 1 }}>
                         <img
-                          src={product.mainPicture}
-                          alt="Product picture"
+                          src={
+                            product.mainPicture
+                              ? product.mainPicture
+                              : "assets/img/unknown.png"
+                          }
+                          alt=""
                           style={{ width: "100%", height: "auto" }}
                         />
                       </div>
-                      <div className="col-xs-7">
-                        <h3 className="display-4" style={{ color: "red" }}>
-                          {product.name}
-                        </h3>
-                        <p>
-                          <text
-                            style={{
-                              textDecorationLine: "line-through",
-                              color: "gray"
-                            }}
-                          >
-                            {currencyFormat(product.price)}
-                          </text>{" "}
-                          -> {currencyFormat(product.promotionPrice)}
+                      <div style={{ flex: 3, paddingLeft: 10 }}>
+                        <p style={{ marginBottom: 0 }}>
+                          <b style={{ color: "red" }}>{product.name}</b>
                         </p>
+                        <small>ID: {product._id}</small>
+                        {product.promotionPrice ? (
+                          <div>
+                            <h5 style={{ color: "red", marginBottom: 0 }}>
+                              {currencyFormat(product.promotionPrice)}
+                            </h5>
+                            <small
+                              style={{ textDecorationLine: "line-through" }}
+                            >
+                              {currencyFormat(product.price)}
+                            </small>
+                          </div>
+                        ) : (
+                          <h5 style={{ color: "red" }}>
+                            {currencyFormat(product.price)}
+                          </h5>
+                        )}
+                        <div style={{ width: "100%" }}>
+                          {!product.giftProducts ||
+                          product.giftProducts.length === 0 ? (
+                            <p
+                              className="text-center"
+                              style={{ color: "gray" }}
+                            >
+                              NO ATTACHED PRODUCTS
+                            </p>
+                          ) : (
+                            <div className="panel panel-default">
+                              <div className="panel-body">
+                                {product.giftProducts.map(
+                                  (giftProduct, giftIndex) => (
+                                    <div
+                                      className="clickable product-showcase"
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        selectProduct(giftProduct);
+                                      }}
+                                      key={
+                                        "gift-product-" +
+                                        product._id +
+                                        "-" +
+                                        giftProduct._id
+                                      }
+                                      style={{
+                                        marginBottom: 20,
+                                        paddingTop: 20,
+                                        paddingBottom: 20,
+                                        width: "100%",
+                                        display: "flex"
+                                      }}
+                                    >
+                                      <div style={{ flex: 1 }}>
+                                        <img
+                                          src={
+                                            giftProduct.mainPicture
+                                              ? giftProduct.mainPicture
+                                              : "assets/img/unknown.png"
+                                          }
+                                          alt=""
+                                          style={{
+                                            width: "100%",
+                                            height: "auto"
+                                          }}
+                                        />
+                                      </div>
+                                      <div style={{ flex: 3, padding: 10 }}>
+                                        <p style={{ marginBottom: 0 }}>
+                                          <b style={{ color: "red" }}>
+                                            {giftProduct.name}
+                                          </b>
+                                        </p>
+                                        <small>ID: {giftProduct._id}</small>
+                                        <h5 style={{ fontWeight: "bold" }}>
+                                          {currencyFormat(
+                                            giftProduct.promotionPrice
+                                              ? giftProduct.promotionPrice
+                                              : giftProduct.price
+                                          )}{" "}
+                                        </h5>
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -438,12 +617,9 @@ class Promotion extends Component {
           <div>
             <h3>CREATE PROMOTION</h3>
             <form
-              name="promotion_form"
+              ref={ref => (this.createPromotionForm = ref)}
               onSubmit={async e => {
                 e.preventDefault();
-                if (this.state.isSubmittingForm) return;
-                if (selectedProducts.length === 0)
-                  return toast("PLEASE SELECT SOME PRODUCTS", "error");
                 const {
                   name,
                   start,
@@ -451,232 +627,302 @@ class Promotion extends Component {
                   sendNotification,
                   sendMail
                 } = e.target;
-                const obj = {
+                const products = selectedProducts.map(product => ({
+                  product_id: product._id,
+                  new_price:
+                    this.prices[product._id].value !== ""
+                      ? this.prices[product._id].value
+                      : undefined,
+                  giftIds: product.giftProducts.map(
+                    giftProduct => giftProduct._id
+                  )
+                }));
+                const data = {
                   name: name.value,
+                  posterUrl: this.state.promotionPoster,
                   start: start.value,
                   end: end.value,
                   sendNotification: sendNotification.checked,
-                  posterUrl: this.state.currentPicture,
                   sendMail: sendMail.checked,
-                  products: selectedProducts.map(product => ({
-                    product_id: product._id,
-                    new_price:
-                      product.currentPrice -
-                      this.state.promotionRate * product.currentPrice / 100
-                  }))
+                  products
                 };
-                this.setState({ isSubmittingForm: true });
-                let err = "UNDEFINED ERROR! TRY AGAIN LATER";
-                try {
-                  const { status } = await request(
-                    "/promotions",
-                    "POST",
-                    { Authorization: "JWT " + token },
-                    obj
-                  );
-                  if (status === 200) {
-                    toast("ADD PROMOTION SUCCESSFULLY", "success");
-                    loadPromotions();
-                    return this.setState({
-                      isSubmittingForm: false,
-                      selectedPromotion: null
-                    });
-                  } else if (status === 401) {
-                    err =
-                      "AUTHENTICATION FAILED. PLEASE CHECK YOUR ACCOUNT ROLE!";
-                  }
-                } catch (error) {}
-                toast(err, "error");
-                this.setState({ isSubmittingForm: false });
+
+                return this.validate(data) && this.submit(data);
               }}
             >
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  POSTER
-                </label>
-                <div className="col-sm-9">
-                  <input
-                    type="text"
-                    name="poster"
-                    className="form-control border-input"
-                    placeholder="Enter picture URL"
-                    value={this.state.currentPicture}
-                    onChange={({ target }) =>
-                      this.setState({ currentPicture: target.value })
-                    }
-                    required
-                  />
-                  {this.state.currentPicture !== "" ? (
-                    <img
-                      src={this.state.currentPicture}
-                      alt=""
-                      style={{ width: "100%", height: "auto" }}
+              <div className="row">
+                <div className="col-xs-5">
+                  <div className="form-group">
+                    <label>Promotion name:</label>
+                    <input
+                      placeholder="Enter promotion name"
+                      type="text"
+                      className="form-control border-input"
+                      id="promotionName"
+                      name="name"
+                      required
                     />
-                  ) : (
-                    <p>Please enter picture url on the textbox above</p>
-                  )}
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  NAME
-                </label>
-                <div className="col-sm-9">
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Enter promotion name"
-                    className="form-control border-input"
-                    required
+                  </div>
+                  <ImagePicker
+                    instruction="CHOOSE PROMOTION IMAGE"
+                    image={this.state.promotionPoster}
+                    changeImage={url => this.setState({ promotionPoster: url })}
                   />
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  START TIME
-                </label>
-                <div className="col-sm-9">
-                  <DatePicker
-                    name="start"
-                    selected={this.state.start}
-                    onChange={date => this.setState({ start: date })}
-                    className="form-control border-input"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  END TIME
-                </label>
-                <div className="col-sm-9">
-                  <DatePicker
-                    name="end"
-                    selected={this.state.end}
-                    onChange={date => this.setState({ end: date })}
-                    className="form-control border-input"
-                    required
-                  />
-                  <Checkbox name="sendNotification" defaultChecked>
-                    Send notification to users
-                  </Checkbox>
-                  <Checkbox name="sendMail" defaultChecked>
-                    Send notification to users through email
-                  </Checkbox>
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  PROMOTION RATE
-                </label>
-                <div className="col-sm-3">
-                  <input
-                    type="number"
-                    className="form-control border-input"
-                    value={this.state.promotionRate}
-                    onChange={({ target }) =>
-                      this.setState({
-                        promotionRate: target.value === "" ? 100 : target.value
-                      })
-                    }
-                    required
-                  />
-                </div>
-                <div className="col-sm-1">
-                  <h5>%</h5>
-                </div>
-              </div>
-              <div className="form-group row">
-                <label
-                  className="col-sm-3 col-form-label font-weight-bold text-right"
-                  style={{ paddingTop: 10 }}
-                >
-                  PRODUCTS
-                </label>
-                <div className="col-sm-9">
-                  {this.state.selectedProducts.map((product, index) => (
-                    <div
-                      className="row clickable"
-                      key={"selected-product-" + product._id}
-                      // onClick={() =>
-                      //   history.push("/main/product/detail/" + product._id)
-                      // }
-                    >
-                      <div
-                        className="col-xs-2"
-                        style={{ paddingTop: 10, paddingBottom: 10 }}
-                      >
-                        <img
-                          src={product.mainPicture}
-                          alt="Product picture"
-                          style={{ width: 100, height: 100 }}
-                        />
-                      </div>
-                      <div className="col-xs-8">
-                        <h3 className="display-4" style={{ color: "red" }}>
-                          {product.name}
-                        </h3>
-                        <p>
-                          {currencyFormat(product.currentPrice)} ->{" "}
-                          <b>
-                            {currencyFormat(
-                              product.currentPrice -
-                                this.state.promotionRate *
-                                  product.currentPrice /
-                                  100
-                            )}
-                          </b>
-                        </p>
-                      </div>
-                      <div className="col-xs-1">
-                        <i
-                          className="fa fa-remove fa-2x"
-                          style={{ color: "red" }}
-                          onClick={() => {
-                            const newArray = selectedProducts;
-                            newArray.splice(index, 1);
-                            this.setState({ selectedProducts: newArray });
-                          }}
+                  <div className="checkbox">
+                    <label>
+                      <input
+                        type="checkbox"
+                        value=""
+                        defaultChecked
+                        name="sendNotification"
+                      />Send notification to user in client app
+                    </label>
+                  </div>
+                  <div className="checkbox">
+                    <label>
+                      <input type="checkbox" value="" name="sendMail" />Send to
+                      user mail
+                    </label>
+                  </div>
+                  <div className="row">
+                    <div className="col-xs-6">
+                      <div className="form-group">
+                        <label>From</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="start"
+                          required
+                          defaultValue={getToday()}
                         />
                       </div>
                     </div>
-                  ))}
-                  <button
-                    className="btn btn-default btn-fill"
-                    type="button"
-                    onClick={() =>
-                      this.setState({ showProductPicker: true, marginTop: 50 })
-                    }
-                  >
-                    <i className="fa fa-plus" />
-                  </button>
+                    <div className="col-xs-6">
+                      <div className="form-group">
+                        <label>To</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="end"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-xs-7">
+                  <h4 style={{ marginTop: 0 }}>
+                    SELECTED PRODUCTS
+                    <button
+                      type="button"
+                      className="btn btn-default btn-fill pull-right"
+                      onClick={() =>
+                        this.setState({
+                          showDialog: true,
+                          productSelectorMode: "all"
+                        })
+                      }
+                    >
+                      <i className="fa fa-plus" />
+                      ADD PRODUCT
+                    </button>
+                  </h4>
+                  {selectedProducts.length === 0 ? (
+                    <p
+                      className="text-center"
+                      style={{ marginTop: 50, color: "gray" }}
+                    >
+                      NO PRODUCT SELECTED
+                    </p>
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 500,
+                        overflowY: "auto"
+                      }}
+                    >
+                      {selectedProducts.map((product, index) => (
+                        <div
+                          key={"product-" + product._id}
+                          style={{
+                            marginBottom: 20,
+                            paddingTop: 20,
+                            paddingBottom: 20,
+                            width: "100%",
+                            display: "flex"
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <img
+                              src={
+                                product.mainPicture
+                                  ? product.mainPicture
+                                  : "assets/img/unknown.png"
+                              }
+                              alt=""
+                              style={{ width: "100%", height: "auto" }}
+                            />
+                          </div>
+                          <div style={{ flex: 3, padding: 10 }}>
+                            <p style={{ marginBottom: 0 }}>
+                              <b style={{ color: "red" }}>{product.name}</b>
+                              <i
+                                className="fa fa-remove clickable pull-right"
+                                style={{ color: "orange" }}
+                                onClick={() => {
+                                  const newSelectedProducts = selectedProducts;
+                                  newSelectedProducts.splice(index, 1);
+                                  this.setState({
+                                    selectedProducts: newSelectedProducts
+                                  });
+                                }}
+                              />
+                            </p>
+                            <small>ID: {product._id}</small>
+                            <div className="row">
+                              <div className="col-xs-5">
+                                <h5 style={{ fontWeight: "bold" }}>
+                                  {currencyFormat(
+                                    product.promotionPrice
+                                      ? product.promotionPrice
+                                      : product.price
+                                  )}{" "}
+                                  ->
+                                </h5>
+                              </div>
+                              <div className="col-xs-5">
+                                <input
+                                  type="number"
+                                  className="form-control border-input"
+                                  placeholder="Enter new price"
+                                  ref={ref => (this.prices[product._id] = ref)}
+                                />
+                              </div>
+                              <div className="col-xs-2">
+                                <h5 style={{ fontWeight: "bold" }}>VNĐ</h5>
+                              </div>
+                            </div>
+                            <div
+                              className="panel panel-default"
+                              style={{ marginTop: 20 }}
+                            >
+                              <div className="panel-heading">
+                                <p>
+                                  <b>
+                                    <small>ATTACHED PRODUCTS</small>
+                                  </b>{" "}
+                                  <i
+                                    className="fa fa-plus pull-right clickable"
+                                    onClick={() =>
+                                      this.setState({
+                                        productSelectorMode: "specific",
+                                        currentProcessingProduct: product,
+                                        showDialog: true
+                                      })
+                                    }
+                                  />
+                                </p>
+                              </div>
+                              <div className="panel-body">
+                                {product.giftProducts.length === 0 ? (
+                                  <p
+                                    className="text-center"
+                                    style={{ color: "gray" }}
+                                  >
+                                    NO PRODUCT SELECTED
+                                  </p>
+                                ) : (
+                                  <div>
+                                    {product.giftProducts.map(
+                                      (giftProduct, giftIndex) => (
+                                        <div
+                                          key={
+                                            "gift-product-" +
+                                            product._id +
+                                            "-" +
+                                            giftProduct._id
+                                          }
+                                          style={{
+                                            marginBottom: 20,
+                                            paddingTop: 20,
+                                            paddingBottom: 20,
+                                            width: "100%",
+                                            display: "flex"
+                                          }}
+                                        >
+                                          <div style={{ flex: 1 }}>
+                                            <img
+                                              src={
+                                                giftProduct.mainPicture
+                                                  ? giftProduct.mainPicture
+                                                  : "assets/img/unknown.png"
+                                              }
+                                              alt=""
+                                              style={{
+                                                width: "100%",
+                                                height: "auto"
+                                              }}
+                                            />
+                                          </div>
+                                          <div style={{ flex: 3, padding: 10 }}>
+                                            <p style={{ marginBottom: 0 }}>
+                                              <b style={{ color: "red" }}>
+                                                {giftProduct.name}
+                                              </b>
+                                              <i
+                                                className="fa fa-remove clickable pull-right"
+                                                style={{ color: "orange" }}
+                                                onClick={() => {
+                                                  const newSelectedProducts = selectedProducts;
+                                                  newSelectedProducts[
+                                                    index
+                                                  ].giftProducts.splice(
+                                                    giftIndex,
+                                                    1
+                                                  );
+                                                  this.setState({
+                                                    selectedProducts: newSelectedProducts
+                                                  });
+                                                }}
+                                              />
+                                            </p>
+                                            <small>ID: {giftProduct._id}</small>
+                                            <h5 style={{ fontWeight: "bold" }}>
+                                              {currencyFormat(
+                                                giftProduct.promotionPrice
+                                                  ? giftProduct.promotionPrice
+                                                  : giftProduct.price
+                                              )}{" "}
+                                            </h5>
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="text-center">
+              <div
+                className="text-center"
+                style={{ width: "100%", marginTop: 20 }}
+              >
                 <button
-                  className="btn btn-success btn-fill"
                   type="submit"
-                  disabled={this.state.isSubmittingForm}
+                  className="btn btn-success btn-lg"
+                  disabled={this.state.submitting}
                 >
-                  {this.state.isSubmittingForm ? (
-                    <i className="fa fa-circle-o-notch" />
+                  {this.state.submitting ? (
+                    <i className="fa fa-spinner fa-spin" />
                   ) : (
-                    "ADD PROMOTION"
+                    "CREATE PROMOTION"
                   )}
                 </button>
               </div>
@@ -694,18 +940,8 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = dispatch => ({
   loadPromotions: () => dispatch(loadPromotions()),
-  toast: (message, level) => dispatch(toast(message, level))
+  toast: (message, level) => dispatch(toast(message, level)),
+  selectProduct: product => dispatch(selectProduct(product))
 });
-const ReduxForm = reduxForm({
-  form: "promotion_form",
-  touchOnBlur: false,
-  enableReinitialize: true,
-  onSubmitFail: () => {},
-  validate: values => {
-    const errors = {};
-    console.log(values);
-    return errors;
-  }
-})(Promotion);
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReduxForm);
+export default connect(mapStateToProps, mapDispatchToProps)(Promotion);

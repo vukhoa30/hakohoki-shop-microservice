@@ -7,6 +7,7 @@ import { parseToObject, request } from "../../../utils";
 import Loader from "../../components/Loader";
 import { Modal } from "react-bootstrap";
 import { reduce } from "lodash";
+import ImagePicker from "../../components/ImagePicker";
 
 const renderSpecifications = ({ fields, meta: { error, submitFailed } }) => (
   <div className="card">
@@ -171,7 +172,7 @@ class ProductDetail extends Component {
             <Modal.Footer>
               <button type="submit" className="btn btn-primary">
                 {this.state.importRequesting ? (
-                  <i className="fa fa fa-circle-o-notch fa-spin"/>
+                  <i className="fa fa fa-circle-o-notch fa-spin" />
                 ) : (
                   "Import"
                 )}{" "}
@@ -278,57 +279,13 @@ class ProductDetail extends Component {
               <div className="content">
                 <div className="row">
                   <div className="col-md-5 col-xs-12">
-                    {this.state.mainPicture !== null ? (
-                      <div>
-                        <img
-                          src={this.state.mainPicture}
-                          className="img-fluid"
-                          style={{ width: "100%", height: "auto" }}
-                          alt="Main picture"
-                          onError={() => {
-                            toast("INVALID PICTURE URI", "error");
-                            this.setState({ mainPicture: null });
-                          }}
-                        />
-                        <div>
-                          <button
-                            type="button"
-                            className="btn btn-light mt-3"
-                            onClick={() =>
-                              this.setState({
-                                picturePickMode: "main",
-                                showPictureDialog: true
-                              })
-                            }
-                          >
-                            Change picture
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="jumbotron">
-                          <p className="lead">
-                            Main picture not available. Please select one!
-                          </p>
-                          <hr className="my-4" />
-                          <p className="lead">
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-lg"
-                              onClick={() =>
-                                this.setState({
-                                  picturePickMode: "main",
-                                  showPictureDialog: true
-                                })
-                              }
-                            >
-                              Add picture
-                            </button>
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    <ImagePicker
+                      instruction="CHOOSE MAIN IMAGE"
+                      image={this.state.mainPicture}
+                      changeImage={image =>
+                        this.setState({ mainPicture: image })
+                      }
+                    />
                   </div>
                   <div className="col-md-7 col-xs-12">
                     <Field
@@ -390,29 +347,13 @@ class ProductDetail extends Component {
             <div className="card mt-5">
               <h3 className="header">Additional pictures</h3>
               <div className="content">
-                <button
-                  type="button"
-                  className="btn btn-light"
-                  onClick={() =>
-                    this.setState({
-                      picturePickMode: "addition",
-                      showPictureDialog: true
-                    })
-                  }
-                >
-                  <i className="fa fa-plus" /> Add pictures
-                </button>
                 <div className="row">
                   {this.state.additionalPictures.map((pictureUri, index) => (
                     <div
                       key={"additionalPicture-" + index}
-                      style={{
-                        marginRight: 20,
-                        width: 300,
-                        display: "inline-block"
-                      }}
+                      className="col-xs-3"
                     >
-                      <img
+                      {/* <img
                         src={pictureUri}
                         alt="Additional image"
                         style={{ height: 300, width: "100%" }}
@@ -422,11 +363,23 @@ class ProductDetail extends Component {
                           this.setState({ additionalPictures: newArray });
                           toast("INVALID PICTURE URI", "error");
                         }}
+                      /> */}
+                      <ImagePicker
+                        instruction="CHOOSE ADDITIONAL IMAGE"
+                        image={pictureUri}
+                        changeImage={image => {
+                          const newAdditionImages = this.state
+                            .additionalPictures;
+                          newAdditionImages[index] = image;
+                          this.setState({
+                            additionalPictures: newAdditionImages
+                          });
+                        }}
                       />
                       <button
                         type="button"
                         style={{ marginTop: 10 }}
-                        className="btn btn-danger btn-lg btn-block"
+                        className="btn btn-danger btn-block"
                         onClick={() => {
                           const newArray = this.state.additionalPictures;
                           newArray.splice(index, 1);
@@ -437,6 +390,19 @@ class ProductDetail extends Component {
                       </button>
                     </div>
                   ))}
+                  <div className="col-xs-3">
+                    <ImagePicker
+                      instruction="CHOOSE ADDITIONAL IMAGE"
+                      image={null}
+                      changeImage={image => {
+                        const newAdditionImages = this.state.additionalPictures;
+                        newAdditionImages.push(image);
+                        this.setState({
+                          additionalPictures: newAdditionImages
+                        });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -445,8 +411,8 @@ class ProductDetail extends Component {
               component={renderSpecifications}
             />
             <div className="row">
-              <div className="col" />
-              <div className="col">
+              <div className="col-xs-4" />
+              <div className="col-xs-4">
                 {id ? (
                   <button
                     type="submit"
@@ -466,7 +432,7 @@ class ProductDetail extends Component {
                   </button>
                 )}
               </div>
-              <div className="col" />
+              <div className="col-xs-4" />
             </div>
           </div>
         </form>

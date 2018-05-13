@@ -1031,7 +1031,7 @@ textarea.form-control {
   padding: 15px 8px; }
 
 /*      Checkbox and radio         */
-.checkbox,
+/* .checkbox,
 .radio {
   margin-bottom: 12px;
   padding-left: 30px;
@@ -1064,14 +1064,13 @@ textarea.form-control {
     opacity: 1; }
   .checkbox input,
   .radio input {
-    outline: none !important;
-    display: none; }
+    outline: none !important; }
 
 .checkbox label,
 .radio label {
   padding-left: 10px; }
 
-.checkbox .icons .first-icon,
+/* .checkbox .icons .first-icon,
 .radio .icons .first-icon,
 .checkbox .icons .second-icon,
 .radio .icons .second-icon {
@@ -1087,14 +1086,14 @@ textarea.form-control {
 .checkbox .icons .second-icon,
 .radio .icons .second-icon {
   opacity: 0;
-  filter: alpha(opacity=0); }
+  filter: alpha(opacity=0); } */
 
-.checkbox:hover,
+/* .checkbox:hover,
 .radio:hover {
   -webkit-transition: color 0.2s linear;
-  transition: color 0.2s linear; }
+  transition: color 0.2s linear; } */
 
-.checkbox:hover .first-icon,
+/* .checkbox:hover .first-icon,
 .radio:hover .first-icon {
   opacity: 0;
   filter: alpha(opacity=0); }
@@ -1114,18 +1113,18 @@ textarea.form-control {
   opacity: 1;
   filter: alpha(opacity=100);
   -webkit-transition: color 0.2s linear;
-  transition: color 0.2s linear; }
+  transition: color 0.2s linear; } */
 
-.checkbox.disabled,
+/* .checkbox.disabled,
 .radio.disabled {
   cursor: default;
   color: #DDDDDD; }
 
 .checkbox.disabled .icons,
 .radio.disabled .icons {
-  color: #DDDDDD; }
+  color: #DDDDDD; } */
 
-.checkbox.disabled .first-icon,
+/* .checkbox.disabled .first-icon,
 .radio.disabled .first-icon {
   opacity: 1;
   filter: alpha(opacity=100); }
@@ -1133,13 +1132,13 @@ textarea.form-control {
 .checkbox.disabled .second-icon,
 .radio.disabled .second-icon {
   opacity: 0;
-  filter: alpha(opacity=0); }
+  filter: alpha(opacity=0); } */
 
-.checkbox.disabled.checked .icons,
+/* .checkbox.disabled.checked .icons,
 .radio.disabled.checked .icons {
-  color: #DDDDDD; }
+  color: #DDDDDD; } */
 
-.checkbox.disabled.checked .first-icon,
+/* .checkbox.disabled.checked .first-icon,
 .radio.disabled.checked .first-icon {
   opacity: 0;
   filter: alpha(opacity=0); }
@@ -1148,7 +1147,7 @@ textarea.form-control {
 .radio.disabled.checked .second-icon {
   opacity: 1;
   color: #DDDDDD;
-  filter: alpha(opacity=100); }
+  filter: alpha(opacity=100); } */
 
 .nav > li > a:hover,
 .nav > li > a:focus {

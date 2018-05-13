@@ -94,19 +94,27 @@ class ProductSelector extends Component {
                     this.search(productName, category);
                   }}
                 >
-                  <div className="row">
-                    <div className="col-xs-8 form-group">
+                  <div style={{ display: "flex" }}>
+                    <div className="form-group" style={{ width: "60%" }}>
                       <input
                         ref={ref => (this.form.productName = ref)}
                         type="text"
                         className="form-control border-input"
                         placeholder="Search for product name"
+                        style={{
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0
+                        }}
                       />
                     </div>
-                    <div className="col-xs-4 form-group">
+                    <div className="form-group" style={{ width: "40%" }}>
                       <select
                         ref={ref => (this.form.category = ref)}
                         className="form-control border-input"
+                        style={{
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0
+                        }}
                       >
                         <option value="all" defaultValue>
                           All products
@@ -162,14 +170,15 @@ class ProductSelector extends Component {
                     )
                     .map(product => (
                       <div
-                        className="row clickable"
+                        className="clickable"
+                        key={"product-" + product._id}
                         style={{
                           marginBottom: 20,
-                          borderTop: "1px solid gray",
                           paddingTop: 20,
-                          paddingBottom: 20
+                          paddingBottom: 20,
+                          width: "100%",
+                          display: "flex"
                         }}
-                        key={"searched-product-" + product._id}
                         onClick={() =>
                           !processing &&
                           this.setState({
@@ -178,59 +187,39 @@ class ProductSelector extends Component {
                             )
                           })
                         }
-                        // onClick={() =>
-                        //   history.push("/main/product/detail/" + product._id)
-                        // }
                       >
-                        <div className="col-md-4">
+                        <div style={{ flex: 1 }}>
                           <img
-                            src={product.mainPicture}
+                            src={
+                              product.mainPicture
+                                ? product.mainPicture
+                                : "assets/img/unknown.png"
+                            }
                             alt=""
                             style={{ width: "100%", height: "auto" }}
                           />
                         </div>
-                        <div className="col-md-7">
-                          <h4>
-                            <b style={{ color: "red", fontSize: 25 }}>
-                              {product.name}
-                            </b>
-                          </h4>
+                        <div style={{ flex: 3, paddingLeft: 10 }}>
+                          <p style={{ marginBottom: 0 }}>
+                            <b style={{ color: "red" }}>{product.name}</b>
+                          </p>
                           <small>ID: {product._id}</small>
                           {product.promotionPrice ? (
-                            <p>
-                              <code
-                                style={{
-                                  textDecorationLine: "line-through",
-                                  color: "gray"
-                                }}
+                            <div>
+                              <h5 style={{ color: "red", marginBottom: 0 }}>
+                                {currencyFormat(product.promotionPrice)}
+                              </h5>
+                              <small
+                                style={{ textDecorationLine: "line-through" }}
                               >
                                 {currencyFormat(product.price)}
-                              </code>{" "}
-                              <b>{currencyFormat(product.promotionPrice)}</b>
-                            </p>
+                              </small>
+                            </div>
                           ) : (
-                            <p>
-                              <b>{currencyFormat(product.price)}</b>
-                            </p>
+                            <h5 style={{ color: "red" }}>
+                              {currencyFormat(product.price)}
+                            </h5>
                           )}
-                        </div>
-                        <div className="col-md-1">
-                          {/* <input
-                    className="form-control"
-                    type="checkbox"
-                    onClick={({ target }) => {
-                      const checked = target.checked;
-                      const { selectedProductIds } = this.form;
-                      if (checked) selectedProductIds.push(product._id);
-                      else
-                        selectedProductIds.splice(
-                          selectedProductIds.findIndex(
-                            productId => productId === product._id
-                          ),
-                          1
-                        );
-                    }}
-                  /> */}
                         </div>
                       </div>
                     ))}
@@ -267,66 +256,63 @@ class ProductSelector extends Component {
                   >
                     {selectedProducts.map(product => (
                       <div
-                        className="row clickable"
+                        className="clickable"
+                        key={"product-" + product._id}
                         style={{
                           marginBottom: 20,
-                          borderTop: "1px solid gray",
                           paddingTop: 20,
-                          paddingBottom: 20
+                          paddingBottom: 20,
+                          width: "100%",
+                          display: "flex"
                         }}
-                        key={"selected-product-" + product._id}
-                        // onClick={() =>
-                        //   history.push("/main/product/detail/" + product._id)
-                        // }
                       >
-                        <div className="col-md-1">
-                          <i
-                            className="fa fa-remove clickable"
-                            style={{ color: "orange" }}
-                            onClick={() => {
-                              if (processing) return;
-                              const newList = selectedProducts.splice(0);
-                              const deletedId = product._id;
-                              const deletedIndex = newList.findIndex(
-                                product => product._id === deletedId
-                              );
-                              if (deletedIndex > -1) {
-                                newList.splice(deletedIndex, 1);
-                                this.setState({ selectedProducts: newList });
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="col-md-4">
+                        <div style={{ flex: 1 }}>
                           <img
-                            src={product.mainPicture}
+                            src={
+                              product.mainPicture
+                                ? product.mainPicture
+                                : "assets/img/unknown.png"
+                            }
                             alt=""
                             style={{ width: "100%", height: "auto" }}
                           />
                         </div>
-                        <div className="col-md-7">
-                          <h4>
-                            <b style={{ color: "red", fontSize: 25 }}>
-                              {product.name}
-                            </b>
-                          </h4>
+                        <div style={{ flex: 3, paddingLeft: 10 }}>
+                          <p style={{ marginBottom: 0 }}>
+                            <b style={{ color: "red" }}>{product.name}</b>
+                            <i
+                              className="fa fa-remove clickable pull-right"
+                              style={{ color: "orange" }}
+                              onClick={() => {
+                                if (processing) return;
+                                const newList = selectedProducts.splice(0);
+                                const deletedId = product._id;
+                                const deletedIndex = newList.findIndex(
+                                  product => product._id === deletedId
+                                );
+                                if (deletedIndex > -1) {
+                                  newList.splice(deletedIndex, 1);
+                                  this.setState({ selectedProducts: newList });
+                                }
+                              }}
+                            />
+                          </p>
                           <small>ID: {product._id}</small>
                           {product.promotionPrice ? (
-                            <p>
-                              <code
-                                style={{
-                                  textDecorationLine: "line-through",
-                                  color: "gray"
-                                }}
+                            <div>
+                              <h5 style={{ color: "red", marginBottom: 0 }}>
+                                {currencyFormat(product.promotionPrice)}
+                              </h5>
+                              <small
+                                style={{ textDecorationLine: "line-through" }}
                               >
                                 {currencyFormat(product.price)}
-                              </code>{" "}
-                              <b>{currencyFormat(product.promotionPrice)}</b>
-                            </p>
+                              </small>
+                            </div>
                           ) : (
-                            <p>
-                              <b>{currencyFormat(product.price)}</b>
-                            </p>
+                            <h5 style={{ color: "red" }}>
+                              {currencyFormat(product.price)}
+                            </h5>
                           )}
                         </div>
                       </div>
