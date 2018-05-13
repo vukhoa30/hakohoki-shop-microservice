@@ -7,10 +7,10 @@ import ProductList from "./Product/List";
 import ProductDetail from "./Product/Detail";
 import AddProduct from "./Product/AddProduct";
 import NotificationPage from "./Notification";
-import ProductFeedback from "./Product/Feedback";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import Promotion from "./Promotion";
+import SubscribeProduct from "./Subscribe";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
@@ -34,8 +34,8 @@ class Main extends React.Component {
       logOutConfirmDialog: false
     };
     const { notification, token, loadNotifications, loadStatistic } = props;
-    loadNotifications(this.props.token);
-    loadStatistic(token);
+    // loadNotifications(this.props.token);
+    // loadStatistic(token);
   }
   render() {
     const {
@@ -52,7 +52,7 @@ class Main extends React.Component {
       connectToServer
     } = this.props;
     const { isConnecting, isConnected } = connection;
-    const notifications = notification.data.slice(0, 10);
+    const notifications = notification.data.slice(0, 5);
     const notificationUnreadCount = notifications.filter(
       notification => !notification.read
     ).length;
@@ -141,9 +141,23 @@ class Main extends React.Component {
                   </Link>
                 </li>
               )}
+              {role === "employee" && (
+                <li
+                  className={
+                    location.pathname.includes("subscribe-product")
+                      ? "active"
+                      : ""
+                  }
+                >
+                  <Link to={`${match.url}/subscribe-product`}>
+                    <i className="fa fa-certificate" />
+                    <p>Subscription</p>
+                  </Link>
+                </li>
+              )}
               <li
                 className={
-                  location.pathname.includes("product") ? "active" : ""
+                  location.pathname.includes("/product") ? "active" : ""
                 }
               >
                 <Link to={`${match.url}/product/list`}>
@@ -223,24 +237,39 @@ class Main extends React.Component {
                       {notifications.map(notification => (
                         <li key={"notification-" + notification.id}>
                           <Link
-                            to={`${match.url}/product/feedback/${
+                            to={`${
+                              match.url
+                            }/subscribe-product?_v=${new Date().getTime()}&product_id=${
                               notification.productId
-                            }?selected=${notification.commentId}&reload=true`}
+                            }&comment_id=${notification.commentId}`}
                             onClick={() =>
                               setNotificationAsRead(notification.id, token)
                             }
-                            style={{ padding: 20 }}
+                            style={{ padding: 20, whiteSpace: 'normal', width: 400 }}
                           >
-                            <div
-                              style={{
-                                fontWeight: notification.read ? "none" : "bold"
-                              }}
-                            >
-                              New comment about product{" "}
-                              <b>{notification.productName}</b>
-                              <small style={{ display: "block" }}>
-                                {formatTime(notification.createdAt)}
-                              </small>
+                            <div className="row">
+                              <div className="col-xs-2">
+                                <img
+                                  src="assets/img/notification.png"
+                                  alt=""
+                                  style={{ width: "100%", height: "auto" }}
+                                />
+                              </div>
+                              <div
+                                className="col-xs-10"
+                                style={{
+                                  fontWeight: notification.read
+                                    ? "none"
+                                    : "bold",
+                                  flex: 6
+                                }}
+                              >
+                                New comment about product{" "}
+                                <b>{notification.productName}</b>
+                                <small style={{ display: "block" }}>
+                                  {formatTime(notification.createdAt)}
+                                </small>
+                              </div>
                             </div>
                           </Link>
                         </li>
@@ -277,7 +306,7 @@ class Main extends React.Component {
                     ? `${match.url}/dashboard`
                     : role === "receptionist"
                       ? `${match.url}/bill/list`
-                      : `${match.url}/product/list`
+                      : `${match.url}/subscribe-product`
                 }
               />
               <ProtectedRoute
@@ -299,6 +328,11 @@ class Main extends React.Component {
                 component={ProductDetail}
               />
               <ProtectedRoute
+                path={`${match.url}/subscribe-product`}
+                component={SubscribeProduct}
+                isAuthorized={() => role === "employee"}
+              />
+              <ProtectedRoute
                 path={`${match.url}/product/add-product`}
                 component={AddProduct}
                 isAuthorized={() => role === "manager"}
@@ -307,10 +341,6 @@ class Main extends React.Component {
                 path={`${match.url}/product/update-product/:id`}
                 component={AddProduct}
                 isAuthorized={() => role === "manager"}
-              />
-              <Route
-                path={`${match.url}/product/feedback/:id`}
-                component={ProductFeedback}
               />
               <Route path={`${match.url}/bill/list`} component={BillList} />
               <Route

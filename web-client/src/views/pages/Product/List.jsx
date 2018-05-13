@@ -87,7 +87,7 @@ class ProductList extends Component {
 
     return (
       <div className="container-fluid">
-        <form
+        {/* <form
           className="form-inline"
           style={{ marginTop: 10 }}
           onSubmit={async e => {
@@ -139,7 +139,17 @@ class ProductList extends Component {
               Add product
             </button>
           )}
-        </form>
+        </form> */}
+        {role === "manager" && (
+          <button
+            className="btn btn-success"
+            style={{ marginLeft: 20 }}
+            onClick={() => history.push("/main/product/add-product")}
+          >
+            <i className="fa fa-plus" />
+            Add product
+          </button>
+        )}
         <div className="card" style={{ padding: 10, marginTop: 10 }}>
           <div className="content">
             <form

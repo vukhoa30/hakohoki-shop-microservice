@@ -3,6 +3,7 @@ import { keys } from "../actions";
 const { LOADING_STATISTIC } = keys;
 
 const initialState = {
+  hasData: false,
   isLoading: false,
   billCount: 0,
   revenue: 0,
@@ -32,7 +33,8 @@ const reducer = (state = initialState, action) => {
         billCount,
         revenue,
         soldProductCount,
-        categories
+        categories,
+        hasData: true
       };
   }
   return nextState;

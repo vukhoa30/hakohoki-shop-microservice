@@ -10,6 +10,7 @@ import notification from "./notification";
 import promotion from "./promotion";
 import statistic from "./statistic";
 import connection from "./connection";
+import subscription from "./subscription";
 import { routerReducer as router } from "react-router-redux";
 
 export default combineReducers({
@@ -24,5 +25,6 @@ export default combineReducers({
   notification,
   statistic,
   connection,
-  promotion
+  promotion,
+  subscription
 });

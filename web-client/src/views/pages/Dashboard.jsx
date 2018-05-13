@@ -29,6 +29,9 @@ class Dashboard extends Component {
         ]
       }
     };
+    const { hasData, isLoading, loadStatistic, token } = this.props
+    if (!isLoading && !hasData)
+      loadStatistic(token)
   }
   componentWillMount() {
     const data = {

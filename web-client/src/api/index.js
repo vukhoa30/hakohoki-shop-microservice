@@ -3,7 +3,8 @@ import {
   request,
   parseToQueryString,
   convertObjectToArray,
-  createSocketConnection
+  createSocketConnection,
+  buildNotificationText
 } from "../utils";
 import { reduce, transform } from "lodash";
 import { push } from "react-router-redux";
@@ -30,7 +31,9 @@ const {
   LOADING_STATISTIC,
   CONNECTION_SETTING,
   CONNECTION_FINISH_SETTING,
-  CONNECTION_FAILED
+  CONNECTION_FAILED,
+  LOADING_SUBSCRIBED_PRODUCTS,
+  REMOVE_SUBSCRIBED_PRODUCTS
 } = keys;
 
 const {
@@ -110,6 +113,9 @@ export const loadProductData = productId => {
       );
       if (status === 200) {
         data.specifications = convertObjectToArray(data.specifications);
+        data.pictures = [data.mainPicture].concat(
+          data.additionPicture ? data.additionPicture : []
+        );
         return dispatch(getAction(LOADING_PRODUCT, { isLoading: false, data }));
       }
       err = "Internal server error";
@@ -140,7 +146,7 @@ export const loadProductFeedback = productId => {
           },
           { reviews: [], comments: [] }
         );
-        dispatch(
+        return dispatch(
           getAction(LOADING_PRODUCT_FEEDBACK, {
             isLoading: false,
             reviews,
@@ -199,7 +205,7 @@ export const addProduct = (product, token) => {
   return new Promise(async (resolve, reject) => {
     let _error = "Undefined error. Try again later!";
     try {
-      console.log(product)
+      console.log(product);
       const { status, data } = await request(
         "/products",
         "POST",
@@ -274,7 +280,8 @@ export const createAccount = async (values, token, onSubmitSuccess) => {
 
 export const logIn = (account, token) => {
   return dispatch => {
-    dispatch(connectToServer(account.accountId));
+    //dispatch(connectToServer(account.accountId));
+    //dispatch(loadNotifications(token));
     dispatch(getAction(LOG_IN, { account, token }));
   };
 };
@@ -335,6 +342,32 @@ export const searchForBills = (query, billType, token) => {
             isLoading: false,
             data: data.map(bill => ({
               ...bill,
+              buyer: bill.buyer
+                ? reduce(
+                    bill.buyer,
+                    (result, value, key) => {
+                      result.push({
+                        name: key,
+                        value
+                      });
+                      return result;
+                    },
+                    []
+                  )
+                : [],
+              seller: bill.seller
+                ? reduce(
+                    bill.seller,
+                    (result, value, key) => {
+                      result.push({
+                        name: key,
+                        value
+                      });
+                      return result;
+                    },
+                    []
+                  )
+                : [],
               totalPrice: bill.specificProducts.reduce(
                 (total, product) => total + product.price,
                 0
@@ -446,6 +479,7 @@ export const confirmBill = async (billId, token) => {
 export const giveAnswer = async (productId, content, parentId, token) => {
   let _error = "Undefined error. Try again later!";
   try {
+    console.log("Content:" + content);
     const { status, data } = await request(
       "/comments",
       "POST",
@@ -639,4 +673,79 @@ export const loadStatistic = token => {
 
     dispatch(getAction(LOADING_STATISTIC, { isLoading: false, err }));
   };
+};
+
+export const loadSubscribedProducts = token => {
+  return async dispatch => {
+    dispatch(getAction(LOADING_SUBSCRIBED_PRODUCTS, { isLoading: true }));
+    let err = UNKNOWN_ERROR;
+    try {
+      const { status, data } = await request(
+        "/notifications/subscription-comment-posted",
+        "GET",
+        {
+          Authorization: "JWT " + token
+        }
+      );
+      if (status === 200)
+        return dispatch(
+          getAction(LOADING_SUBSCRIBED_PRODUCTS, { isLoading: false, data })
+        );
+      else if (status === 401) err = FORBIDDEN;
+      else err = INTERNAL_SERVER_ERROR;
+    } catch (error) {
+      err = error;
+    }
+    dispatch(getAction(LOADING_SUBSCRIBED_PRODUCTS, { isLoading: false, err }));
+  };
+};
+
+export const subscribeProducts = (productIds, token) => {
+  return new Promise(async (resolve, reject) => {
+    let err = buildNotificationText(UNKNOWN_ERROR);
+    try {
+      const { status } = await request(
+        "/notifications/subscription-comment-posted",
+        "POST",
+        {
+          Authorization: "JWT " + token
+        },
+        productIds
+      );
+      if (status === 200) return resolve();
+      else if (status === 401)
+        err = buildNotificationText(FORBIDDEN, {
+          functionName: "SUBSCRIBE PRODUCTS"
+        });
+      else err = buildNotificationText(INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      err = buildNotificationText(error);
+    }
+    return reject(err);
+  });
+};
+
+export const removeSubscribedProduct = (productId, token) => {
+  return new Promise(async (resolve, reject) => {
+    let err = buildNotificationText(UNKNOWN_ERROR);
+    try {
+      const { status } = await request(
+        "/notifications/subscription-comment-posted",
+        "DELETE",
+        {
+          Authorization: "JWT " + token
+        },
+        { productId }
+      );
+      if (status === 200) return resolve();
+      else if (status === 401)
+        err = buildNotificationText(FORBIDDEN, {
+          functionName: "REMOVE PRODUCTS FROM YOUR SUBSCRITION LIST"
+        });
+      else err = buildNotificationText(INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      err = buildNotificationText(error);
+    }
+    return reject(err);
+  });
 };

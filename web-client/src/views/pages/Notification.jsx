@@ -5,6 +5,7 @@ import { ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { formatTime } from "../../utils";
 import { loadNotifications, toast, setNotificationAsRead } from "../../api";
 import Loader from "../components/Loader";
+import NotificationElement from "../components/Notification";
 import { code as errCode } from "../../api/err-code";
 const {
   UNKNOWN_ERROR,
@@ -69,37 +70,10 @@ class Notification extends Component {
         ) : (
           <ListGroup>
             {notifications.map(notification => (
-              <ListGroupItem
-                key={"notification-" + notification.id}
-                onClick={() => {
-                  setNotificationAsRead(notification.id, token);
-                  history.push(
-                    "/main/product/feedback/" +
-                      notification.productId +
-                      "?selected=" +
-                      notification.commentId +
-                      "&reload=true"
-                  );
-                }}
-              >
-                <div>
-                  <h3>
-                    <b>NEW FEEDBACK ABOUT PRODUCT</b>
-                  </h3>
-                  <small>{formatTime(notification.createdAt)}</small>
-                </div>
-                <p className="mb-1">
-                  Some user has give a feedback to product{" "}
-                  <Link
-                    to={`/main/product/detail/${
-                      notification.productId
-                    }?reload=true`}
-                  >
-                    {`${notification.productName}`}(ID:{" "}
-                    {`${notification.productId}`})
-                  </Link>
-                </p>
-              </ListGroupItem>
+              <NotificationElement
+                notification={notification}
+                key={"specific-notification-" + notification.id}
+              />
             ))}
           </ListGroup>
         )}

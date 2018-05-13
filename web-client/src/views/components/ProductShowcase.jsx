@@ -83,14 +83,6 @@ class ProducShowcase extends Component {
               >
                 View details
               </button>
-              <button
-                className="btn btn-block btn-warning mt-3"
-                onClick={() =>
-                  history.push("/main/product/feedback/" + product._id)
-                }
-              >
-                View feedback
-              </button>
             </div>
           )}
         </div>

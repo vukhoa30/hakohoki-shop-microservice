@@ -347,6 +347,10 @@ button.btn.btn-secondary {
   border-radius: 0;
 }
 
-.checkbox .second-icon {
-  opacity: 1;
+.product-showcase {
+  border: 1px solid transparent;
+}
+
+.product-showcase:hover {
+  border-color: blue;
 }
