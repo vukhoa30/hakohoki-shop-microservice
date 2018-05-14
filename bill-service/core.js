@@ -245,6 +245,7 @@ module.exports = {
         }
         return b.seller
       })
+      var customers = await msgBroker.requestGetCustomers(customerIds)
       var employees = await msgBroker.requestGetEmployees(employeeIds)
 
       var specificIds = [];
@@ -255,6 +256,10 @@ module.exports = {
             specificIds = specificIds.concat(p.giftSpecificIds)
           }
         })
+        if (b.buyer.accountId) {
+          var finder = customers.find(c => c.accountId.toString() == b.buyer.accountId)
+          if (finder) { b.buyer = finder }
+        }
       })
       var specificInfos = await msgBroker.requestGetSpecificInfos(specificIds)
 
