@@ -2,7 +2,7 @@ import { PROMOTION_LOADING, PROMOTION_LOADING_FAILED, PROMOTION_LOADED } from ".
 import { remove } from 'lodash'
 
 const initialState = {
-    status: 'LOADING',
+    status: 'INIT',
     list: []
 }
 

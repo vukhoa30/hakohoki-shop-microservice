@@ -40,7 +40,7 @@ class SignUp extends Component {
         "Account created! Activation code was sent to your email"
       );
     } else if (submitFailed && error) {
-      alert("error", error);
+     // alert("error", error);
       clearSubmitErrors();
     }
   }
@@ -96,6 +96,9 @@ class SignUp extends Component {
     return (
       <Container>
         <Content>
+          <View style={{ width: "100%", alignItems: "center" }}>
+            <AppText color="red">{error}</AppText>
+          </View>
           <View style={{ marginHorizontal: 10 }}>
             <Field
               name="fullName"
