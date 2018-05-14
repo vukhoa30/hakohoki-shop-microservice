@@ -348,9 +348,14 @@ button.btn.btn-secondary {
 }
 
 .product-showcase {
-  border: 1px solid transparent;
+  padding: 20px;
 }
 
 .product-showcase:hover {
-  border-color: blue;
+  cursor: pointer;
+  background-color: rgb(218, 218, 218);
+}
+
+.bill-showcase:hover {
+  background-color: rgb(211, 202, 202);
 }
