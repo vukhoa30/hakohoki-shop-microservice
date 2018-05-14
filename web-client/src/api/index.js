@@ -280,8 +280,8 @@ export const createAccount = async (values, token, onSubmitSuccess) => {
 
 export const logIn = (account, token) => {
   return dispatch => {
-    //dispatch(connectToServer(account.accountId));
-    //dispatch(loadNotifications(token));
+    dispatch(connectToServer(account.accountId));
+    dispatch(loadNotifications(token));
     dispatch(getAction(LOG_IN, { account, token }));
   };
 };
@@ -313,8 +313,6 @@ export const loadUserInfo = () => {
     if (infoString !== null) {
       try {
         const { account, token } = JSON.parse(infoString);
-        console.log(token);
-        console.log(account);
         dispatch(logIn(account, token));
       } catch (error) {}
     }

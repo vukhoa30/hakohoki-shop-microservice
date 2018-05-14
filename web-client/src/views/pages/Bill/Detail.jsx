@@ -236,7 +236,7 @@ class BillDetail extends Component {
                   )}
                   <h3 className="mt-3">Products</h3>
                   {products.map((product, index) => (
-                    <div className="row" key={"product-" + index}>
+                    <div className="row product-showcase" key={"product-" + index} style={{ marginBottom: 50 }}>
                       <div className="col-xs-3">
                         <img
                           src={product.mainPicture}

@@ -34,8 +34,11 @@ class Bill extends Component {
   render() {
     const { bill, selectBill } = this.props;
     return (
-      <li className="row list-group-item clickable" onClick={() => selectBill(bill)}>
-        <div className="col-xs-3">
+      <li
+        className="row list-group-item clickable bill-showcase"
+        onClick={() => selectBill(bill)}
+      >
+        <div className="col-xs-3" style={{ backgroundColor: 'transparent' }}>
           <img
             src={`assets/img/${
               bill.status === "completed" ? "bill_complete" : "bill"
@@ -58,13 +61,25 @@ class Bill extends Component {
             )}
           </div>
         </div>
-        <div className="col-xs-9">
+        <div className="col-xs-9" style={{ backgroundColor: 'transparent' }}>
           <div style={{ display: "flex" }}>
             <h5 style={{ fontWeight: "bold", marginTop: 0, flex: 1 }}>
               Total price: {currencyFormat(bill.totalPrice)}
             </h5>
           </div>
-          <div className="panel panel-default">
+          <div>
+            <small style={{ color: "gray" }}>
+              Ordered at: {formatTime(bill.createdAt)}
+            </small>
+          </div>
+          {bill.completedAt && (
+            <div>
+              <small style={{ color: "gray" }}>
+                Confirmed at: {formatTime(bill.completedAt)}
+              </small>
+            </div>
+          )}
+          <div className="panel panel-default" style={{ marginTop: 50 }}>
             <div className="panel-heading">
               <b>Buyer information</b>
             </div>
