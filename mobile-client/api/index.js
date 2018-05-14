@@ -49,7 +49,7 @@ import {
   SAVE_TO_BUFFER,
   WATCH_LIST_LOADING
 } from "../actions";
-
+import { Keyboard } from "react-native";
 import { SubmissionError } from "redux-form";
 import { reduce, assign, transform } from "lodash";
 import { NavigationActions } from "react-navigation";
@@ -184,6 +184,7 @@ function loadUserInfo() {
     // });
     store.loadFromCache().then(({ token, account, watchList, cart }) => {
       dispatch(getAction(FINISH_LOADING_CART, { list: cart }));
+      console.log(token)
       // dispatch(
       //   getAction(WATCH_LIST_LOADING, { status: "LOADED", data: watchList })
       // );
@@ -213,6 +214,7 @@ function logOut() {
 
 function authenticate(values) {
   return new Promise(async (resolve, reject) => {
+    Keyboard.dismiss();
     let err = `Undefined error, try again later!`;
     const { emailOrPhoneNo, password } = values;
     try {
@@ -230,13 +232,7 @@ function authenticate(values) {
       switch (status) {
         case 200:
           logIn(data.token, data.account);
-          AsyncStorage.multiSet(
-            [
-              ["@User:token", data.token],
-              ["@User:account", JSON.stringify(data.account)]
-            ],
-            errors => console.log("Error" + errors)
-          );
+          store.setAccountInfo(data.token, data.account)
           navigation.dispatch(NavigationActions.back());
           return resolve();
         case 401:
@@ -263,6 +259,7 @@ function authenticate(values) {
 
 function enroll(values) {
   return new Promise(async (resolve, reject) => {
+    Keyboard.dismiss();
     let err = `Undefined error, try again later!`;
     const { email, password, fullName, phoneNumber } = values;
     try {
@@ -973,8 +970,9 @@ function makeOrder(productList, buyer) {
       });
       if (status === 200) {
         alert(
-          "Success",
-          "Order successfully! We will contact you soon to confirm your order"
+          "success",
+          "Order successfully! We will contact you soon to confirm your order",
+          "top"
         );
         return dispatch(getAction(REMOVE_ALL));
       } else if (status === 401)
@@ -983,7 +981,7 @@ function makeOrder(productList, buyer) {
       if (error === "CONNECTION_ERROR")
         err = "Could not connect to server! Try again later";
     }
-    alert("Error", err);
+    alert("error", err);
     dispatch(getAction(FINISH_MAKING_ORDER));
   };
 }

@@ -72,7 +72,7 @@ class AppCarousel extends Component {
       //         </View>
       //     </TouchableOpacity>
       // </ImageBackground>
-      <TouchableOpacity style={{ flexDirection: "row", width, height: "100%" }} onPress={() => navigation.navigate('PromotionDetail',{ promotion: item })} >
+      <TouchableOpacity style={{ flexDirection: "row", width, height: "100%" }} onPress={() => navigation.navigate('PromotionDetail',{ promotionId: item.id })} >
         <Image
           source={{ uri: item["poster_url"] }}
           style={{

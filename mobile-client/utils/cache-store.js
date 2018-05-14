@@ -2,10 +2,10 @@ import { AsyncStorage } from "react-native";
 
 const Store = function() {
   this.setAccountInfo = (token, account) =>
-    AsyncStorage.multiSet([
-      ["@User:token", token],
-      ["@User:account", JSON.stringify(account)]
-    ]);
+    AsyncStorage.multiSet(
+      [["@User:token", token], ["@User:account", JSON.stringify(account)]],
+      err => console.log(err)
+    );
   this.setCartList = cart =>
     AsyncStorage.setItem("@Cart", JSON.stringify(cart));
   this.setWatchList = watchList =>
@@ -24,6 +24,7 @@ const Store = function() {
           storage.forEach(item => {
             let data = null;
             try {
+              if (item[0] === "@User:token") data = item[1];
               data = item[1] !== null ? JSON.parse(item[1]) : null;
             } catch (error) {}
             switch (item[0]) {

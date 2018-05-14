@@ -1,6 +1,12 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View, ScrollView, Dimensions, TouchableHighlight } from "react-native";
+import {
+  View,
+  ScrollView,
+  Dimensions,
+  TouchableHighlight,
+  Image
+} from "react-native";
 import { setCart, loadCart, makeOrder, selectProduct } from "../../api";
 import {
   Container,
@@ -58,6 +64,17 @@ class Cart extends Component {
             <Spinner />
           </View>
         )} */}
+        {status === "LOADING" && (
+          <View
+            style={{
+              width: width,
+              alignItems: "center",
+              backgroundColor: "white"
+            }}
+          >
+            <Spinner color="red" />
+          </View>
+        )}
         <UserForm
           showInfoDialog={this.state.showInfoDialog}
           closeDialog={() => this.setState({ showInfoDialog: false })}
@@ -85,96 +102,162 @@ class Cart extends Component {
             <List
               dataArray={list}
               renderRow={product => (
-                <ListItem>
-                  <Thumbnail
-                    square
-                    size={80}
-                    source={
-                      product.mainPicture && product.mainPicture !== ""
-                        ? {
-                            uri: product.mainPicture
-                          }
-                        : unknown
-                    }
-                  />
+                <ListItem key={"product-" + product._id}>
                   <Body>
-                    <TouchableHighlight
-                      onPress={() => selectProduct(product._id)}
-                    >
-                      <View>
-                        <AppText>{product.name}</AppText>
-                        <AppText color="red">
-                          {currencyFormat(product.price)}
-                        </AppText>
-                        {/* <AppText small note>
-                      Quantity: {product.amount}
-                    </AppText> */}
-                      </View>
-                    </TouchableHighlight>
                     <Grid>
-                      <Col style={{ padding: 5, paddingLeft: 20, width: 100 }}>
-                        <Icon
-                          name="ios-trash-outline"
-                          onPress={() => {
-                            confirm(
-                              "Confirm",
-                              `Are you sure to remove product "${
-                                product.name
-                              }" from your cart?`,
-                              () => setCart(token, product, "REMOVE")
-                            );
-                          }}
+                      <Col style={{ width: 70 }}>
+                        <Thumbnail
+                          square
+                          size={100}
+                          source={
+                            product.mainPicture && product.mainPicture !== ""
+                              ? {
+                                  uri: product.mainPicture
+                                }
+                              : unknown
+                          }
                         />
                       </Col>
                       <Col>
-                        <View style={{ flexDirection: "row", marginLeft: 20 }}>
-                          <Button
-                            small
-                            style={{ padding: 5, backgroundColor: "#eee" }}
-                          >
-                            <AppText
-                              style={{ fontSize: 20 }}
-                              note
-                              onPress={() => {
-                                product.amount + 1 <= product.quantity
-                                  ? setCart(
-                                      token,
-                                      product,
-                                      "UPDATE",
-                                      product.amount + 1
-                                    )
-                                  : alert("warning", "NOT ENOUGH PRODUCTS");
-                              }}
-                            >
-                              +
+                        <TouchableHighlight
+                          onPress={() => selectProduct(product._id)}
+                        >
+                          <View>
+                            <AppText style={{ fontWeight: "bold" }}>
+                              {product.name}
                             </AppText>
-                          </Button>
-                          <View style={{ paddingHorizontal: 10 }}>
-                            <AppText style={{ fontSize: 20 }}>
-                              {product.amount}
+                            <AppText color="red">
+                              {currencyFormat(
+                                product.promotionPrice
+                                  ? product.promotionPrice
+                                  : product.price
+                              )}
                             </AppText>
+                            {/* <AppText small note>
+                      Quantity: {product.amount}
+                    </AppText> */}
                           </View>
-                          <Button
-                            small
-                            style={{ padding: 5, backgroundColor: "#eee" }}
+                        </TouchableHighlight>
+                        <Grid>
+                          <Col
+                            style={{ padding: 5, paddingLeft: 20, width: 100 }}
                           >
-                            <AppText
-                              style={{ fontSize: 20 }}
-                              note
+                            <Icon
+                              name="ios-trash-outline"
                               onPress={() => {
-                                if (product.amount > 1)
-                                  setCart(
-                                    token,
-                                    product,
-                                    "UPDATE",
-                                    product.amount - 1
-                                  );
+                                confirm(
+                                  "Confirm",
+                                  `Are you sure to remove product "${
+                                    product.name
+                                  }" from your cart?`,
+                                  () => setCart(token, product, "REMOVE")
+                                );
+                              }}
+                            />
+                          </Col>
+                          <Col>
+                            <View
+                              style={{ flexDirection: "row", marginLeft: 20 }}
+                            >
+                              <Button
+                                small
+                                style={{ padding: 5, backgroundColor: "#eee" }}
+                              >
+                                <AppText
+                                  style={{ fontSize: 20 }}
+                                  note
+                                  onPress={() => {
+                                    product.amount + 1 <= product.quantity
+                                      ? setCart(
+                                          token,
+                                          product,
+                                          "UPDATE",
+                                          product.amount + 1
+                                        )
+                                      : alert("warning", "NOT ENOUGH PRODUCTS");
+                                  }}
+                                >
+                                  +
+                                </AppText>
+                              </Button>
+                              <View style={{ paddingHorizontal: 10 }}>
+                                <AppText style={{ fontSize: 20 }}>
+                                  {product.amount}
+                                </AppText>
+                              </View>
+                              <Button
+                                small
+                                style={{ padding: 5, backgroundColor: "#eee" }}
+                              >
+                                <AppText
+                                  style={{ fontSize: 20 }}
+                                  note
+                                  onPress={() => {
+                                    if (product.amount > 1)
+                                      setCart(
+                                        token,
+                                        product,
+                                        "UPDATE",
+                                        product.amount - 1
+                                      );
+                                  }}
+                                >
+                                  -
+                                </AppText>
+                              </Button>
+                            </View>
+                          </Col>
+                        </Grid>
+                        {product.giftProducts &&
+                          product.giftProducts.length > 0 && (
+                            <View
+                              style={{
+                                marginTop: 20,
+                                paddingTop: 10,
+                                borderTopWidth: 0.5,
+                                borderTopColor: "gray"
                               }}
                             >
-                              -
-                            </AppText>
-                          </Button>
-                        </View>
+                              <AppText style={{ marginBottom: 20 }} note>
+                                Attached products (free cost)
+                              </AppText>
+                              {product.giftProducts.map(giftProduct => (
+                                <Grid
+                                  key={"gift-product-" + giftProduct._id}
+                                  style={{ marginBottom: 20 }}
+                                >
+                                  <Col style={{ width: 70 }}>
+                                    <Thumbnail
+                                      square
+                                      size={70}
+                                      source={
+                                        giftProduct.mainPicture &&
+                                        giftProduct.mainPicture !== ""
+                                          ? {
+                                              uri: giftProduct.mainPicture
+                                            }
+                                          : unknown
+                                      }
+                                    />
+                                  </Col>
+                                  <Col>
+                                    <View>
+                                      <AppText style={{ fontWeight: "bold" }}>
+                                        {giftProduct.name}
+                                      </AppText>
+                                      <AppText color="red">
+                                        {currencyFormat(
+                                          product.promotionPrice
+                                            ? product.promotionPrice
+                                            : product.price
+                                        )}
+                                      </AppText>
+                                    </View>
+                                  </Col>
+                                </Grid>
+                              ))}
+                            </View>
+                          )}
                       </Col>
                     </Grid>
                   </Body>

@@ -28,7 +28,7 @@ class Notification extends Component {
     super(props);
     this.state = {};
     const { token, loadNotifications, status, isLoggedIn } = this.props;
-    if (isLoggedIn && status !== "INIT") loadNotifications(token);
+    if (isLoggedIn && status === "INIT") loadNotifications(token);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -53,7 +53,8 @@ class Notification extends Component {
       selectProduct,
       makeNotificationAsRead,
       viewAnswers,
-      token
+      token,
+      navigation
     } = this.props;
 
     let title = "Unknown notification",
@@ -79,6 +80,8 @@ class Notification extends Component {
       case "promotionCreated":
         title = "New promotion coming up!";
         content = `${promotionName}`;
+        callback = () =>
+          navigation.navigate("PromotionDetail", { promotionId });
         break;
       case "productBought":
         title = "New order has been made!";

@@ -100,7 +100,7 @@ class ProductShowcase extends Component {
             </AppText>
           )} */}
           <AppText note small>
-            {item.quantity ? `Quantity: ${item.quantity}` : ""}
+            {item.quantity ? `Quantity: ${item.quantity}` : "Quantity: 0"}
           </AppText>
           {item.promotionPrice ? (
             <View>
