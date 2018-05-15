@@ -221,13 +221,14 @@ module.exports = {
   },
   getBills: async (req, res) => {
     try {
+      /*
       var token;
       if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
         token = req.headers.authorization.split(' ')[1]
       } else { return catchUnauthorized(res) }
       var authentication = await msgBroker.requestAuthenticateEmployee(token)
       if (!authentication) { return catchUnauthorized(res) }
-
+      */
       var bills
       if (req.params.billId) {
         bills = await db.GetBills(req.params)
