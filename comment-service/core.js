@@ -66,8 +66,8 @@ module.exports = {
       res.json({id: commentId})
     } catch (e) { catchError(res, e) }
   },
-  getComments: (req, res) => {
-    db.GetComments(req.params.productId)
+  getCommentsByProductId: (req, res) => {
+    db.GetCommentsByProductId(req.params.productId)
     .then(async rslt => {
       var accountIds = rslt.map(r => r.accountId)
       try {
@@ -98,5 +98,23 @@ module.exports = {
       )
     })
     .catch(e => catchError(res, e))
+  },
+  getCommentsByParentId: async (req, res) => {
+    try {
+      var commentId = req.params.commentId
+      var comments = await db.GetCommentsByParentId(commentId)
+      var parent = comments.find(c => c._id.toString() === commentId)
+      parent._doc.replies = comments
+      .filter(c => { return c._id.toString() !== commentId })
+      .map(c => { 
+        c._doc.id = c._id;
+        delete c._doc._id
+        delete c._doc.parentId
+        return c
+      })
+      parent._doc.id = parent._id
+      delete parent._doc._id
+      res.json(parent)
+    } catch (e) { catchError(res, e) }
   }
 }

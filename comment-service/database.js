@@ -21,7 +21,7 @@ module.exports = {
       })
     })
   },
-  GetComments: (productId) => {
+  GetCommentsByProductId: (productId) => {
     return new Promise((resolve, reject) => {
       models.Comment
       .find({ productId })
@@ -89,6 +89,22 @@ module.exports = {
         if (err) { console.log(e); return reject(false) }
         console.log(rslt.length)
         resolve(rslt.length > 0)
+      })
+    })
+  },
+  GetCommentsByParentId: (commentId) => {
+    commentId = mongoose.Types.ObjectId(commentId)
+    return new Promise((resolve, reject) => {
+      models.Comment
+      .find({
+        $or: [
+          { _id: commentId },
+          { parentId: commentId }
+        ]
+      })
+      .exec((err, rslt) => {
+        if (err) { return reject(false) }
+        resolve(rslt)
       })
     })
   }

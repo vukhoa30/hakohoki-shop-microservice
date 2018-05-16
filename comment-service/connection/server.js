@@ -17,7 +17,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use(morgan('combined'));
 
 //REST API ------------------------------------------------------------------
-app.get('/:productId', core.getComments)
+app.get('/product/:productId', core.getCommentsByProductId)
+app.get('/replies/:commentId', core.getCommentsByParentId)
 
 app.post('/', core.comment)
 
