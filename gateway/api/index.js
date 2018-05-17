@@ -55,9 +55,7 @@ module.exports = (app, db) => {
         pathRewrite: {
           [`^${service.clientUrl}`]: '/'
         },
-        onProxyReq: (proxyReq, req, res) => {
-          parseToken(proxyReq, req);
-        }
+        proxyTimeout: 12000
       }))
     }
   });
