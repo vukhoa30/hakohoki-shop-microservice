@@ -103,6 +103,22 @@ module.exports = {
     try {
       var commentId = req.params.commentId
       var comments = await db.GetCommentsByParentId(commentId)
+
+      var accountIds = comments.map(c => c.accountId)
+      var customers = await msgBroker.requestCustomers(accountIds
+        .filter(id => id.length == 24))
+      var employees = await msgBroker.requestEmployees(accountIds
+        .filter(e => parseInt(e))
+        .map(e => parseInt(e)))
+      var accounts = customers.concat(employees)
+      comments.forEach(c => {
+        var finder = accounts.find(a => a.accountId.toString() == c.accountId.toString())
+        if (finder) {
+          c._doc.userName = finder.fullName
+          c._doc.userRole = finder.role
+        }
+      })
+
       var parent = comments.find(c => c._id.toString() === commentId)
       parent._doc.replies = comments
       .filter(c => { return c._id.toString() !== commentId })
@@ -114,6 +130,7 @@ module.exports = {
       })
       parent._doc.id = parent._id
       delete parent._doc._id
+
       res.json(parent)
     } catch (e) { catchError(res, e) }
   }
