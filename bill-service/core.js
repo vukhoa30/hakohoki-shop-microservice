@@ -128,17 +128,12 @@ module.exports = {
         }),
         createdAt: new Date(),
       })
-      
-      if (authentication && await !msgBroker.requestClearCart(authentication.accountId)) {
-        res.json({ ok: false, msg: 'clearing cart failed' })
-      } else {
-        res.json({ ok: true, msg: 'cart cleared, order added' })
-      }
 
-      /*var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
-        .filter(p => p.productQuantity >= 1 && p.productQuantity <= 2)
+      var products = await msgBroker.requestGetProducts(req.body.products.map(p => p.productId))
+      var watchlistItems = await msgBroker.requestGetWatchlistUsers(products
+        .filter(p => p.quantity >= 1 && p.quantity <= 2)
         .map(p => p.productId))
-      if (req.body.buyer.accountId) {
+      if (req.body.buyer && req.body.buyer.accountId) {
         watchlistItems = watchlistItems.filter(i => i.accountId.toString() != req.body.buyer.accountId.toString())
       }
       var customers = await msgBroker.requestCustomers(watchlistItems.map(i =>
@@ -151,7 +146,7 @@ module.exports = {
         finder = products.find(
           e => e.productId.toString() == i.productId.toString())
         i.productName = finder.productName
-        i.amount = finder.productQuantity
+        i.amount = finder.quantity
       })
 
       if (watchlistItems.length > 0) {
@@ -172,7 +167,22 @@ module.exports = {
             amount: i.amount
           }
         }))
-      }*/
+      }
+
+      var receptionistIds = await msgBroker.requestGetAllEmployees({ role: 'receptionist' })
+      msgBroker.produceNotificationRequest(receptionistIds.map(id => {
+        return {
+          type: 'pendingBillCreated',
+          accountId: id,
+          billId: rslt._id
+        }
+      }))
+
+      if (authentication && await !msgBroker.requestClearCart(authentication.accountId)) {
+        res.json({ ok: false, msg: 'clearing cart failed' })
+      } else {
+        res.json({ ok: true, msg: 'cart cleared, order added' })
+      }
     } catch(e) { catchError(res, e) }
   },
   completeBill: async (req, res) => {
@@ -186,13 +196,11 @@ module.exports = {
 
       var bill = await db.GetBillById(req.body.billId)
       if (!bill) { return catchError(res, 'bill not found') }
-      console.log(bill)
       var specificIds = []
       bill.specificProducts.forEach(s => {
         specificIds.push(s.id)
         if (s.giftSpecificIds) { specificIds = specificIds.concat(s.giftSpecificIds) }
       })
-      console.log(specificIds)
       await msgBroker.requestUpdateSpecificsStatus(specificIds)
       
       var rslt = await db.CompleteBill(req.body.billId, authentication.accountId)
@@ -204,8 +212,7 @@ module.exports = {
         return {
           type: 'productBought',
           accountId: bill.buyer.accountId,
-          productId: p.productId,
-          productName: p.productName
+          billId: bill._id
         }
       }))
       var customer = await msgBroker.requestCustomers([bill.buyer.accountId])
@@ -221,14 +228,6 @@ module.exports = {
   },
   getBills: async (req, res) => {
     try {
-      /*
-      var token;
-      if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-        token = req.headers.authorization.split(' ')[1]
-      } else { return catchUnauthorized(res) }
-      var authentication = await msgBroker.requestAuthenticateEmployee(token)
-      if (!authentication) { return catchUnauthorized(res) }
-      */
       var bills
       if (req.params.billId) {
         bills = await db.GetBills(req.params)

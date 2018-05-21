@@ -93,18 +93,20 @@ module.exports = {
       .catch(e => { reject(e); })
     })
   },
-  GetAllEmployees: () => {
+  GetAllEmployees: (role) => {
     return new Promise((resolve, reject) => {
       db('accounts')
+      .where({role: role ? role : undefined})
       .then(rows => {
         resolve(rows)
       })
       .catch(e => { reject(e); })
     })
   },
-  GetAllEmployeeIds: () => {
+  GetAllEmployeeIds: (query) => {
     return new Promise((resolve, reject) => {
       db('accounts')
+      .where(query)
       .then(rows => {
         resolve(rows.map(r => r.id))
       })

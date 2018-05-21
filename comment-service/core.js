@@ -37,20 +37,21 @@ module.exports = {
 
       var products = await msgBroker.requestGetProducts([req.body.productId])
       var productName = products[0].name
-      if (req.body.parentId) {
-        var comments = await db.GetCommentById(req.body.parentId)
-        var accountId = comments[0].accountId
-        msgBroker.produceNotificationRequest([{
-          type: 'commentReplied',
-          accountId,
-          productId: req.body.productId,
-          productName,
-          commentId: req.body.parentId
-        }])
+      if (authentication.role != 'customer') {
+        if (req.body.parentId) {
+          var comments = await db.GetCommentById(req.body.parentId)
+          var accountId = comments[0].accountId
+          msgBroker.produceNotificationRequest([{
+            type: 'commentReplied',
+            accountId,
+            productId: req.body.productId,
+            productName,
+            commentId: req.body.parentId
+          }])
+        }
       }
       else {
         var receiptionistIds = await msgBroker.requestGetAllEmployees({nothing:true})
-        console.log(receiptionistIds)
         msgBroker.produceNotificationRequest(
           receiptionistIds.map(id => {
             return {

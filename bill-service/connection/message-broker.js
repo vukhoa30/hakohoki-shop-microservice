@@ -97,5 +97,11 @@ module.exports = {
   },
   requestPromotionInfos: (productIds) => {
     return requestAmqp(productIds, 'getPromotionInfos')
-  }
+  },
+  requestGetProducts: (productIds) => {
+    return requestAmqp(productIds, 'getProducts')
+  },
+  requestGetAllEmployees: (query) => {
+    return requestAmqp(query, 'getAllEmployees')
+  },
 }
