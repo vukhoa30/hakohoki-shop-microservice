@@ -9,7 +9,8 @@ module.exports = (mongoose) => {
       promotionId: Number,
       billId: String,
       amount: Number,
-      commentId: mongoose.Schema.ObjectId
+      commentId: mongoose.Schema.ObjectId,
+      parentId: mongoose.Schema.ObjectId
     }),
     Subscription: mongoose.model('Subscription', {
       accountId: String,

@@ -51,7 +51,7 @@ module.exports = {
         }
       }
       else {
-        var receiptionistIds = await msgBroker.requestGetAllEmployees({nothing:true})
+        var receiptionistIds = await msgBroker.requestGetAllEmployees(null)
         msgBroker.produceNotificationRequest(
           receiptionistIds.map(id => {
             return {
@@ -59,7 +59,8 @@ module.exports = {
               accountId: id,
               productId: req.body.productId,
               productName,
-              commentId
+              commentId,
+              parentId: (authentication.role == 'customer') ? req.body.parentId : undefined
             }
           })
         )
