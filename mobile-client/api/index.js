@@ -4,7 +4,8 @@ import {
   delay,
   alert,
   createSocketConnection,
-  updateGateway
+  updateGateway,
+  formatProduct
 } from "../utils";
 import navigator from "../navigations";
 import {
@@ -47,7 +48,11 @@ import {
   PROMOTION_LOADING_FAILED,
   PROMOTION_LOADED,
   SAVE_TO_BUFFER,
-  WATCH_LIST_LOADING
+  WATCH_LIST_LOADING,
+  UPDATE_WATCH_LIST,
+  ORDERS_LOADING,
+  ORDERS_LOADED,
+  ORDERS_LOAD_FAILED
 } from "../actions";
 import { Keyboard } from "react-native";
 import { SubmissionError } from "redux-form";
@@ -184,7 +189,7 @@ function loadUserInfo() {
     // });
     store.loadFromCache().then(({ token, account, watchList, cart }) => {
       dispatch(getAction(FINISH_LOADING_CART, { list: cart }));
-      console.log(token)
+      console.log(token);
       // dispatch(
       //   getAction(WATCH_LIST_LOADING, { status: "LOADED", data: watchList })
       // );
@@ -215,7 +220,7 @@ function logOut() {
 function authenticate(values) {
   return new Promise(async (resolve, reject) => {
     Keyboard.dismiss();
-    let err = `Undefined error, try again later!`;
+    let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
     const { emailOrPhoneNo, password } = values;
     try {
       const response = await request(
@@ -232,7 +237,7 @@ function authenticate(values) {
       switch (status) {
         case 200:
           logIn(data.token, data.account);
-          store.setAccountInfo(data.token, data.account)
+          store.setAccountInfo(data.token, data.account);
           navigation.dispatch(NavigationActions.back());
           return resolve();
         case 401:
@@ -245,12 +250,12 @@ function authenticate(values) {
           err = "The account is not existed!";
           break;
         case 500:
-          err = "Internal server error! Try again later";
+          err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
           break;
       }
     } catch (error) {
       console.log(error);
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+      if (error === "CONNECTION_ERROR") err = "COULD NOT CONNECT TO SERVER";
     }
 
     reject(new SubmissionError({ _error: err }));
@@ -260,7 +265,7 @@ function authenticate(values) {
 function enroll(values) {
   return new Promise(async (resolve, reject) => {
     Keyboard.dismiss();
-    let err = `Undefined error, try again later!`;
+    let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
     const { email, password, fullName, phoneNumber } = values;
     try {
       const response = await request(
@@ -280,11 +285,11 @@ function enroll(values) {
           err = "The email was registered";
           break;
         case 500:
-          err = "Internal server error! Try again later";
+          err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
           break;
       }
     } catch (error) {
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+      if (error === "CONNECTION_ERROR") err = "COULD NOT CONNECT TO SERVER";
     }
 
     reject(new SubmissionError({ _error: err }));
@@ -293,7 +298,7 @@ function enroll(values) {
 
 function activate(values) {
   return new Promise(async (resolve, reject) => {
-    let err = `Undefined error, try again later!`;
+    let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
     const { activationCode } = values;
     const { navigation } = this.props;
 
@@ -317,11 +322,11 @@ function activate(values) {
           err = "Activation code is wrong";
           break;
         case 500:
-          err = "Internal server error! Try again later";
+          err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
           break;
       }
     } catch (error) {
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+      if (error === "CONNECTION_ERROR") err = "COULD NOT CONNECT TO SERVER";
     }
 
     reject(new SubmissionError({ _error: err }));
@@ -397,26 +402,32 @@ function loadProductList(conditions, offset, limit) {
         {}
       );
       const { status, data } = response;
-      if (status === 200) resolve({ ok: true, data });
-    } catch (error) {}
+      if (status === 200)
+        resolve({
+          ok: true,
+          data: data.map(product => formatProduct(product))
+        });
+    } catch (error) {
+      console.log(error);
+    }
 
     resolve({ ok: false });
   });
 }
 
-function selectProduct(productId) {
+function selectProduct({ product, productId }) {
   return dispatch => {
-    dispatch(getAction(SELECT_PRODUCT, { productId }));
     dispatch(
-      navigator.router.getActionForPathAndParams("ProductDetail/Information")
+      navigator.router.getActionForPathAndParams("ProductDetail", {
+        product,
+        productId
+      })
     );
   };
 }
 
 function loadProductInformation(productId, token) {
-  return async dispatch => {
-    dispatch(getAction(PRODUCT_DATA_LOADING));
-
+  return new Promise(async resolve => {
     try {
       const response = await request(`/products/info/${productId}`, "GET", {
         Authorization: "JWT " + token
@@ -426,21 +437,26 @@ function loadProductInformation(productId, token) {
       if (status === 200) {
         if (data.reviewScore)
           data.reviewScore = Math.round(data.reviewScore, 1);
-        return dispatch(getAction(PRODUCT_DATA_LOADED, { data }));
-      }
+        return resolve({
+          ok: true,
+          product: formatProduct(data)
+        });
+      } else resolve({ ok: false });
     } catch (error) {
       console.log(error);
+      resolve({ ok: false, err: error });
     }
-
-    dispatch(getAction(PRODUCT_DATA_LOADING_FAILED));
-  };
+  });
 }
 
 function loadProductFeedback(productId) {
-  return async dispatch => {
+  return new Promise(async (resolve, reject) => {
     try {
-      dispatch(getAction(FEEDBACK_LOADING));
-      const response = await request(`/comments/${productId}`, "GET", {});
+      const response = await request(
+        `/comments/product/${productId}`,
+        "GET",
+        {}
+      );
       const { status, data } = response;
 
       if (status === 200) {
@@ -470,34 +486,52 @@ function loadProductFeedback(productId) {
           }
         );
 
-        const { questions, answers } = reduce(
-          comments,
-          (result, comment) => {
-            result[comment.parentId ? "answers" : "questions"].push(comment);
-            return result;
-          },
-          {
-            questions: [],
-            answers: []
-          }
-        );
-
-        return dispatch(
-          getAction(FEEDBACK_LOADED, {
-            reviews,
+        return resolve({
+          ok: true,
+          reviews: reviews.reverse(),
+          comments: transform(
             comments,
-            questions,
-            answers,
-            statistic
-          })
-        );
-      }
+            (result, cur) => {
+              if (!cur.parentId) result.push({ ...cur, childs: [] });
+              else {
+                const parentComment = result.find(
+                  comment => comment.id === cur.parentId
+                );
+                if (parentComment) parentComment.childs.push(cur);
+              }
+              return result;
+            },
+            []
+          ).reverse(),
+          statistic
+        });
+      } else resolve({ ok: false });
     } catch (error) {
       console.log(error);
+      resolve({ ok: false, err: error });
     }
+  });
+}
 
-    dispatch(getAction(FEEDBACK_LOADING_FAILED));
-  };
+function loadChildComments(commentId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { status, data } = await request(
+        "/comments/replies/" + commentId,
+        "GET",
+        {}
+      );
+      if (status === 200)
+        resolve({
+          ok: true,
+          parentComment: { ...data, replies: undefined },
+          childComments: data.replies
+        });
+      else resolve({ ok: false });
+    } catch (error) {
+      resolve({ ok: false, err: error });
+    }
+  });
 }
 
 function reviewProduct() {
@@ -505,18 +539,12 @@ function reviewProduct() {
 }
 
 function sendReview(values) {
+  Keyboard.dismiss();
   return new Promise(async (resolve, reject) => {
-    let err = `Undefined error, try again later!`;
+    let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
     const content = values.review;
     const reviewScore = this.state.starCount;
-    const {
-      productId,
-      logOut,
-      token,
-      loadProductFeedback,
-      loadProductInformation,
-      reviewProduct
-    } = this.props;
+    const { productId, logOut, token, finishSubmittingReview } = this.props;
     try {
       const response = await request(
         "/comments",
@@ -528,21 +556,18 @@ function sendReview(values) {
 
       switch (status) {
         case 200:
-          loadProductFeedback(productId);
-          loadProductInformation(productId, token);
-          reviewProduct();
-          return resolve();
+          return resolve(finishSubmittingReview());
         case 401:
-          err = "Authenticate user failed! Please log in again";
+          err = "AUTHENTICATION FAILED! PLEASE LOG IN AGAIN";
           logOut();
           break;
         case 500:
-          err = "Internal server error! Try again later";
+          err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
           break;
       }
     } catch (error) {
       console.log(error);
-      if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+      if (error === "CONNECTION_ERROR") err = "COULD NOT CONNECT TO SERVER";
     }
 
     reject(new SubmissionError({ _error: err }));
@@ -551,17 +576,11 @@ function sendReview(values) {
 
 async function sendComment(values) {
   let hasError = false;
-  let err = `Undefined error, try again later!`;
+  let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
   this.setState({ submitting: true });
+  const { token, productId, parentId, reload, logOut } = this.props;
   try {
     const content = this.state.comment;
-    const {
-      token,
-      productId,
-      parentId,
-      loadProductFeedback,
-      logOut
-    } = this.props;
     const response = await request(
       "/comments",
       "POST",
@@ -572,26 +591,27 @@ async function sendComment(values) {
 
     switch (status) {
       case 200:
-        loadProductFeedback(productId);
-        this.setState({ comment: "" });
         break;
       case 401:
-        err = "Authenticate user failed! Please log in again";
+        err = "AUTHENTICATION FAILED! PLEASE LOG IN AGAIN";
         logOut();
         hasError = true;
         break;
       case 500:
-        err = "Internal server error! Try again later";
+        err = "INTERNAL SERVER ERROR! PLEASE TRY AGAIN";
         hasError = true;
         break;
     }
   } catch (error) {
     hasError = true;
     console.log(error);
-    if (error === "CONNECTION_ERROR") err = "Could not connect to server";
+    if (error === "CONNECTION_ERROR") err = "COULD NOT CONNECT TO SERVER";
   }
-  if (hasError) alert("Error", err);
-  this.setState({ submitting: false });
+  if (hasError) alert("error", err);
+  this.setState(
+    { comment: "", submitting: false },
+    () => !hasError && reload()
+  );
 }
 
 async function loadAnswers(productId, parentId) {
@@ -715,64 +735,93 @@ function saveCartToCache(cartList) {
   store.setCartList(cartList);
 }
 
-function updateWatchListStateOfProduct(existsInWatchlist) {
-  return async dispatch => {
-    dispatch(
-      getAction(PRODUCT_DATA_UPDATE_WATCH_LIST_STATE, { existsInWatchlist })
-    );
-  };
+// function updateWatchListStateOfProduct(existsInWatchlist) {
+//   return async dispatch => {
+//     dispatch(
+//       getAction(PRODUCT_DATA_UPDATE_WATCH_LIST_STATE, { existsInWatchlist })
+//     );
+//   };
+// }
+
+// async function updateWatchList(type) {
+//   const {
+//     product,
+//     token,
+//     logOut,
+//     loadWatchList,
+//     watchList,
+//     updateWatchListStateOfProduct
+//   } = this.props;
+//   this.setState({ isWatchListUpdating: true });
+
+//   if (token === null) {
+//     logOut();
+//   }
+
+//   try {
+//     const response = await request(
+//       `/watchlists/${product._id}`,
+//       type === "ADD" ? "POST" : "DELETE",
+//       { Authorization: "JWT " + token }
+//     );
+//     const { status } = response;
+
+//     if (status === 200) {
+//       if (watchList.length > 0) {
+//         loadWatchList(token, 0, watchList.length);
+//       }
+//       updateWatchListStateOfProduct(type === "ADD");
+//       alert(
+//         "Success",
+//         type === "ADD"
+//           ? "Add product to watch list successfully"
+//           : "Remove product from watch list successfully"
+//       );
+//     } else if (status === 401) {
+//       alert("Authentication failed", "Please log in");
+//       return logOut();
+//     } else {
+//       alert(
+//         "Error",
+//         `Could not ${
+//           type === "ADD"
+//             ? "add product to your watch list!"
+//             : "remove product from your watch list!"
+//         } Please try again.`
+//       );
+//     }
+//   } catch (error) {}
+
+//   this.setState({ isWatchListUpdating: false });
+// }
+
+function changeWatchListState(token, productId, isAdding) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { status } = await request(
+        "/watchlists/" + productId,
+        isAdding ? "POST" : "DELETE",
+        { Authorization: "JWT " + token }
+      );
+      if (status === 200) {
+        resolve({
+          ok: true
+        });
+      } else resolve({ ok: false });
+    } catch (error) {
+      resolve({ ok: false, err: error });
+    }
+  });
 }
 
-async function updateWatchList(type) {
-  const {
-    product,
-    token,
-    logOut,
-    loadWatchList,
-    watchList,
-    updateWatchListStateOfProduct
-  } = this.props;
-  this.setState({ isWatchListUpdating: true });
-
-  if (token === null) {
-    logOut();
-  }
-
-  try {
-    const response = await request(
-      `/watchlists/${product._id}`,
-      type === "ADD" ? "POST" : "DELETE",
-      { Authorization: "JWT " + token }
+function updateWatchList(product, isAdding) {
+  return async dispatch =>
+    dispatch(
+      getAction(UPDATE_WATCH_LIST, {
+        data: product,
+        command: isAdding ? "add" : "remove"
+      })
     );
-    const { status } = response;
-
-    if (status === 200) {
-      if (watchList.length > 0) {
-        loadWatchList(token, 0, watchList.length);
-      }
-      updateWatchListStateOfProduct(type === "ADD");
-      alert(
-        "Success",
-        type === "ADD"
-          ? "Add product to watch list successfully"
-          : "Remove product from watch list successfully"
-      );
-    } else if (status === 401) {
-      alert("Authentication failed", "Please log in");
-      return logOut();
-    } else {
-      alert(
-        "Error",
-        `Could not ${
-          type === "ADD"
-            ? "add product to your watch list!"
-            : "remove product from your watch list!"
-        } Please try again.`
-      );
-    }
-  } catch (error) {}
-
-  this.setState({ isWatchListUpdating: false });
 }
 
 function removeFromWatchlist(productId, token, offset, limit) {
@@ -800,22 +849,23 @@ function removeFromWatchlist(productId, token, offset, limit) {
         status = response.status;
         data = response.data;
         if (status === 200) {
-          alert("Success", "The product has been removed from your watch list");
+          alert("success", "The product has been removed from your watch list");
           return dispatch(
-            getAction(WATCH_LIST_LOADING, { status: "LOADED", data })
+            getAction(WATCH_LIST_LOADING, {
+              status: "LOADED",
+              data,
+              refresh: true
+            })
           );
         } else {
-          alert("Errors", "Some errors occur. Please try again later!");
+          alert("error", "Some errors occur. Please try again later!");
         }
       } else {
         if (status === 401) {
-          alert("Authentication failed", "You need to log in first");
+          alert("error", "You need to log in first");
           dispatch(logOut());
         } else {
-          alert(
-            "Remove from watch list failed",
-            "The product may not exist in your watch list"
-          );
+          alert("error", "The product may not exist in your watch list");
         }
       }
     } catch (error) {}
@@ -902,13 +952,11 @@ function makeNotificationAsRead(token, notificationId) {
 
 function viewAnswers(productId, commentId) {
   return async dispatch => {
-    console.log("Get here");
     if (!commentId) return;
-    dispatch(loadProductFeedback(productId));
     dispatch(
       NavigationActions.navigate({
         routeName: "Answers",
-        params: { parentId: commentId, productId }
+        params: { selectedCommentId: commentId, productId }
       })
     );
   };
@@ -971,8 +1019,7 @@ function makeOrder(productList, buyer) {
       if (status === 200) {
         alert(
           "success",
-          "Order successfully! We will contact you soon to confirm your order",
-          "top"
+          "Order successfully! We will contact you soon to confirm your order"
         );
         return dispatch(getAction(REMOVE_ALL));
       } else if (status === 401)
@@ -984,6 +1031,87 @@ function makeOrder(productList, buyer) {
     alert("error", err);
     dispatch(getAction(FINISH_MAKING_ORDER));
   };
+}
+
+function loadOrders(token, accountId) {
+  return async dispatch => {
+    dispatch(getAction(ORDERS_LOADING));
+    try {
+      const { status, data } = await request(
+        "/bills?accountId=" + accountId,
+        "GET",
+        { Authorization: "JWT " + token }
+      );
+      if (status === 200)
+        return dispatch(
+          getAction(ORDERS_LOADED, {
+            list: data.map(order => ({
+              ...order,
+              totalPrice: order.specificProducts.reduce(
+                (total, product) => total + product.price,
+                0
+              )
+            }))
+          })
+        );
+    } catch (error) {}
+    dispatch(getAction(ORDERS_LOAD_FAILED));
+  };
+}
+
+function loadOrderDetail(token, orderId) {
+  return new Promise(async resolve => {
+    try {
+      const { status, data } = await request("/bills/" + orderId, "GET", {
+        Authorization: "JWT " + token
+      });
+      if (status === 200)
+        return resolve({
+          ok: true,
+          data: {
+            ...data,
+            totalPrice: data.specificProducts.reduce(
+              (total, product) => total + product.price,
+              0
+            ),
+            seller: data.seller
+              ? reduce(
+                  data.seller,
+                  (result, value, key) => {
+                    result.push({
+                      name: key,
+                      value
+                    });
+                    return result;
+                  },
+                  []
+                )
+              : undefined,
+            products: transform(
+              data.specificProducts,
+              (result, cur) => {
+                const element = result.find(
+                  product => product.productName === cur.productName
+                );
+                if (element) {
+                  element.specifics.push(cur.id);
+                } else {
+                  result.push({
+                    productName: cur.productName,
+                    price: cur.price,
+                    specifics: [cur.id],
+                    mainPicture: cur.mainPicture
+                  });
+                }
+                return result;
+              },
+              []
+            )
+          }
+        });
+    } catch (error) {}
+    resolve({ ok: false });
+  });
 }
 
 module.exports = {
@@ -1004,14 +1132,17 @@ module.exports = {
   selectCategory,
   loadProductInformation,
   loadProductFeedback,
+  loadChildComments,
   reviewProduct,
   sendReview,
   sendComment,
   loadAnswers,
   setCart,
   loadWatchList,
-  updateWatchListStateOfProduct,
+  changeWatchListState,
   updateWatchList,
+  // updateWatchListStateOfProduct,
+  // updateWatchList,
   removeFromWatchlist,
   makeNotificationAsRead,
   loadNotifications,
@@ -1019,5 +1150,7 @@ module.exports = {
   loadPromotion,
   loadCart,
   disconnect,
-  makeOrder
+  makeOrder,
+  loadOrders,
+  loadOrderDetail
 };

@@ -1,7 +1,13 @@
 import React, { Component } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  TouchableOpacity,
+  View,
+  TouchableWithoutFeedback
+} from "react-native";
 import { Card, CardItem, Left, Body, Icon, Button, Right } from "native-base";
 import { currencyFormat, reduceString } from "../../utils";
+import { withNavigation } from "react-navigation";
 import AppText from "./AppText";
 var unknown = require("../../resources/images/unknown.png");
 
@@ -39,12 +45,12 @@ class ProductShowcase extends Component {
     return stars;
   }
   render() {
-    const { item, onSelected } = this.props;
+    const { item, onSelected, navigation } = this.props;
     const outOfOrder = require("../../resources/images/sold-out.png");
     return (
       <TouchableOpacity
         style={{ width: "100%" }}
-        onPress={() => onSelected(item._id)}
+        onPress={() => navigation.navigate('ProductDetail', { product: item, productId: item._id })}
       >
         <View
           style={{
@@ -53,6 +59,7 @@ class ProductShowcase extends Component {
             paddingVertical: 10,
             margin: 5
           }}
+          onPress={() => onSelected(item)}
         >
           {item.sold5OrOver && (
             <Image
@@ -105,7 +112,7 @@ class ProductShowcase extends Component {
           {item.promotionPrice ? (
             <View>
               <AppText large color="red">
-                {currencyFormat(item.promotionPrice)}
+                {item.promotionPrice}
               </AppText>
               <AppText
                 small
@@ -115,13 +122,13 @@ class ProductShowcase extends Component {
                   textDecorationLine: "line-through"
                 }}
               >
-                {currencyFormat(item.price)}
+                {item.price}
               </AppText>
             </View>
           ) : (
             <View>
               <AppText large color="red">
-                {currencyFormat(item.price)}
+                {item.price}
               </AppText>
               <AppText small style={{ opacity: 0 }}>
                 no promotion
@@ -140,4 +147,4 @@ class ProductShowcase extends Component {
   }
 }
 
-export default ProductShowcase;
+export default withNavigation(ProductShowcase);

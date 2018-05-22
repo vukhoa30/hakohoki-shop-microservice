@@ -1,31 +1,27 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Field, reduxForm } from "redux-form";
-import { View, Dimensions, KeyboardAvoidingView } from "react-native";
+import { View, Dimensions, KeyboardAvoidingView, Modal } from "react-native";
 import {
   loadProductFeedback,
   logOut,
   sendComment,
-  loadAnswers
+  loadAnswers,
+  loadChildComments
 } from "../../api";
 import {
+  View as NativeBaseView,
   Container,
   Content,
-  Form,
   List,
   ListItem,
-  Thumbnail,
-  Left,
-  Right,
-  Footer,
-  FooterTab,
-  Item,
-  Input,
-  Icon,
+  Button,
   Spinner,
+  Card,
+  CardItem,
+  Left,
   Body,
-  Grid,
-  Col
+  Thumbnail
 } from "native-base";
 import { alert } from "../../utils";
 import AppText from "../components/AppText";
@@ -37,77 +33,164 @@ const { height, width } = Dimensions.get("window");
 class Answers extends Component {
   constructor(props) {
     super(props);
+    const { productId, parentComment, childComments } = this.props;
+    this.state = {
+      productId,
+      status: "LOADED",
+      parentComment,
+      childComments,
+      showDialog: false
+    };
+  }
+
+  componentDidMount() {
+    const { parentComment } = this.state;
+    if (parentComment === null) this.loadData();
+  }
+
+  loadData() {
+    const { productId, selectedCommentId, reload } = this.props;
+    if (reload) reload();
+    this.setState({ status: "LOADING", showDialog: false });
+    loadChildComments(selectedCommentId).then(
+      result => {
+        const { ok, parentComment, childComments } = result;
+        if (ok)
+          this.setState({
+            status: "LOADED",
+            parentComment: parentComment,
+            childComments: childComments
+          });
+        else this.setState({ status: "ERROR" });
+      },
+      err => this.setState({ status: "ERROR" })
+    );
+    // setTimeout(
+    //   () =>
+    //     loadChildComments(selectedCommentId).then(
+    //       result => {
+    //         const { ok, parentComment, childComments } = result;
+    //         if (ok)
+    //           this.setState({
+    //             status: "LOADED",
+    //             parentComment,
+    //             childComments
+    //           });
+    //         else this.setState({ status: "ERROR" });
+    //       },
+    //       err => this.setState({ status: "ERROR" })
+    //     ),
+    //   500
+    // );
   }
 
   render() {
-    const { submitting, navigation, status, answers, questions } = this.props;
-    const { params } = navigation.state;
-    const { parentId, productId } = params;
-    let currentQuestion = questions.find(question => question.id === parentId);
-    if (!currentQuestion) currentQuestion = { content: "Unknown comment" };
-
+    const {
+      status,
+      parentComment,
+      childComments,
+      productId,
+      showDialog
+    } = this.state;
+    const { isLoggedIn, userName } = this.props;
     return (
       <Container>
-        {(status === "LOADING" || submitting) && (
-          <View
-            style={{
-              position: "absolute",
-              alignItems: "center",
-              justifyContent: "center",
-              width,
-              height: height - 50
-            }}
-          >
-            <Spinner />
-          </View>
-        )}
-        <List style={{ marginBottom: 10 }}>
-          <ListItem itemDivider>
-            <AppText>>> {currentQuestion.content}</AppText>
-          </ListItem>
-        </List>
-        <SendComment parentId={parentId} productId={productId} />
-        <Content
-          style={{ opacity: status === "LOADING" || submitting ? 0.5 : 1 }}
+        <Modal
+          animationType="slide"
+          visible={showDialog}
+          onRequestClose={() => {}}
         >
-          <List
-            dataArray={answers
-              .filter(answer => answer.parentId === parentId)
-              .reverse()}
-            renderRow={item => (
-              <ListItem avatar key={"comment-" + item.id}>
-                <AppComment comment={item} />
+          <View>
+            <List>
+              <ListItem>
+                <Left>
+                  <Thumbnail
+                    square
+                    source={require("../../resources/images/user.png")}
+                  />
+                  <Body>
+                    <AppText>{userName}</AppText>
+                  </Body>
+                </Left>
               </ListItem>
-            )}
-          />
+            </List>
+            <View style={{ padding: 10 }}>
+              <SendComment
+                parentId={parentComment ? parentComment.id : null}
+                productId={productId}
+                reload={() => this.loadData()}
+              />
+              <Button
+                style={{ marginTop: 10 }}
+                warning
+                block
+                onPress={() => this.setState({ showDialog: false })}
+              >
+                <AppText>CLOSE</AppText>
+              </Button>
+            </View>
+          </View>
+        </Modal>
+        {status === "LOADING" && <Spinner style={{ alignSelf: "center" }} />}
+        {parentComment !== null && <AppComment comment={parentComment} />}
+        <Content>
+          <View>
+            <View style={{ paddingHorizontal: 20 }}>
+              {childComments.map(comment => (
+                <AppComment key={"comment-" + comment.id} comment={comment} />
+              ))}
+              {parentComment !== null &&
+                (isLoggedIn ? (
+                  <Button
+                    primary
+                    block
+                    style={{ marginVertical: 20 }}
+                    onPress={() => this.setState({ showDialog: true })}
+                  >
+                    <AppText>COMMENT</AppText>
+                  </Button>
+                ) : (
+                  <Button
+                    danger
+                    block
+                    style={{ marginVertical: 20 }}
+                    onPress={() =>
+                      this.props.navigation.navigate("Account/LogIn")
+                    }
+                  >
+                    <AppText>LOG IN TO COMMENT</AppText>
+                  </Button>
+                ))}
+            </View>
+          </View>
         </Content>
       </Container>
     );
   }
 }
 
-const mapStateToProps = state => ({
-  status: state.feedback.status,
-  answers: state.feedback.answers,
-  questions: state.feedback.questions
-});
-
+const mapStateToProps = (state, props) => {
+  const { isLoggedIn, account } = state.user;
+  const { params } = props.navigation.state;
+  const {
+    productId,
+    selectedCommentId,
+    parentComment,
+    childComments,
+    reload
+  } = params;
+  return {
+    productId,
+    selectedCommentId,
+    parentComment: parentComment ? parentComment : null,
+    childComments: childComments ? childComments : [],
+    isLoggedIn,
+    reload,
+    userName: account.fullName
+  };
+};
 const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut())
 });
 
-const ReduxForm = reduxForm({
-  form: "answer_form",
-  touchOnBlur: false,
-  enableReinitialize: true,
-  onSubmitFail: () => {},
-  validate: values => {
-    const errors = {};
-
-    if (!values.comment) errors.reply = "Required";
-
-    return errors;
-  }
-})(Answers);
-
-export default connect(mapStateToProps, mapDispatchToProps)(ReduxForm);
+export default connect(mapStateToProps, mapDispatchToProps)(Answers);

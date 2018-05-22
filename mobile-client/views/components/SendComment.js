@@ -9,7 +9,7 @@ import {
   Form,
   Spinner,
   Item,
-  Input,
+  Textarea,
   Grid,
   Col
 } from "native-base";
@@ -26,22 +26,31 @@ class SendComment extends Component {
     };
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.submitting && !prevProps.submitting) Keyboard.dismiss();
+  }
+
   render() {
-    const { submitting } = this.state;
+    const { submitting, invalid } = this.state;
     return (
       <Form>
-        <Item>
-          <Input
-            value={this.state.comment}
-            onChangeText={text => this.setState({ comment: text })}
-            style={{ fontSize: 12 }}
-            placeholder="Type your comment"
-            onSubmitEditing={() =>
-              this.state.comment !== "" && sendComment.call(this)
-            }
-          />
-          {submitting && <Spinner />}
-        </Item>
+        <Textarea
+          value={this.state.comment}
+          onChangeText={text => this.setState({ comment: text })}
+          style={{ fontSize: 12 }}
+          placeholder="Enter your comment"
+          rowSpan={5}
+          bordered
+        />
+        <Button
+          primary
+          style={{ marginTop: 10 }}
+          disabled={submitting || invalid}
+          block
+          onPress={() => this.state.comment !== "" && sendComment.call(this)}
+        >
+          {submitting ? <Spinner /> : <AppText>SEND</AppText>}
+        </Button>
       </Form>
     );
   }
