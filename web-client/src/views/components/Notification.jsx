@@ -10,39 +10,88 @@ class Notification extends Component {
     super(props);
     this.state = {};
   }
-  render() {
-    const { token, notification, setNotificationAsRead, history } = this.props;
-    return (
-      <ListGroupItem
-        onClick={() => {
-          setNotificationAsRead(notification.id, token);
-          history.push(
-            `/main/subscribe-product?_v=${new Date().getTime()}&product_id=${
-              notification.productId
-            }&comment_id=${notification.commentId}`
-          );
-        }}
-      >
-        <div className="row">
-          <div className="col-xs-1">
-            <img src="assets/img/notification.png" alt="" style={{ width: '100%', height: 'auto' }} />
-          </div>
-          <div className="col-xs-10">
-            <div>
-              <h3 style={{ marginTop: 0 }}>
-                <b>NEW FEEDBACK ABOUT PRODUCT</b>
-              </h3>
-              <small>{formatTime(notification.createdAt)}</small>
+
+  renderNotification(notification) {
+    const {
+      type,
+      productId,
+      productName,
+      commentId,
+      id,
+      createdAt,
+      billId
+    } = notification;
+    const { token, setNotificationAsRead, history } = this.props;
+
+    switch (type) {
+      case "commentPosted":
+        return (
+          <div
+            className="row clickable"
+            onClick={() => {
+              setNotificationAsRead(id, token);
+              history.push(
+                `/main/subscribe-product?_v=${new Date().getTime()}&product_id=${productId}&comment_id=${commentId}`
+              );
+            }}
+          >
+            <div className="col-xs-1">
+              <img
+                src="assets/img/notification.png"
+                alt=""
+                style={{ width: "100%", height: "auto" }}
+              />
             </div>
-            <p className="mb-1">
-              Some user has give a feedback to product{" "}
-              <Link to={`/main/product/detail/${notification.productId}`}>
-                {`${notification.productName}`}(ID:{" "}
-                {`${notification.productId}`})
-              </Link>
-            </p>
+            <div className="col-xs-10">
+              <div>
+                <h3 style={{ marginTop: 0 }}>
+                  <b>NEW FEEDBACK ABOUT PRODUCT</b>
+                </h3>
+                <small>{formatTime(createdAt)}</small>
+              </div>
+              <p className="mb-1">
+                Some user has give a feedback to product{" "}
+                <Link to={`/main/product/detail/${productId}`}>
+                  {`${productName}`}(ID: {`${productId}`})
+                </Link>
+              </p>
+            </div>
           </div>
-        </div>
+        );
+      default:
+        return (
+          <div
+            className="row clickable"
+            onClick={() => {
+              setNotificationAsRead(id, token);
+              history.push("/main/bill/list?selected_bill_id=" + billId);
+            }}
+          >
+            <div className="col-xs-1">
+              <img
+                src="assets/img/notification.png"
+                alt=""
+                style={{ width: "100%", height: "auto" }}
+              />
+            </div>
+            <div className="col-xs-10">
+              <div>
+                <h3 style={{ marginTop: 0 }}>
+                  <b>NEW ORDER</b>
+                </h3>
+                <small>{formatTime(createdAt)}</small>
+              </div>
+              <p className="mb-1">New order with ID {billId} was made</p>
+            </div>
+          </div>
+        );
+    }
+  }
+
+  render() {
+    return (
+      <ListGroupItem>
+        {this.renderNotification(this.props.notification)}
       </ListGroupItem>
     );
   }

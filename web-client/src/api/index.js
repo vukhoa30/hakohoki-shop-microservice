@@ -11,6 +11,7 @@ import { push } from "react-router-redux";
 import { resolve } from "url";
 import { SubmissionError } from "redux-form";
 import { code as errCode } from "./err-code";
+import { store } from "../App";
 const {
   FINISH_LOADING_APP,
   LOADING_PRODUCT,
@@ -22,7 +23,10 @@ const {
   LOADING_UPCOMING_BILL,
   LOADING_COMPLETED_BILL,
   SEARCHING_BILL,
+  CONFIRM_BILL,
+  BILL_COMING,
   SELECT_BILL,
+  READ_BILL,
   LOADING_ACCOUNTS,
   APPEND_NOTIFICATION,
   LOADING_NOTIFICATIONS,
@@ -52,6 +56,7 @@ window.addEventListener("beforeunload", ev => {
 });
 
 export function connectToServer(accountId) {
+  const { router, user } = store.getState();
   return async dispatch => {
     dispatch(getAction(CONNECTION_SETTING));
     socket = createSocketConnection(
@@ -71,7 +76,15 @@ export function connectToServer(accountId) {
         dispatch(getAction(CONNECTION_FAILED));
       },
       data => {
-        console.log(data);
+        if (
+          router.location.pathname === "/main/bill/list" &&
+          data.type === "pendingBillCreated"
+        )
+          request("/bills/" + data.billId, "GET", {
+            Authorization: "JWT" + user.token
+          }).then(result => {
+            if (result.status === 200) dispatch(newBillComing(result.data));
+          });
         dispatch(getAction(APPEND_NOTIFICATION, { data }));
       },
       () => {
@@ -132,11 +145,15 @@ export const loadProductFeedback = productId => {
     let err = "undefined error";
     dispatch(
       getAction(LOADING_PRODUCT_FEEDBACK, {
-        isLoading: true
+        isLoading: true,
+        _id: productId
       })
     );
     try {
-      const { status, data } = await request("/comments/" + productId, "GET");
+      const { status, data } = await request(
+        "/comments/product/" + productId,
+        "GET"
+      );
       if (status === 200) {
         const { reviews, comments } = reduce(
           data,
@@ -313,6 +330,7 @@ export const loadUserInfo = () => {
     if (infoString !== null) {
       try {
         const { account, token } = JSON.parse(infoString);
+        console.log(token);
         dispatch(logIn(account, token));
       } catch (error) {}
     }
@@ -365,7 +383,7 @@ export const searchForBills = (query, billType, token) => {
                     },
                     []
                   )
-                : [],
+                : undefined,
               totalPrice: bill.specificProducts.reduce(
                 (total, product) => total + product.price,
                 0
@@ -414,6 +432,26 @@ export const selectBill = (bill, token) => {
               totalPrice: data.specificProducts.reduce(
                 (total, product) => total + product.price,
                 0
+              ),
+              products: transform(
+                data.specificProducts,
+                (result, cur) => {
+                  const element = result.find(
+                    product => product.productName === cur.productName
+                  );
+                  if (element) {
+                    element.specifics.push(cur.id);
+                  } else {
+                    result.push({
+                      productName: cur.productName,
+                      price: cur.price,
+                      specifics: [cur.id],
+                      mainPicture: cur.mainPicture
+                    });
+                  }
+                  return result;
+                },
+                []
               )
             }
           })
@@ -443,6 +481,52 @@ export const getBill = async (billId, token) => {
           totalPrice: data.specificProducts.reduce(
             (total, product) => total + product.price,
             0
+          ),
+          buyer: data.buyer
+            ? reduce(
+                data.buyer,
+                (result, value, key) => {
+                  result.push({
+                    name: key,
+                    value
+                  });
+                  return result;
+                },
+                []
+              )
+            : [],
+          seller: data.seller
+            ? reduce(
+                data.seller,
+                (result, value, key) => {
+                  result.push({
+                    name: key,
+                    value
+                  });
+                  return result;
+                },
+                []
+              )
+            : undefined,
+          products: transform(
+            data.specificProducts,
+            (result, cur) => {
+              const element = result.find(
+                product => product.productName === cur.productName
+              );
+              if (element) {
+                element.specifics.push(cur.id);
+              } else {
+                result.push({
+                  productName: cur.productName,
+                  price: cur.price,
+                  specifics: [cur.id],
+                  mainPicture: cur.mainPicture
+                });
+              }
+              return result;
+            },
+            []
           )
         }
       });
@@ -472,6 +556,76 @@ export const confirmBill = async (billId, token) => {
       status: error === "CONNECTION_ERROR" ? 0 : -1
     });
   }
+};
+
+export const confirmBillOnState = billId => {
+  return dispatch => dispatch(getAction(CONFIRM_BILL, { billId }));
+};
+
+export const setBillAsRead = billId => {
+  return dispatch => dispatch(getAction(READ_BILL, { billId }));
+};
+
+export const newBillComing = bill => {
+  return dispatch =>
+    dispatch(
+      getAction(BILL_COMING, {
+        data: {
+          ...bill,
+          new: true,
+          totalPrice: bill.specificProducts.reduce(
+            (total, product) => total + product.price,
+            0
+          ),
+          buyer: bill.buyer
+            ? reduce(
+                bill.buyer,
+                (result, value, key) => {
+                  result.push({
+                    name: key,
+                    value
+                  });
+                  return result;
+                },
+                []
+              )
+            : [],
+          seller: bill.seller
+            ? reduce(
+                bill.seller,
+                (result, value, key) => {
+                  result.push({
+                    name: key,
+                    value
+                  });
+                  return result;
+                },
+                []
+              )
+            : undefined,
+          products: transform(
+            bill.specificProducts,
+            (result, cur) => {
+              const element = result.find(
+                product => product.productName === cur.productName
+              );
+              if (element) {
+                element.specifics.push(cur.id);
+              } else {
+                result.push({
+                  productName: cur.productName,
+                  price: cur.price,
+                  specifics: [cur.id],
+                  mainPicture: cur.mainPicture
+                });
+              }
+              return result;
+            },
+            []
+          )
+        }
+      })
+    );
 };
 
 export const giveAnswer = async (productId, content, parentId, token) => {

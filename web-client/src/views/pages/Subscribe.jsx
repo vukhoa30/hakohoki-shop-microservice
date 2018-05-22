@@ -5,6 +5,7 @@ import ProductSelector from "../components/ProductSelector";
 import Comment from "../components/Comment";
 import Loader from "../components/Loader";
 import ConfirmDialog from "../components/ConfirmDialog";
+import IncomingIcon from "../components/Incoming";
 import { Well, Collapse } from "react-bootstrap";
 import {
   loadProductData,
@@ -21,7 +22,6 @@ class Subscribe extends Component {
     super(props);
     this.state = {
       query: {
-        _v: null,
         productId: null,
         commentId: null
       },
@@ -42,13 +42,11 @@ class Subscribe extends Component {
     loadSubscribedProducts(token);
   }
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { _v, product_id, comment_id } = parseToObject(
+    const { product_id, comment_id } = parseToObject(
       nextProps.location.search
     );
-    if (!_v || prevState.query._v === _v) return null;
     return {
       query: {
-        _v,
         productId: product_id ? product_id : null,
         commentId: comment_id ? comment_id : null
       }
@@ -288,14 +286,37 @@ class Subscribe extends Component {
                               style={{ width: 50, height: "auto" }}
                             />
                           </div>
-                          <div style={{ flex: 3, padding: 10 }}>
+                          <div style={{ flex: 3, padding: 10, paddingTop: 0 }}>
                             <p style={{ marginBottom: 0 }}>
                               <b style={{ color: "red" }}>
                                 {subscription.productName}
                               </b>
-                              <i
-                                className="fa fa-remove clickable pull-right"
-                                style={{ color: "orange" }}
+                            </p>
+                            <small>ID: {subscription.productId}</small>
+                            <div>
+                              <button
+                                className="btn btn-primary btn-fill btn-block"
+                                style={{ borderWidth: 0 }}
+                                onClick={() => {
+                                  if (
+                                    selectedProduct !== null &&
+                                    selectedProduct.productId ===
+                                      subscription.productId
+                                  )
+                                    return;
+                                  history.push({
+                                    ...location,
+                                    search: `?_v=${new Date().getTime()}&product_id=${
+                                      subscription.productId
+                                    }`
+                                  });
+                                }}
+                              >
+                                View comments <span class="badge">7</span>
+                              </button>
+                              <button
+                                className="btn btn-danger btn-fill btn-block"
+                                style={{ marginTop: 5, borderWidth: 0 }}
                                 onClick={e => {
                                   e.stopPropagation();
                                   if (isRemoving) return;
@@ -307,9 +328,10 @@ class Subscribe extends Component {
                                     }
                                   });
                                 }}
-                              />
-                            </p>
-                            <small>ID: {subscription.productId}</small>
+                              >
+                                Remove
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}

@@ -12,20 +12,20 @@ import { createLogger } from "redux-logger";
 
 const history = createHashHistory();
 
-const store = createStore(
+export const store = createStore(
   reducer,
-  applyMiddleware(
-    routerMiddleware(history),
-    thunk,
-    createLogger()
-  )
+  applyMiddleware(routerMiddleware(history), thunk, createLogger())
 );
 
 class App extends Component {
+  componentDidCatch(error) {
+    console.log("Some error occurs");
+    console.log(error);
+  }
   render() {
     return (
       <Provider store={store}>
-       <Container history={history} />
+        <Container history={history} />
       </Provider>
     );
   }
