@@ -21,6 +21,11 @@ export default class App extends React.Component {
     disconnect();
   }
 
+  componentDidCatch(error) {
+    console.log("Some error occurs");
+    console.log(error);
+  }
+
   render() {
     return (
       <Provider store={store}>

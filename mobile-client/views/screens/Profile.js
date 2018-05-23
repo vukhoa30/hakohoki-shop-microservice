@@ -168,7 +168,7 @@ class Profile extends Component {
               </ListItem>
             </List>
           </View>
-          <List style={{ marginVertical: 5, backgroundColor: "white" }}>
+          {/* <List style={{ marginVertical: 5, backgroundColor: "white" }}>
             <ListItem icon onPress={() => this.select("WATCH_LIST")}>
               <Left>
                 <Icon name="md-paper" />
@@ -185,23 +185,22 @@ class Profile extends Component {
                 <AppText>My cart</AppText>
               </Body>
             </ListItem>
-          </List>
+          </List> */}
+          <View style={{ flex: 1, flexDirection: "row" }}>
+            <AppIconButton
+              buttonName="ORDERS"
+              name="ios-paper-outline"
+              onPress={() => navigation.navigate("Order")}
+            />
+            <AppIconButton
+              buttonName="WATCH LIST"
+              name="md-paper"
+              onPress={() => navigation.navigate("WatchList")}
+            />
+          </View>
         </Content>
       </Container>
     );
-  }
-
-  select(key) {
-    const { navigation } = this.props;
-
-    switch (key) {
-      case "CART":
-        navigation.navigate("Cart");
-        break;
-      case "WATCH_LIST":
-        navigation.navigate("WatchList");
-        break;
-    }
   }
 
   render() {

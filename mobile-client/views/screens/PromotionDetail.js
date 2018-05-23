@@ -13,7 +13,9 @@ import {
   Thumbnail,
   Grid,
   Col,
-  Spinner
+  Spinner,
+  FooterTab,
+  Footer
 } from "native-base";
 import AppText from "../components/AppText";
 import ProductShowcase from "../components/ProductShowcase";
@@ -93,7 +95,12 @@ class PromotionDetail extends Component {
                 renderRow={product => (
                   <ListItem
                     key={"product-" + product._id}
-                    onPress={() => selectProduct(product._id)}
+                    onPress={() =>
+                      selectProduct({
+                        product: product,
+                        productId: product._id
+                      })
+                    }
                   >
                     <Body>
                       <Grid>
@@ -155,7 +162,10 @@ class PromotionDetail extends Component {
                                     key={"gift-product-" + giftProduct._id}
                                     style={{ marginBottom: 20 }}
                                     onPress={e =>
-                                      selectProduct(giftProduct._id)
+                                      selectProduct({
+                                        product: giftProduct,
+                                        productId: giftProduct._id
+                                      })
                                     }
                                   >
                                     <Col style={{ width: 70 }}>
@@ -179,9 +189,9 @@ class PromotionDetail extends Component {
                                         </AppText>
                                         <AppText color="red">
                                           {currencyFormat(
-                                            product.promotionPrice
-                                              ? product.promotionPrice
-                                              : product.price
+                                            giftProduct.promotionPrice
+                                              ? giftProduct.promotionPrice
+                                              : giftProduct.price
                                           )}
                                         </AppText>
                                       </View>
@@ -209,7 +219,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  selectProduct: productId => dispatch(selectProduct(productId)),
+  selectProduct: productInfo => dispatch(selectProduct(productInfo)),
   loadPromotion: () => dispatch(loadPromotion())
 });
 

@@ -64,7 +64,7 @@ class WatchList extends Component {
                         list.length > 0 ?
                             <View>{
                                 list.map(item =>
-                                    <TouchableOpacity key={item._id} onPress={() => selectProduct(item._id)}>
+                                    <TouchableOpacity key={item._id} onPress={() => selectProduct({ product: item, productId: item._id })}>
                                         <Card style={{ width: '100%', marginVertical: 5, paddingRight: 5 }}>
                                             <CardItem>
                                                 <Body>
@@ -164,7 +164,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         loadWatchList: (token, offset, limit) => dispatch(loadWatchList(token, offset, limit)),
-        selectProduct: productID => dispatch(selectProduct(productID)),
+        selectProduct: productInfo => dispatch(selectProduct(productInfo)),
         removeFromWatchlist: (productId, token, offset, limit) => dispatch(removeFromWatchlist(productId, token, offset, limit))
     }
 }

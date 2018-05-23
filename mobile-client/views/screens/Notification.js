@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, RefreshControl } from "react-native";
 import {
   selectProduct,
   makeNotificationAsRead,
@@ -47,7 +47,8 @@ class Notification extends Component {
       amount,
       promotionId,
       promotionName,
-      commentId
+      commentId,
+      billId
     } = notification;
     const {
       selectProduct,
@@ -86,6 +87,8 @@ class Notification extends Component {
       case "productBought":
         title = "New order has been made!";
         content = `You have made an order for product "${productName}"`;
+        callback = () =>
+          navigation.navigate("OrderDetail", { orderId: billId });
         break;
     }
 
@@ -133,63 +136,20 @@ class Notification extends Component {
       connectToServer
     } = this.props;
 
-    if (!isLoggedIn) {
-      return (
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <AppText onPress={() => logOut()} note>
-            Tap here to log in
-          </AppText>
-        </View>
-      );
-    }
-
-    switch (status) {
-      case "LOADING":
-        return (
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <Spinner />
-          </View>
-        );
-      case "LOADING_FAILED":
-        return (
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <AppText color="red" small style={{ marginBottom: 10 }}>
-              Could not load data
-            </AppText>
-            <Button
-              small
-              warning
-              style={{ alignSelf: "center" }}
-              onPress={() => loadNotifications(token)}
-            >
-              <AppText>Reload</AppText>
-            </Button>
-          </View>
-        );
-    }
-
-    return (
+    return !isLoggedIn ? (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+      >
+        <AppText onPress={() => logOut()} note>
+          Tap here to log in
+        </AppText>
+      </View>
+    ) : (
       <Container>
         {connectionStatus === "CONNECTING" && (
           <AppText color="green" center small>
@@ -210,8 +170,49 @@ class Notification extends Component {
             </AppText>
           </TouchableOpacity>
         )}
+        {status === "LOADING" ? (
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <Spinner />
+          </View>
+        ) : (
+          status === "LOADING_FAILED" && (
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              <AppText color="red" small style={{ marginBottom: 10 }}>
+                Could not load data
+              </AppText>
+              <Button
+                small
+                warning
+                style={{ alignSelf: "center" }}
+                onPress={() => loadNotifications(token)}
+              >
+                <AppText>Reload</AppText>
+              </Button>
+            </View>
+          )
+        )}
         <Content>
           <List
+            refreshControl={
+              <RefreshControl
+                refreshing={status === "LOADING"}
+                onRefresh={() => loadNotifications(token)}
+              />
+            }
             dataArray={list}
             renderRow={notification => (
               <ListItem key={"notification-" + notification.id}>

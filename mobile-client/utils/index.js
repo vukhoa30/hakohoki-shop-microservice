@@ -1,8 +1,11 @@
 import { gatewayHost, gatewayPort } from "../config";
 import { stringify } from "query-string";
-import { AlertAndroid, Alert, Platform } from "react-native";
+import { AlertAndroid, Alert, Platform, Dimensions } from "react-native";
 import { Toast } from "native-base";
 import io from "socket.io-client";
+
+var { width, height } = Dimensions.get("window");
+var platform = Platform.OS;
 
 var gatewayAddress = "http://" + gatewayHost + ":" + gatewayPort;
 
@@ -31,14 +34,16 @@ function createSocketConnection(
   return socket;
 }
 
-function alert(type, content, position = 'bottom') {
-  const toastType = type === 'success' ? 'default' : type === 'error' ? 'danger' : 'warning'
+function alert(type, content, position = "bottom") {
+  const toastType =
+    type === "success" ? "default" : type === "error" ? "danger" : "warning";
   Toast.show({
     text: content,
     buttonText: "OK",
     position: "bottom",
     type: toastType,
-    position
+    position,
+    duration: 3000
   });
 }
 
@@ -57,36 +62,25 @@ function confirm(title, content, callback) {
 
 function request(url, method, header, data) {
   const fullUrl = gatewayAddress + url;
-  return new Promise((resolve, reject) => {
-    fetch(fullUrl, {
-      method,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...header
-      },
-      body: data ? JSON.stringify(data) : null
-    })
-      .then(res => {
-        const status = res.status;
-        return new Promise((resolve, reject) => {
-          res
-            .json()
-            .then(data => resolve({ status, data }))
-            .catch(error => {
-              console.log(error);
-              reject("JSON_PARSE_FAILED");
-            });
-        });
-      })
-      .catch(error => {
-        console.log(error);
-        reject("CONNECTION_ERROR");
-      })
-      .then(data => {
-        console.log(`${method} ${url} - ${data ? data.status : "failed"}`);
-        resolve(data);
+  return new Promise(async (resolve, reject) => {
+    try {
+      let response = await fetch(fullUrl, {
+        method,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          ...header
+        },
+        body: data ? JSON.stringify(data) : null
       });
+      console.log(method + " " + url + " - " + response.status);
+      let responseJson = await response.json();
+      return resolve({ status: response.status, data: responseJson });
+    } catch (error) {
+      console.log(error);
+      console.log(method + " " + url);
+      reject(error);
+    }
   });
 }
 
@@ -101,9 +95,48 @@ function validateEmail(email) {
   return re.test(String(email).toLowerCase());
 }
 
-function formatTime(time) {
-  const dateObj = new Date(time);
-  return dateObj.toLocaleTimeString() + " - " + dateObj.toLocaleDateString();
+function formatTime(curTime) {
+  const dateObj = new Date(curTime);
+  const today = new Date();
+  let time = Math.round((today.getTime() - dateObj.getTime()) / 60000);
+  let unit = "minute";
+  let loop = true;
+  let i = 0;
+  while (i++ < 4 && loop) {
+    switch (unit) {
+      case "minute":
+        if (time < 60) loop = false;
+        else {
+          time = Math.round(time / 60);
+          unit = "hour";
+        }
+        break;
+      case "hour":
+        if (time < 24) loop = false;
+        else {
+          time = Math.round(time / 24);
+          unit = "day";
+        }
+        break;
+      case "day":
+        if (time < 30) loop = false;
+        else {
+          time = Math.round(time / 30);
+          unit = "month";
+        }
+        break;
+      case "month":
+        if (time < 12) loop = false;
+        else {
+          time = Math.round(time / 12);
+          unit = "year";
+        }
+        break;
+    }
+  }
+  return unit === "minute" && time === 0
+    ? "Just now"
+    : time + " " + unit + (time > 1 ? "s" : "") + " ago";
 }
 
 function parseToQueryString(obj) {
@@ -125,7 +158,20 @@ function delay(ms) {
   return new Promise(res => setTimeout(() => res(), ms));
 }
 
+function formatProduct(product) {
+  return {
+    ...product,
+    price: currencyFormat(product.price),
+    promotionPrice: product.promotionPrice
+      ? currencyFormat(product.promotionPrice)
+      : undefined
+  };
+}
+
 module.exports = {
+  width,
+  height,
+  platform,
   updateGateway,
   request,
   currencyFormat,
@@ -137,5 +183,6 @@ module.exports = {
   confirm,
   delay,
   createSocketConnection,
-  reduceString
+  reduceString,
+  formatProduct
 };

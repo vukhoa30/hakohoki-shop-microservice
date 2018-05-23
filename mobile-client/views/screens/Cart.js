@@ -120,7 +120,9 @@ class Cart extends Component {
                       </Col>
                       <Col>
                         <TouchableHighlight
-                          onPress={() => selectProduct(product._id)}
+                          onPress={() =>
+                            selectProduct({ product, productId: product._id })
+                          }
                         >
                           <View>
                             <AppText style={{ fontWeight: "bold" }}>
@@ -225,6 +227,12 @@ class Cart extends Component {
                                 <Grid
                                   key={"gift-product-" + giftProduct._id}
                                   style={{ marginBottom: 20 }}
+                                  onPress={e =>
+                                    selectProduct({
+                                      product: giftProduct,
+                                      productId: giftProduct._id
+                                    })
+                                  }
                                 >
                                   <Col style={{ width: 70 }}>
                                     <Thumbnail
@@ -346,7 +354,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch(setCart(token, product, type, amount)),
   loadCart: token => dispatch(loadCart(token)),
   makeOrder: (productList, token) => dispatch(makeOrder(productList, token)),
-  selectProduct: productId => dispatch(selectProduct(productId))
+  selectProduct: productInfo => dispatch(selectProduct(productInfo))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cart);

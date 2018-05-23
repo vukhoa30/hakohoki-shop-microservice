@@ -152,6 +152,7 @@ class AppCarousel extends Component {
                 onSnapToItem={slideIndex =>
                   this.setState({ activeSlide: slideIndex })
                 }
+              
                 layout={"default"}
                 firstItem={0}
                 autoplay={true}

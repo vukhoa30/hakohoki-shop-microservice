@@ -1,28 +1,41 @@
-import { WATCH_LIST_LOADING } from "../actions"
+import { WATCH_LIST_LOADING, UPDATE_WATCH_LIST } from "../actions";
 const initialState = {
-    status: 'INIT',
-    list: [],
-    needToUpdate: false
-}
+  status: "INIT",
+  list: []
+};
 
 function reducer(state = initialState, action) {
+  let nextState = state;
+  const { type, status, data, command, refresh } = action;
 
-    let nextState = state
-    const { type, status, data } = action
+  switch (type) {
+    case WATCH_LIST_LOADING:
+      if (status === "LOADED")
+        nextState = refresh
+          ? { ...state, status, list: data }
+          : { ...state, status, list: state.list.concat(data) };
+      else nextState = { ...state, status };
+      break;
+    case UPDATE_WATCH_LIST:
+      if (status === "LOADED")
+        if (command === "add") {
+          const newList = state.list;
+          newList.push(data);
+          nextState = { ...state, list: newList };
+        } else {
+          const productIndex = state.list.findIndex(
+            product => product._id === data._id
+          );
+          if (productIndex > -1) {
+            const newList = state.list;
+            newList.splice(productIndex, 1);
+            nextState = { ...state, list: newList };
+          }
+        }
+      break;
+  }
 
-    switch (type) {
-
-        case WATCH_LIST_LOADING:
-            if (status === 'LOADED')
-                nextState = { ...state, status, list: state.list.concat(data) }
-            else
-                nextState = { ...state, status }
-            break
-
-    }
-
-    return nextState
-
+  return nextState;
 }
 
-export default reducer
+export default reducer;

@@ -18,6 +18,7 @@ import ServerAddressForm from "../views/screens/ServerAddressForm";
 import ProductInformation from "../views/screens/ProductInformation";
 import ProductReviews from "../views/screens/ProductReviews";
 import ProductComments from "../views/screens/ProductComments";
+import ProductDetail from "../views/screens/ProductDetail";
 import Catalog from "../views/screens/Catalog";
 import Cart from "../views/screens/Cart";
 import Answers from "../views/screens/Answers";
@@ -27,42 +28,44 @@ import NotificationComponent from "../views/screens/Notification";
 import TabBarIcon from "../views/components/TabBarIcon";
 import CartIcon from "../views/components/CartIcon";
 import BackButton from "../views/components/BackButton";
+import OrderList from "../views/screens/OrderList";
+import OrderDetail from "../views/screens/OrderDetail";
 import { Icon } from "native-base";
 
 const themeColor = "#BE2E11";
 
-const ProductDetail = TabNavigator(
-  {
-    Information: {
-      screen: ProductInformation
-    },
-    Reviews: {
-      screen: ProductReviews
-    },
-    Comments: {
-      screen: ProductComments
-    }
-  },
-  {
-    initialRouteName: "Information",
-    tabBarComponent: TabBarTop,
-    tabBarPosition: "top",
-    tabBarOptions: {
-      upperCaseLabel: true,
-      activeTintColor: "white",
-      labelStyle: {
-        fontWeight: "bold"
-      },
-      indicatorStyle: {
-        backgroundColor: "white"
-      },
-      inactiveTintColor: "white",
-      style: {
-        backgroundColor: themeColor
-      }
-    }
-  }
-);
+// const ProductDetail = TabNavigator(
+//   {
+//     Information: {
+//       screen: ProductInformation
+//     },
+//     Reviews: {
+//       screen: ProductReviews
+//     },
+//     Comments: {
+//       screen: ProductComments
+//     }
+//   },
+//   {
+//     initialRouteName: "Information",
+//     tabBarComponent: TabBarTop,
+//     tabBarPosition: "top",
+//     tabBarOptions: {
+//       upperCaseLabel: true,
+//       activeTintColor: "white",
+//       labelStyle: {
+//         fontWeight: "bold"
+//       },
+//       indicatorStyle: {
+//         backgroundColor: "white"
+//       },
+//       inactiveTintColor: "white",
+//       style: {
+//         backgroundColor: themeColor
+//       }
+//     }
+//   }
+// );
 
 // const Product = StackNavigator(
 //     {
@@ -227,22 +230,30 @@ const rootNavigator = StackNavigator(
       }
     },
 
+    // ProductDetail: {
+    //   screen: ProductDetail,
+    //   navigationOptions: ({ navigation }) => ({
+    //     title: "Product detail",
+    //     headerStyle: {
+    //       backgroundColor: themeColor,
+    //       elevation: 0,
+    //       shadowOpacity: 0
+    //     },
+    //     headerTitleStyle: {
+    //       color: "white"
+    //     },
+    //     headerTintColor: "white",
+    //     headerRight: <CartIcon />,
+    //     headerLeft: <BackButton type="product_detail" navigation={navigation} />
+    //   })
+    // },
+
     ProductDetail: {
       screen: ProductDetail,
-      navigationOptions: ({ navigation }) => ({
-        title: "Product detail",
-        headerStyle: {
-          backgroundColor: themeColor,
-          elevation: 0,
-          shadowOpacity: 0
-        },
-        headerTitleStyle: {
-          color: "white"
-        },
-        headerTintColor: "white",
-        headerRight: <CartIcon />,
-        headerLeft: <BackButton type="product_detail" navigation={navigation} />
-      })
+      navigationOptions: {
+        title: "Product Detail",
+        headerRight: <CartIcon />
+      }
     },
 
     Cart: {
@@ -266,6 +277,28 @@ const rootNavigator = StackNavigator(
       navigationOptions: {
         title: "Watch list",
         headerRight: <View />
+      }
+    },
+
+    Order: {
+      screen: OrderList,
+      navigationOptions: {
+        title: "My orders",
+        headerStyle: {
+          backgroundColor: themeColor,
+          elevation: 0,
+          shadowOpacity: 0
+        },
+        headerTitleStyle: {
+          color: "white"
+        }
+      }
+    },
+
+    OrderDetail: {
+      screen: OrderDetail,
+      navigationOptions: {
+        title: "Order detail",
       }
     }
   },

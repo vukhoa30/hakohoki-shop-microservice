@@ -122,7 +122,7 @@ class Home extends Component {
 
     return (
       <Container>
-        <View
+        {/* <View
           style={{
             backgroundColor: "black",
             width: "100%",
@@ -191,7 +191,7 @@ class Home extends Component {
                 })}
             </ScrollView>
           }
-        </View>
+        </View> */}
         <Content
           style={{ paddingTop: 70 }}
           onScroll={({ nativeEvent }) => {
@@ -224,13 +224,13 @@ class Home extends Component {
             placeholder="Searching for product"
             onTouchStart={() => navigation.navigate("Search")}
           /> */}
-          <PromotionCarousel
+          {/* <PromotionCarousel
             navigation={navigation}
             isHide={fadingBanner}
             list={promotionList}
             status={promotionStatus}
             load={() => loadPromotion()}
-          />
+          /> */}
           <View
             style={{
               width: "100%",
@@ -270,7 +270,7 @@ class Home extends Component {
                 {latestProductList.map(product => (
                   <View key={product._id} style={{ width: width / 2 }}>
                     <ProductShowcase
-                      onSelected={productId => selectProduct(productId)}
+                      onSelected={productId => selectProduct({ product, productId: product._id })}
                       item={product}
                     />
                   </View>
@@ -291,7 +291,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  selectProduct: productId => dispatch(selectProduct(productId)),
+  selectProduct: productInfo => dispatch(selectProduct(productInfo)),
   loadPromotion: () => dispatch(loadPromotion()),
   loadCategories: () => dispatch(loadCategories())
 });

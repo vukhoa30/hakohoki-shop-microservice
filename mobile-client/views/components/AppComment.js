@@ -10,7 +10,11 @@ import {
   Body,
   Icon,
   Thumbnail,
-  Badge
+  Badge,
+  Right,
+  Left,
+  Card,
+  CardItem
 } from "native-base";
 import AppText from "./AppText";
 import { formatTime } from "../../utils";
@@ -86,43 +90,127 @@ class AppComment extends Component {
     );
   }
 
+  getCompliment(rating) {
+    switch (rating) {
+      case 1:
+        return "BAD";
+      case 2:
+        return "NOT GOOD";
+      case 3:
+        return "GOOD";
+      case 4:
+        return "VERY GOOD";
+      case 5:
+        return "EXCELLENT";
+    }
+  }
+
+  loadData() {
+    this.props.trigger();
+  }
+
   render() {
-    const { comment } = this.props;
+    const { comment, trigger } = this.props;
 
     return (
-      <Grid style={{ marginVertical: 5 }}>
-        <Col style={{ width: width / 4 }}>
-          <Body>{this.getImage(comment.userRole)}</Body>
-        </Col>
-        <Col>
+      <Card style={{ flex: 0 }} transparent>
+        <CardItem>
+          <Left>
+            <Thumbnail
+              square
+              source={require("../../resources/images/user.png")}
+            />
+            <Body>
+              <AppText>{comment.userName}</AppText>
+              <AppText note>{formatTime(comment.createdAt)}</AppText>
+            </Body>
+          </Left>
+        </CardItem>
+        <CardItem>
           <Body>
-            <AppText style={{ fontWeight: "bold" }}>{comment.userName}</AppText>
-            {comment.userRole !== "customer" && (
-              <AppText
-                small
-                color={
-                  comment.userRole === "manager"
-                    ? "red"
-                    : comment.userRole === "employee"
-                      ? "orange"
-                      : "yellow"
-                }
-              >
-                {comment.userRole}
-              </AppText>
-            )}
             {comment.reviewScore && (
               <View style={{ flexDirection: "row" }}>
                 {this.renderStars(comment.reviewScore)}
+                <AppText note style={{ marginLeft: 5 }}>
+                  {this.getCompliment(comment.reviewScore)}
+                </AppText>
               </View>
             )}
-            <AppText note>{comment.content}</AppText>
-            <AppText note small style={{ marginVertical: 5, fontSize: 10 }}>
-              {formatTime(comment.createdAt)}
-            </AppText>
+            <AppText>{comment.content}</AppText>
+            {comment.childs && (
+              <Grid>
+                <Col />
+                <Col
+                  style={{ justifyContent: "flex-end", flexDirection: "row" }}
+                >
+                  <Icon
+                    name="md-chatboxes"
+                    style={{ marginRight: 5, color: "blue" }}
+                    onPress={() => trigger && trigger()}
+                  />
+                  <AppText color="blue">{comment.childs.length}</AppText>
+                </Col>
+              </Grid>
+            )}
           </Body>
-        </Col>
-      </Grid>
+        </CardItem>
+      </Card>
+      // <Grid style={{ marginVertical: 5 }}>
+      //   <Col style={{ width: width / 5 }}>
+      //     <Body>{this.getImage(comment.userRole)}</Body>
+      //   </Col>
+      //   <Col>
+      //     <Body>
+      //       {comment.userRole !== "employee" && !comment.reviewScore ? (
+      //         <Grid>
+      //           <Col>
+      //             <AppText style={{ fontWeight: "bold" }}>
+      //               {comment.userName}
+      //             </AppText>
+      //           </Col>
+      //           <Col style={{ flex: 1, alignItems: "flex-end" }}>
+      //             {!comment.reviewScore &&
+      //               comment.userRole &&
+      //               comment.userRole !== "customer" && (
+      //                 <Badge
+      //                   danger={comment.userRole === "manager"}
+      //                   primary={comment.userRole === "receptionist"}
+      //                   success={comment.userRole === "employee"}
+      //                 >
+      //                   <AppText small>{comment.userRole}</AppText>
+      //                 </Badge>
+      //               )}
+      //           </Col>
+      //         </Grid>
+      //       ) : (
+      //         <AppText style={{ fontWeight: "bold" }}>
+      //           {comment.userName}
+      //         </AppText>
+      //       )}
+      //       {comment.reviewScore && (
+      //         <View style={{ flexDirection: "row" }}>
+      //           {this.renderStars(comment.reviewScore)}
+      //         </View>
+      //       )}
+      //       <AppText note>{comment.content}</AppText>
+      //     </Body>
+      //     <Left>
+      //       <AppText note small style={{ marginVertical: 5, fontSize: 10 }}>
+      //         {formatTime(comment.createdAt)}
+      //       </AppText>
+      //     </Left>
+      //     {comment.childs && (
+      //       <Right>
+      //         <View style={{ flexDirection: "row" }}>
+      //           <Icon name="md-chatboxes" />
+      //           <AppText small note>
+      //             {comment.childs.length}
+      //           </AppText>
+      //         </View>
+      //       </Right>
+      //     )}
+      //   </Col>
+      // </Grid>
     );
   }
 }
