@@ -100,6 +100,7 @@ module.exports = {
             productId: r.productId,
             id: r._id,
             commentId: r.commentId,
+            parentId: r.parentId,
             billId: r.billId,
             productName: r.productName,
             promotionName: r.promotionName
