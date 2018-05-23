@@ -12,6 +12,8 @@ import { resolve } from "url";
 import { SubmissionError } from "redux-form";
 import { code as errCode } from "./err-code";
 import { store } from "../App";
+import { EventEmitter } from "events";
+
 const {
   FINISH_LOADING_APP,
   LOADING_PRODUCT,
@@ -49,6 +51,7 @@ const {
 } = errCode;
 
 var socket = null;
+export const eventEmitter = new EventEmitter();
 
 window.addEventListener("beforeunload", ev => {
   ev.preventDefault();
@@ -85,6 +88,13 @@ export function connectToServer(accountId) {
           }).then(result => {
             if (result.status === 200) dispatch(newBillComing(result.data));
           });
+        else if (data.type === "commentPosted") {
+          eventEmitter.emit("newComment", {
+            productId: data.productId,
+            commentId: data.commentId,
+            parentId: data.parentId
+          });
+        }
         dispatch(getAction(APPEND_NOTIFICATION, { data }));
       },
       () => {
@@ -889,7 +899,7 @@ export const removeSubscribedProduct = (productId, token) => {
         },
         { productId }
       );
-      if (status === 200) return resolve();
+      if (status === 200) return resolve({ ok: true });
       else if (status === 401)
         err = buildNotificationText(FORBIDDEN, {
           functionName: "REMOVE PRODUCTS FROM YOUR SUBSCRITION LIST"
@@ -898,6 +908,6 @@ export const removeSubscribedProduct = (productId, token) => {
     } catch (error) {
       err = buildNotificationText(error);
     }
-    return reject(err);
+    return resolve({ ok: false, err });
   });
 };
