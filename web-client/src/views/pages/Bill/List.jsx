@@ -4,27 +4,33 @@ import {
   formatTime,
   currencyFormat,
   parseToObject,
-  parseToQueryString
+  parseToQueryString,
+  request
 } from "../../../utils";
 import {
   searchForBills,
   getBill,
   toast,
   confirmBill,
-  selectBill
+  confirmBillOnState,
+  setBillAsRead
 } from "../../../api";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 import Bill from "../../components/Bill";
 import Loader from "../../components/Loader";
+import BillDetail from "../../components/BillDetail";
 import { findDOMNode } from "react-dom";
+import { transform, reduce } from "lodash";
 
 class BillList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstLoad: true,
+      selectedBillLoading: false,
+      selectedBillErr: false,
+      mode: "pending",
       begin: null,
       end: moment(),
       selectedBill: null,
@@ -37,36 +43,89 @@ class BillList extends Component {
   }
 
   componentDidMount() {
-    if (this.state.firstLoad) {
-      this.setState({ firstLoad: false });
-      const { location, searchForBills, token } = this.props;
-      const { search } = location;
-      if (search === "") return;
-      searchForBills(search, "search", token);
-      const searchObj = parseToObject(search);
-      Object.keys(searchObj).map(key => {
-        if (
-          key === "accountId" ||
-          key === "phoneNumber" ||
-          key === "email" ||
-          key === "fullName"
-        ) {
-          this.buyerInfoKey.value = key;
-          this.buyer.value = searchObj[key];
-        } else if (key === "status") this.status.value = searchObj[key];
-        else if (key === "begin" || key === "end") {
-          this.setState({ [key]: moment(searchObj[key]) });
-        }
-      });
+    const { billId } = this.props;
+    if (billId !== null) this.loadSelectedBill();
+  }
+
+  loadSelectedBill() {
+    const { billId, token } = this.props;
+    this.setState({
+      selectedBillLoading: true,
+      selectedBill: null,
+      selectedBillErr: false
+    });
+    getBill(billId, token).then(result => {
+      if (result.ok)
+        this.setState({
+          selectedBill: result.data,
+          selectedBillLoading: false
+        });
+      else this.setState({ selectedBillLoading: false, selectedBillErr: true });
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.props.billId !== prevProps.billId &&
+      (this.state.selectedBill !== null &&
+        this.state.selectedBill._id !== this.props.billId)
+    ) {
+      this.loadSelectedBill();
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.location !== nextProps.location) {
-      const { token, location, searchForBills } = nextProps;
-      const { search } = location;
-      searchForBills(search, "search", token);
+  getInfoName(key) {
+    let name = "";
+    switch (key) {
+      case "accountId":
+        name = "ID";
+        break;
+      case "fullName":
+        name = "Name";
+        break;
+      case "email":
+        name = "Email";
+        break;
+      case "phoneNumber":
+      case "phoneNumner":
+        name = "Phone";
+        break;
     }
+    return name;
+  }
+
+  selectBill(bill) {
+    if (bill.new) this.props.setBillAsRead(bill._id);
+    this.setState({
+      selectedBill: {
+        ...bill,
+        products: transform(
+          bill.specificProducts,
+          (result, cur) => {
+            const element = result.find(
+              product => product.productName === cur.productName
+            );
+            if (element) {
+              element.specifics.push(cur.id);
+            } else {
+              result.push({
+                productName: cur.productName,
+                price: cur.price,
+                specifics: [cur.id],
+                mainPicture: cur.mainPicture,
+                giftProducts: cur.specificGifts
+              });
+            }
+            return result;
+          },
+          []
+        )
+      }
+    });
+    this.props.history.push({
+      ...this.props.location,
+      search: "?selected_bill_id=" + bill._id
+    });
   }
 
   render() {
@@ -80,10 +139,17 @@ class BillList extends Component {
       handleSubmit,
       history,
       toast,
-      selectBill,
-      role
+      role,
+      confirmBillOnState,
+      account
     } = this.props;
-    const { selectedBill, confirmingBill } = this.state;
+    const {
+      selectedBill,
+      confirmingBill,
+      mode,
+      selectedBillErr,
+      selectedBillLoading
+    } = this.state;
     return (
       <div className="container-fluid">
         {role === "receptionist" && (
@@ -138,74 +204,251 @@ class BillList extends Component {
           </button>
         </form> */}
         <div className="row mt-3">
-          <div className="col-md-6 col-xs-12">
-            <h3>UPCOMING</h3>
-            <div style={{ height: 600, overflowY: "auto" }}>
-              {upcoming.err !== null && (
-                <div
-                  className="alert alert-danger clickable"
-                  role="alert"
-                  onClick={() =>
-                    searchForBills("?status=pending", "pending", token)
-                  }
+          <div className="col-md-4 col-xs-12">
+            <ul className="nav nav-tabs">
+              <li className={mode === "pending" ? "active" : ""}>
+                <a
+                  href="javascript:;"
+                  onClick={() => this.setState({ mode: "pending" })}
                 >
-                  COULD NOT LOAD DATA. CLICK TO TRY AGAIN
-                </div>
-              )}
-              {upcoming.isLoading ? (
-                <div className="d-flex justify-content-center mt-5">
-                  <Loader />
-                </div>
-              ) : upcoming.data.length > 0 ? (
-                <div className="list-group mt-3">
-                  {upcoming.data.reverse().map(bill => (
-                    <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
-                  ))}
+                  <b>Pending</b>
+                </a>
+              </li>
+              <li className={mode === "completed" ? "active" : ""}>
+                <a
+                  href="javascript:;"
+                  onClick={() => this.setState({ mode: "completed" })}
+                >
+                  <b>Completed</b>
+                </a>
+              </li>
+              <li className={mode === "search" ? "active" : ""}>
+                <a
+                  href="javascript:;"
+                  onClick={() => this.setState({ mode: "search" })}
+                >
+                  <b>Search</b>
+                </a>
+              </li>
+            </ul>
+            <div style={{ width: "100%" }}>
+              {mode === "search" ? (
+                <form
+                  style={{ marginTop: 10 }}
+                  onSubmit={e => {
+                    e.preventDefault();
+                    const { buyer, criteria, begin, end } = e.target;
+                    const user =
+                      buyer.value !== ""
+                        ? {
+                            accountId:
+                              criteria === "by_id" ? buyer.value : undefined,
+                            fullName:
+                              criteria === "by_name" ? buyer.value : undefined,
+                            email:
+                              criteria === "by_email" ? buyer.value : undefined,
+                            phoneNumber:
+                              criteria === "by_phone" ? buyer.value : undefined
+                          }
+                        : {};
+                    const searchObj = {
+                      ...user,
+                      begin: begin.value !== "" ? begin.value : undefined,
+                      end: end.value !== "" ? end.value : undefined
+                    };
+                    console.log(searchObj);
+                  }}
+                >
+                  <div style={{ display: "flex" }}>
+                    <div className="form-group" style={{ flex: 2 }}>
+                      <input
+                        name="buyer"
+                        type="text"
+                        placeholder="SEARCH FOR BUYER"
+                        className="form-control border-input"
+                        style={{
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0
+                        }}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <select
+                        name="criteria"
+                        className="form-control border-input"
+                        style={{
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0
+                        }}
+                      >
+                        <option value="by_id">BY ID</option>
+                        <option value="by_name">BY NAME</option>
+                        <option value="by_email">BY EMAIL</option>
+                        <option value="by_phone">BY PHONE NUMBER</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-horizontal" style={{ display: "flex" }}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="control-label col-sm-2">From</label>
+                      <div className="col-sm-10">
+                        <input
+                          name="begin"
+                          type="date"
+                          placeholder="SEARCH FOR BUYER"
+                          className="form-control border-input"
+                          style={{
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div
+                      className="form-group"
+                      style={{ flex: 1, paddingLeft: 10 }}
+                    >
+                      <label className="control-label col-sm-2 text-right">
+                        To
+                      </label>
+                      <div className="col-sm-10">
+                        <input
+                          name="end"
+                          type="date"
+                          placeholder="SEARCH FOR BUYER"
+                          className="form-control border-input"
+                          style={{
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <button type="submit" className="btn btn-success btn-fill">
+                      SEARCH
+                    </button>
+                  </div>
+                </form>
+              ) : mode === "pending" ? (
+                <div style={{ width: "100%", height: 600, overflowY: "auto" }}>
+                  {upcoming.err !== null && (
+                    <div
+                      className="alert alert-danger clickable"
+                      role="alert"
+                      onClick={() =>
+                        searchForBills("?status=pending", "pending", token)
+                      }
+                    >
+                      COULD NOT LOAD DATA. CLICK TO TRY AGAIN
+                    </div>
+                  )}
+                  {upcoming.isLoading ? (
+                    <div className="text-center">
+                      <Loader />
+                    </div>
+                  ) : upcoming.data.length > 0 ? (
+                    <div className="list-group" style={{ borderTopWidth: 0 }}>
+                      {upcoming.data.map(bill => (
+                        <Bill
+                          key={"upcoming-bill-" + bill._id}
+                          bill={bill}
+                          selectBill={() => this.selectBill(bill)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    upcoming.err === null && (
+                      <div className="d-flex justify-content-center mt-5">
+                        <p style={{ color: "gray" }}>NO BILL FOUND</p>
+                      </div>
+                    )
+                  )}
                 </div>
               ) : (
-                upcoming.err === null && (
-                  <div className="d-flex justify-content-center mt-5">
-                    <p style={{ color: "gray" }}>NO BILL FOUND</p>
-                  </div>
-                )
+                <div style={{ height: 600, overflowY: "auto" }}>
+                  {completed.err !== null && (
+                    <div
+                      className="alert alert-danger clickable"
+                      role="alert"
+                      onClick={() =>
+                        searchForBills("?status=completed", "completed", token)
+                      }
+                    >
+                      COULD NOT LOAD DATA. CLICK TO TRY AGAIN
+                    </div>
+                  )}
+                  {completed.isLoading ? (
+                    <div className="text-center">
+                      <Loader />
+                    </div>
+                  ) : completed.data.length > 0 ? (
+                    <div className="list-group" style={{ borderTopWidth: 0 }}>
+                      {completed.data.map(bill => (
+                        <Bill
+                          key={"completed-bill-" + bill._id}
+                          bill={bill}
+                          selectBill={() => this.selectBill(bill)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    completed.err === null && (
+                      <div className="d-flex justify-content-center mt-5">
+                        <p style={{ color: "gray" }}>NO BILL FOUND</p>
+                      </div>
+                    )
+                  )}
+                </div>
               )}
             </div>
           </div>
-          <div className="col-md-6 col-xs-12">
-            <h3>COMPLETED</h3>
-            <div style={{ height: 600, overflowY: "auto" }}>
-              {completed.err !== null && (
-                <div
-                  className="alert alert-danger clickable"
-                  role="alert"
-                  onClick={() =>
-                    searchForBills("?status=completed", "completed", token)
-                  }
-                >
-                  COULD NOT LOAD DATA. CLICK TO TRY AGAIN
-                </div>
-              )}
-              {completed.isLoading ? (
-                <div className="d-flex justify-content-center mt-5">
-                  <Loader />
-                </div>
-              ) : completed.data.length > 0 ? (
-                <div className="list-group mt-3">
-                  {completed.data.reverse().map(bill => (
-                    <Bill key={"upcoming-bill-" + bill._id} bill={bill} />
-                  ))}
-                </div>
-              ) : (
-                completed.err === null && (
-                  <div className="d-flex justify-content-center mt-5">
-                    <p style={{ color: "gray" }}>NO BILL FOUND</p>
-                  </div>
-                )
-              )}
-            </div>
+          <div
+            className="col-md-8 col-xs-12"
+            style={{ backgroundColor: "white" }}
+          >
+            {selectedBillLoading ? (
+              <div className="text-center">
+                <Loader />
+              </div>
+            ) : selectedBillErr ? (
+              <div
+                className="alert alert-danger"
+                onClick={() => this.loadSelectedBill()}
+              >
+                ERROR IN LOADING BILL! CLICK TO TRY AGAIN
+              </div>
+            ) : (
+              selectedBill !== null && (
+                <BillDetail
+                  key="bill-detail"
+                  selectedBill={selectedBill}
+                  confirmCompleted={() => {
+                    confirmBillOnState(selectedBill._id);
+                    this.setState({
+                      selectedBill: {
+                        ...this.state.selectedBill,
+                        seller: reduce(
+                          account,
+                          (result, value, key) => {
+                            result.push({
+                              name: key,
+                              value
+                            });
+                            return result;
+                          },
+                          []
+                        )
+                      }
+                    });
+                  }}
+                />
+              )
+            )}
           </div>
         </div>
-        <div className="row mt-3">
+        {/* <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
               <div className="header">
@@ -341,28 +584,34 @@ class BillList extends Component {
               )}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     );
   }
 }
 const mapStateToProps = (state, props) => {
-  const { token, role } = state.user;
+  const { token, role, account } = state.user;
   const { upcoming, search, completed } = state.bill;
+  const { search: locationSearchUrl } = props.location;
+  const { selected_bill_id } =
+    locationSearchUrl !== "" ? parseToObject(locationSearchUrl) : {};
 
   return {
+    billId: selected_bill_id ? selected_bill_id : null,
     token,
     upcoming,
     search,
     completed,
-    role
+    role,
+    account
   };
 };
 const mapDispatchToProps = dispatch => ({
   searchForBills: (query, billType, token) =>
     dispatch(searchForBills(query, billType, token)),
   toast: (message, level) => dispatch(toast(message, level)),
-  selectBill: bill => dispatch(selectBill(bill))
+  confirmBillOnState: billId => dispatch(confirmBillOnState(billId)),
+  setBillAsRead: billId => dispatch(setBillAsRead(billId))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BillList);

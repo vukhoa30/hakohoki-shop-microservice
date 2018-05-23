@@ -44,27 +44,7 @@ class BillDetail extends Component {
   }
   render() {
     const { selectedBill, selectBill, token, toast, role } = this.props;
-    const { specificProducts } = selectedBill;
-    const products = transform(
-      specificProducts,
-      (result, cur) => {
-        const element = result.find(
-          product => product.productName === cur.productName
-        );
-        if (element) {
-          element.specifics.push(cur.id);
-        } else {
-          result.push({
-            productName: cur.productName,
-            price: cur.price,
-            specifics: [cur.id],
-            mainPicture: cur.mainPicture
-          });
-        }
-        return result;
-      },
-      []
-    );
+    const { products } = selectedBill;
     return (
       <div className="container-fluid">
         <div className="d-flex flex-row">
@@ -167,28 +147,33 @@ class BillDetail extends Component {
                   </div>
                   <div className="panel panel-default">
                     <div className="panel-body">
-                      {Object.keys(selectedBill.buyer).map((infoKey, index) => (
-                        <div
-                          key={"user-info" + index}
-                          className="form-group row"
-                        >
-                          <label
-                            htmlFor="staticEmail"
-                            className="col-sm-4 col-form-label font-weight-bold"
-                          >
-                            {this.getInfoName(infoKey)}
-                          </label>
-                          <div className="col-sm-6">
-                            <input
-                              type="text"
-                              readOnly
-                              className="form-control-plaintext"
-                              id="staticEmail"
-                              defaultValue={selectedBill.buyer[infoKey]}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                      {Object.keys(selectedBill.buyer).map(
+                        (infoKey, index) =>
+                          infoKey === "role" ? (
+                            <div key={"user-info" + index} />
+                          ) : (
+                            <div
+                              key={"user-info" + index}
+                              className="form-group row"
+                            >
+                              <label
+                                htmlFor="staticEmail"
+                                className="col-sm-4 col-form-label font-weight-bold"
+                              >
+                                {this.getInfoName(infoKey)}
+                              </label>
+                              <div className="col-sm-6">
+                                <input
+                                  type="text"
+                                  readOnly
+                                  className="form-control-plaintext"
+                                  id="staticEmail"
+                                  defaultValue={selectedBill.buyer[infoKey]}
+                                />
+                              </div>
+                            </div>
+                          )
+                      )}
                     </div>
                   </div>
                   {selectedBill.seller && (
@@ -207,28 +192,33 @@ class BillDetail extends Component {
                       <div className="panel panel-default">
                         <div className="panel-body">
                           {Object.keys(selectedBill.seller).map(
-                            (infoKey, index) => (
-                              <div
-                                key={"user-info" + index}
-                                className="form-group row"
-                              >
-                                <label
-                                  htmlFor="staticEmail"
-                                  className="col-sm-4 col-form-label font-weight-bold"
+                            (infoKey, index) =>
+                              infoKey === "role" ? (
+                                <div key={"seller-info" + index} />
+                              ) : (
+                                <div
+                                  key={"seller-info" + index}
+                                  className="form-group row"
                                 >
-                                  {this.getInfoName(infoKey)}
-                                </label>
-                                <div className="col-sm-6">
-                                  <input
-                                    type="text"
-                                    readOnly
-                                    className="form-control-plaintext"
-                                    id="staticEmail"
-                                    defaultValue={selectedBill.seller[infoKey]}
-                                  />
+                                  <label
+                                    htmlFor="staticEmail"
+                                    className="col-sm-4 col-form-label font-weight-bold"
+                                  >
+                                    {this.getInfoName(infoKey)}
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      className="form-control-plaintext"
+                                      id="staticEmail"
+                                      defaultValue={
+                                        selectedBill.seller[infoKey]
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            )
+                              )
                           )}
                         </div>
                       </div>
@@ -236,7 +226,11 @@ class BillDetail extends Component {
                   )}
                   <h3 className="mt-3">Products</h3>
                   {products.map((product, index) => (
-                    <div className="row product-showcase" key={"product-" + index} style={{ marginBottom: 50 }}>
+                    <div
+                      className="row product-showcase"
+                      key={"product-" + index}
+                      style={{ marginBottom: 50 }}
+                    >
                       <div className="col-xs-3">
                         <img
                           src={product.mainPicture}

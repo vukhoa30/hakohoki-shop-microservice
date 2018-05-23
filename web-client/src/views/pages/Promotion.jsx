@@ -633,7 +633,7 @@ class Promotion extends Component {
                     this.prices[product._id].value !== ""
                       ? this.prices[product._id].value
                       : undefined,
-                  giftIds: product.giftProducts.map(
+                  gift_ids: product.giftProducts.map(
                     giftProduct => giftProduct._id
                   )
                 }));

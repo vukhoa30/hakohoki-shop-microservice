@@ -14,19 +14,11 @@ class Comment extends Component {
         style={{ width: "100%", marginBottom: 20 }}
         onClick={() => select && select()}
       >
-        <div className="col-xs-1">
-          {selected && (
-            <i
-              className="fa fa-caret-right"
-              style={{ color: "green", fontSize: 20 }}
-            />
-          )}
-        </div>
         <div className="col-xs-2">
           <img
-            src={`assets/img/${
-              (comment.userRole ? comment.userRole : "customer") + ".png"
-            }`}
+            src={`assets/img/${(comment.userRole
+              ? comment.userRole
+              : "customer") + ".png"}`}
             alt=""
             style={{ width: "100%", height: "auto" }}
           />
@@ -39,6 +31,18 @@ class Comment extends Component {
             </small>
           </p>
           <p style={{ fontSize: 12 }}>{comment.content}</p>
+        </div>
+        <div className="col-xs-1">
+          {selected && (
+            <i
+              className="fa fa-caret-left"
+              style={{ color: "green", fontSize: 20 }}
+            />
+          )}
+          {/* {comment.validating &&
+            comment.validating === true && (
+              <i className="fa fa-circle-o-notch fa-spin" />
+            )} */}
         </div>
       </div>
     );

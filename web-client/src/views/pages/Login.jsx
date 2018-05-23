@@ -85,7 +85,7 @@ class Login extends Component {
                     disabled={invalid || submitting}
                   >
                     {submitting ? (
-                      <i className="fa fa-spinner fa-spin fa-2x" />
+                      <i className="fa fa-circle-o-notch fa-spin fa-2x" />
                     ) : (
                       "LOG IN"
                     )}

@@ -1,16 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-class Loader extends Component {
+class IncomingIcon extends Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
   render() {
-    // return <i className="lds-dual-ring" {...this.props} />;
     return (
-      <div className="lds-ellipsis">
-        <div />
-        <div />
+      <div class="lds-ripple" {...this.props}>
         <div />
         <div />
       </div>
@@ -19,4 +16,4 @@ class Loader extends Component {
 }
 const mapStateToProps = state => ({});
 const mapDispatchToProps = dispatch => ({});
-export default connect(mapStateToProps, mapDispatchToProps)(Loader);
+export default connect(mapStateToProps, mapDispatchToProps)(IncomingIcon);

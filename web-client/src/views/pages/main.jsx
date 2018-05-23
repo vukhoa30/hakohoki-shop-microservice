@@ -10,7 +10,7 @@ import NotificationPage from "./Notification";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import Promotion from "./Promotion";
-import SubscribeProduct from "./Subscribe";
+import Subscription from "./Subscribe";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
@@ -49,7 +49,8 @@ class Main extends React.Component {
       setNotificationAsRead,
       connection,
       accountId,
-      connectToServer
+      connectToServer,
+      history
     } = this.props;
     const { isConnecting, isConnected } = connection;
     const notifications = notification.data.slice(0, 5);
@@ -237,15 +238,24 @@ class Main extends React.Component {
                       {notifications.map(notification => (
                         <li key={"notification-" + notification.id}>
                           <Link
-                            to={`${
-                              match.url
-                            }/subscribe-product?_v=${new Date().getTime()}&product_id=${
-                              notification.productId
-                            }&comment_id=${notification.commentId}`}
+                            to={
+                              notification.type === "commentPosted"
+                                ? `${
+                                    match.url
+                                  }/subscribe-product?_v=${new Date().getTime()}&product_id=${
+                                    notification.productId
+                                  }&comment_id=${notification.commentId}`
+                                : `${match.url}/bill/list?selected_bill_id=` +
+                                  notification.billId
+                            }
                             onClick={() =>
                               setNotificationAsRead(notification.id, token)
                             }
-                            style={{ padding: 20, whiteSpace: 'normal', width: 400 }}
+                            style={{
+                              padding: 20,
+                              whiteSpace: "normal",
+                              width: 400
+                            }}
                           >
                             <div className="row">
                               <div className="col-xs-2">
@@ -264,8 +274,14 @@ class Main extends React.Component {
                                   flex: 6
                                 }}
                               >
-                                New comment about product{" "}
-                                <b>{notification.productName}</b>
+                                {notification.type === "commentPosted" ? (
+                                  <b>
+                                    New comment about product{" "}
+                                    {notification.productName}
+                                  </b>
+                                ) : (
+                                  <b>New order was made</b>
+                                )}
                                 <small style={{ display: "block" }}>
                                   {formatTime(notification.createdAt)}
                                 </small>
@@ -329,7 +345,7 @@ class Main extends React.Component {
               />
               <ProtectedRoute
                 path={`${match.url}/subscribe-product`}
-                component={SubscribeProduct}
+                component={Subscription}
                 isAuthorized={() => role === "employee"}
               />
               <ProtectedRoute

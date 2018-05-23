@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { formatTime, currencyFormat } from "../../utils";
-import { selectBill } from "../../api";
 import { Link } from "react-router-dom";
+import IncomingIcon from "../components/Incoming";
 class Bill extends Component {
   constructor(props) {
     super(props);
@@ -10,6 +10,7 @@ class Bill extends Component {
   }
   renderInformation(info) {
     let name = "";
+    if (info.name === "role") return <div key={"info-" + info.name} />;
     switch (info.name) {
       case "accountId":
         name = "ID";
@@ -21,6 +22,7 @@ class Bill extends Component {
         name = "Email";
         break;
       case "phoneNumber":
+      case "phoneNumner":
         name = "Phone";
         break;
     }
@@ -38,7 +40,7 @@ class Bill extends Component {
         className="row list-group-item clickable bill-showcase"
         onClick={() => selectBill(bill)}
       >
-        <div className="col-xs-3" style={{ backgroundColor: 'transparent' }}>
+        <div className="col-xs-3" style={{ backgroundColor: "transparent" }}>
           <img
             src={`assets/img/${
               bill.status === "completed" ? "bill_complete" : "bill"
@@ -46,27 +48,20 @@ class Bill extends Component {
             alt=""
             style={{ width: "100%", height: "auto" }}
           />
-          <div
-            style={{
-              marginTop: 10,
-              width: "100%",
-              display: "flex",
-              justifyContent: "center"
-            }}
-          >
-            {bill.status === "pending" ? (
-              <p style={{ color: "orange" }}>PENDING</p>
-            ) : (
-              <p style={{ color: "green" }}>COMPLETED</p>
-            )}
-          </div>
         </div>
-        <div className="col-xs-9" style={{ backgroundColor: 'transparent' }}>
-          <div style={{ display: "flex" }}>
-            <h5 style={{ fontWeight: "bold", marginTop: 0, flex: 1 }}>
-              Total price: {currencyFormat(bill.totalPrice)}
-            </h5>
-          </div>
+        <div className="col-xs-9" style={{ backgroundColor: "transparent" }}>
+          {bill.status === "pending" ? (
+            <p style={{ color: "orange" }}>
+              PENDING
+              {bill.new && (
+                <div className="pull-right">
+                  <IncomingIcon />
+                </div>
+              )}
+            </p>
+          ) : (
+            <p style={{ color: "green" }}>COMPLETED</p>
+          )}
           <div>
             <small style={{ color: "gray" }}>
               Ordered at: {formatTime(bill.createdAt)}
@@ -79,7 +74,12 @@ class Bill extends Component {
               </small>
             </div>
           )}
-          <div className="panel panel-default" style={{ marginTop: 50 }}>
+          <div style={{ display: "flex" }}>
+            <h5 style={{ fontWeight: "bold", marginTop: 0, flex: 1 }}>
+              Total price: {currencyFormat(bill.totalPrice)}
+            </h5>
+          </div>
+          {/* <div className="panel panel-default" style={{ marginTop: 50 }}>
             <div className="panel-heading">
               <b>Buyer information</b>
             </div>
@@ -93,24 +93,15 @@ class Bill extends Component {
                 <b>Seller information</b>
               </div>
               <div className="panel-body">
-                {bill.seller.map(
-                  info =>
-                    info.name === "role" ? (
-                      <div />
-                    ) : (
-                      this.renderInformation(info)
-                    )
-                )}
+                {bill.seller.map(info => this.renderInformation(info))}
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </li>
     );
   }
 }
 const mapStateToProps = state => ({});
-const mapDispatchToProps = dispatch => ({
-  selectBill: bill => dispatch(selectBill(bill))
-});
+const mapDispatchToProps = dispatch => ({});
 export default connect(mapStateToProps, mapDispatchToProps)(Bill);
