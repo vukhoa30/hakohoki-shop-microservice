@@ -22,7 +22,8 @@ var parseRslt = (rslt) => {
       promotionId: r.promotionId,
       billId: r.billId,
       amount: r.amount,
-      commentId: r.commentId
+      commentId: r.commentId,
+      parentId: r.parentId
     }
   })
 }
