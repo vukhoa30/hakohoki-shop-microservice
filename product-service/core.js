@@ -424,8 +424,10 @@ module.exports = {
         i.productId))
       var promotionInfos = await msgBroker.requestPromotionInfos(products.map(p =>
         p._id))
+      promotionInfos = promotionInfos ? promotionInfos : []
       var gifts = await db.GetProductsByIds(promotionInfos
         .filter(p => p.giftId).map(p => p.giftId))
+      gifts = gifts ? gifts : []
       products.map(r => {
         var items = promotionInfos.filter(e => {
           return e.productId.toString() == r._id.toString()
