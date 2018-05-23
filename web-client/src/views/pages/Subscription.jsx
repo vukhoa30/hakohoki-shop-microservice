@@ -4,11 +4,16 @@ import {
   loadSubscribedProducts,
   loadProductFeedback,
   giveAnswer,
-  toast
+  toast,
+  removeSubscribedProduct,
+  subscribeProducts,
+  eventEmitter
 } from "../../api";
-import { parseToObject } from "../../utils";
+import { parseToObject, request, parseToQueryString } from "../../utils";
 import Loader from "../components/Loader";
 import Comment from "../components/Comment";
+import ProductSelector from "../components/ProductSelector";
+import { Badge } from "react-bootstrap";
 class Subscription extends Component {
   constructor(props) {
     super(props);
@@ -20,56 +25,140 @@ class Subscription extends Component {
       },
       selectedSubscription: null,
       submitting: false,
+      removingProduct: false,
       questions: [],
       answers: {
         parentId: null,
         data: []
-      }
+      },
+      showDialog: false,
+      subscriptions: [],
+      newQuestionIds: [],
+      subscriptionHasNewComments: []
     };
     this.props.loadSubscription(this.props.token);
+    eventEmitter.on("newComment", data => {
+      const { query } = this.state;
+      const { productId, commentId, parentId } = data;
+      if (productId === query.productId) {
+        if (commentId || parentId) {
+          this.props.loadProductFeedback(productId);
+          const newQuestionIds = this.state.newQuestionIds;
+          if (parentId) {
+            const idIndex = newQuestionIds.findIndex(
+              element => element.id === parentId
+            );
+            if (idIndex > -1) newQuestionIds[idIndex].count++;
+            else
+              newQuestionIds.push({
+                id: parentId,
+                count: 1
+              });
+          } else {
+            const idIndex = newQuestionIds.findIndex(
+              element => element.id === parentId
+            );
+            if (idIndex === -1)
+              newQuestionIds.push({
+                id: commentId,
+                count: 0
+              });
+          }
+          this.setState({
+            newQuestionIds
+          });
+        }
+      } else {
+        const subscriptionHasNewComments = this.state
+          .subscriptionHasNewComments;
+        const idIndex = subscriptionHasNewComments.findIndex(
+          element => element.id === productId
+        );
+        if (idIndex > -1) subscriptionHasNewComments[idIndex].count++;
+        else
+          subscriptionHasNewComments.push({
+            id: productId,
+            count: 1
+          });
+        this.setState({
+          subscriptionHasNewComments
+        });
+      }
+    });
   }
   static getDerivedStateFromProps(nextProps, prevState) {
     const { _v, product_id, comment_id, parent_id } = parseToObject(
       nextProps.location.search
     );
+    const { data } = nextProps;
     return {
       query: {
         _v,
         productId: product_id ? product_id : null,
         commentId: parent_id ? parent_id : comment_id ? comment_id : null
-      }
+      },
+      subscriptions: data
     };
   }
+
+  componentWillUnmount() {
+    eventEmitter.removeListener('newComment', () => console.log('Listener removed!'))
+  }
+
+  componentDidMount() {
+    if (this.state.query.productId !== null) {
+      const { history, location } = this.props;
+      const queryString = parseToQueryString({
+        _v: new Date().getTime(),
+        product_id: this.state.query.productId,
+        comment_id: this.state.query.commentId
+          ? this.state.query.commentId
+          : undefined
+      });
+      history.push({
+        ...location,
+        search: queryString
+      });
+    }
+  }
+
   componentDidUpdate(prevProps, prevState) {
     if (
       this.state.query._v !== prevState.query._v &&
       this.state.query.productId !== null
     ) {
+      const subscription = this.state.subscriptions.find(
+        curSub => curSub.productId === this.state.query.productId
+      );
       this.setState({
         submitting: false,
+        newQuestionIds: [],
         questions: [],
         answers: {
           parentId: null,
           data: []
-        }
+        },
+        selectedSubscription: subscription ? subscription : null
       });
       this.loadData();
     } else if (!this.props.feedbackLoading && prevProps.feedbackLoading) {
       const questions = this.props.comments.filter(
         comment => !comment.parentId
       );
-      this.setState({
-        questions,
-        answers: {
-          parentId: this.state.query.commentId,
-          data:
-            this.state.query.commentId !== null
-              ? this.props.comments.filter(
-                  comment => comment.parentId === this.state.query.commentId
-                )
-              : []
-        }
-      });
+      if (this.state.answers.parentId === null)
+        this.setState({
+          questions,
+          answers: {
+            parentId: this.state.query.commentId,
+            data:
+              this.state.query.commentId !== null
+                ? this.props.comments.filter(
+                    comment => comment.parentId === this.state.query.commentId
+                  )
+                : []
+          }
+        });
+      else this.setState({ questions });
     }
   }
 
@@ -87,11 +176,22 @@ class Subscription extends Component {
     });
   }
 
+  renderNotificationForSubscription(subscription) {
+    const subscriptionHasNewComments = this.state.subscriptionHasNewComments;
+    const info = subscriptionHasNewComments.find(
+      element => element.id === subscription.productId
+    );
+    return info ? (
+      <small className="pull-right">
+        <Badge>{info.count}</Badge>
+      </small>
+    ) : null;
+  }
+
   render() {
     const {
       isLoading,
       err,
-      data: subscriptions,
       loadSubscription,
       token,
       feedbackLoading,
@@ -103,8 +203,40 @@ class Subscription extends Component {
     } = this.props;
     return (
       <div className="container-fluid">
+        <ProductSelector
+          open={this.state.showDialog}
+          displayCondition={product =>
+            !this.state.subscriptions.find(
+              subscription => subscription.productId === product._id
+            )
+          }
+          jobName="SUBSCRIBE THESE PRODUCTS"
+          doJob={products =>
+            subscribeProducts(products.map(product => product._id), token).then(
+              () => {
+                toast("SUBSCRIBE PRODUCT SUCCESSFULLY!", "success");
+                loadSubscription(token);
+                return Promise.resolve();
+              },
+              err => {
+                toast(err, "error");
+                Promise.reject();
+              }
+            )
+          }
+          close={() => this.setState({ showDialog: false })}
+        />
         <div className="col-xs-4">
-          <h4 style={{ marginTop: 0 }}>SUBSCRIPTION</h4>
+          <h4 style={{ marginTop: 0 }}>
+            SUBSCRIPTION{" "}
+            {this.state.removingProduct && (
+              <i className="fa fa-circle-o-notch fa-spin" />
+            )}
+            <i
+              className="clickable pull-right fa fa-plus"
+              onClick={() => this.setState({ showDialog: true })}
+            />
+          </h4>
           {isLoading ? (
             <div className="text-center">
               <Loader />
@@ -118,7 +250,7 @@ class Subscription extends Component {
             </div>
           ) : (
             <div style={{ overflowY: "auto", height: 700 }}>
-              {subscriptions.map(subscription => (
+              {this.state.subscriptions.map(subscription => (
                 <div
                   className="clickable product-showcase"
                   key={"subscription-" + subscription.productId}
@@ -129,16 +261,22 @@ class Subscription extends Component {
                     width: "100%",
                     display: "flex"
                   }}
-                  onClick={() => this.selectSubscription(subscription)}
+                  onClick={() => {
+                    const subscriptionHasNewComments = this.state
+                      .subscriptionHasNewComments;
+                    const idIndex = subscriptionHasNewComments.findIndex(
+                      element => element.id === subscription.productId
+                    );
+                    if (idIndex > -1) {
+                      subscriptionHasNewComments.splice(idIndex, 1);
+                      this.setState({
+                        subscriptionHasNewComments
+                      });
+                    }
+                    this.selectSubscription(subscription);
+                  }}
                 >
                   <div style={{ flex: 1 }}>
-                    {/* {selectedProduct !== null &&
-        selectedProduct.productId === subscription.productId && (
-          <i
-            className="fa fa-caret-right"
-            style={{ color: "blue", fontSize: 20 }}
-          />
-        )} */}
                     <img
                       src={subscription.mainPicture}
                       alt=""
@@ -148,8 +286,11 @@ class Subscription extends Component {
                   <div style={{ flex: 3, padding: 10, paddingTop: 0 }}>
                     <p style={{ marginBottom: 0 }}>
                       <b style={{ color: "red" }}>{subscription.productName}</b>
+                      {this.renderNotificationForSubscription(subscription)}
                     </p>
-                    <small>ID: {subscription.productId}</small>
+                    <p>
+                      <small>ID: {subscription.productId}</small>
+                    </p>
                     <div>
                       <button
                         className="btn btn-primary btn-fill btn-block"
@@ -160,6 +301,33 @@ class Subscription extends Component {
                       <button
                         className="btn btn-danger btn-fill btn-block"
                         style={{ marginTop: 5, borderWidth: 0 }}
+                        disabled={this.state.removingProduct}
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (
+                            window.confirm(
+                              `Remove product ${
+                                subscription.productName
+                              } from your subscription list?`
+                            )
+                          ) {
+                            this.setState({ removingProduct: true });
+                            removeSubscribedProduct(
+                              subscription.productId,
+                              token
+                            ).then(result => {
+                              if (result.ok) {
+                                loadSubscription(token);
+                              } else {
+                                toast(
+                                  "COULD NOT UPDATE SUBSCRIPTION LIST",
+                                  "error"
+                                );
+                              }
+                              this.setState({ removingProduct: false });
+                            });
+                          }
+                        }}
                       >
                         Remove
                       </button>
@@ -171,15 +339,40 @@ class Subscription extends Component {
           )}
         </div>
         <div className="col-xs-8">
+          {this.state.selectedSubscription !== null && (
+            <div style={{ display: "flex", marginBottom: 10 }}>
+              <div style={{ flex: 1 }}>
+                <img
+                  src={this.state.selectedSubscription.mainPicture}
+                  alt=""
+                  style={{ width: "100%", height: "auto" }}
+                />
+              </div>
+              <div style={{ flex: 3, padding: 10, paddingTop: 0 }}>
+                <p style={{ marginBottom: 0 }}>
+                  <b style={{ color: "red" }}>
+                    {this.state.selectedSubscription.productName}
+                  </b>
+                </p>
+                <p>
+                  <small>ID: {this.state.selectedSubscription.productId}</small>
+                </p>
+              </div>
+            </div>
+          )}
+          <hr style={{ marginBottom: 10 }}/>
           <div className="row">
             <div className="col-xs-6">
-              <h4 style={{ marginTop: 0 }}>COMMENTS</h4>
-              <div />
-              {feedbackLoading ? (
-                <div className="text-center">
-                  <Loader />
+              <h4 style={{ marginTop: 0 }}>
+                COMMENTS{" "}
+                {this.state.newQuestionIds.length > 0 &&
+                  `(${this.state.newQuestionIds.length})`}
+                <div className="pull-right">
+                  {feedbackLoading && <Loader />}
                 </div>
-              ) : feedbackErr ? (
+              </h4>
+              <div />
+              {feedbackErr ? (
                 <div
                   className="alert alert-danger clickable"
                   onClick={() =>
@@ -202,21 +395,32 @@ class Subscription extends Component {
                       comment={comment}
                       key={"comment-" + comment.id}
                       selected={comment.id === this.state.answers.parentId}
+                      info={this.state.newQuestionIds.find(
+                        element => element.id === comment.id
+                      )}
                       //   select={() =>
                       //     this.setState({
                       //       selectedCommentId: comment.id
                       //     })
                       //   }
-                      select={() =>
+                      select={() => {
+                        const newQuestionIds = this.state.newQuestionIds;
+                        const index = newQuestionIds.findIndex(
+                          element => element.id === comment.id
+                        );
+                        if (index > -1) {
+                          newQuestionIds.splice(index, 1);
+                        }
                         this.setState({
                           answers: {
                             parentId: comment.id,
                             data: comments.filter(
                               curComment => curComment.parentId === comment.id
                             )
-                          }
-                        })
-                      }
+                          },
+                          newQuestionIds
+                        });
+                      }}
                     />
                   ))}
                 </div>

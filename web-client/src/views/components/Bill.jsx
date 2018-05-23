@@ -55,7 +55,7 @@ class Bill extends Component {
               PENDING
               {bill.new && (
                 <div className="pull-right">
-                  <IncomingIcon />
+                  <p style={{ color: 'orange' }}>NEW</p>
                 </div>
               )}
             </p>

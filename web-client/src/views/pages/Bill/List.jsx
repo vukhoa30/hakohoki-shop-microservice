@@ -233,68 +233,54 @@ class BillList extends Component {
             </ul>
             <div style={{ width: "100%" }}>
               {mode === "search" ? (
-                <form
-                  style={{ marginTop: 10 }}
-                  onSubmit={e => {
-                    e.preventDefault();
-                    const { buyer, criteria, begin, end } = e.target;
-                    const user =
-                      buyer.value !== ""
-                        ? {
-                            accountId:
-                              criteria === "by_id" ? buyer.value : undefined,
-                            fullName:
-                              criteria === "by_name" ? buyer.value : undefined,
-                            email:
-                              criteria === "by_email" ? buyer.value : undefined,
-                            phoneNumber:
-                              criteria === "by_phone" ? buyer.value : undefined
-                          }
-                        : {};
-                    const searchObj = {
-                      ...user,
-                      begin: begin.value !== "" ? begin.value : undefined,
-                      end: end.value !== "" ? end.value : undefined
-                    };
-                    console.log(searchObj);
-                  }}
-                >
-                  <div style={{ display: "flex" }}>
-                    <div className="form-group" style={{ flex: 2 }}>
-                      <input
-                        name="buyer"
-                        type="text"
-                        placeholder="SEARCH FOR BUYER"
-                        className="form-control border-input"
-                        style={{
-                          borderTopRightRadius: 0,
-                          borderBottomRightRadius: 0
-                        }}
-                      />
-                    </div>
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <select
-                        name="criteria"
-                        className="form-control border-input"
-                        style={{
-                          borderTopLeftRadius: 0,
-                          borderBottomLeftRadius: 0
-                        }}
-                      >
-                        <option value="by_id">BY ID</option>
-                        <option value="by_name">BY NAME</option>
-                        <option value="by_email">BY EMAIL</option>
-                        <option value="by_phone">BY PHONE NUMBER</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-horizontal" style={{ display: "flex" }}>
-                    <div className="form-group" style={{ flex: 1 }}>
-                      <label className="control-label col-sm-2">From</label>
-                      <div className="col-sm-10">
+                <div>
+                  <form
+                    style={{ marginTop: 10, marginBottom: 10 }}
+                    onSubmit={e => {
+                      e.preventDefault();
+                      const { buyer, criteria, begin, end } = e.target;
+                      const user =
+                        buyer.value !== ""
+                          ? {
+                              accountId:
+                                criteria.value === "by_id"
+                                  ? buyer.value
+                                  : undefined,
+                              fullName:
+                                criteria.value === "by_name"
+                                  ? buyer.value
+                                  : undefined,
+                              email:
+                                criteria.value === "by_email"
+                                  ? buyer.value
+                                  : undefined,
+                              phoneNumber:
+                                criteria.value === "by_phone"
+                                  ? buyer.value
+                                  : undefined
+                            }
+                          : {};
+                      const searchObj = {
+                        ...user,
+                        begin:
+                          begin.value !== ""
+                            ? new Date(begin.value)
+                            : undefined,
+                        end: end.value !== "" ? new Date(end.value) : undefined
+                      };
+                      const queryString = parseToQueryString(searchObj);
+                      searchForBills(
+                        queryString !== "" ? "?" + queryString : "",
+                        "search",
+                        token
+                      );
+                    }}
+                  >
+                    <div style={{ display: "flex" }}>
+                      <div className="form-group" style={{ flex: 2 }}>
                         <input
-                          name="begin"
-                          type="date"
+                          name="buyer"
+                          type="text"
                           placeholder="SEARCH FOR BUYER"
                           className="form-control border-input"
                           style={{
@@ -302,35 +288,103 @@ class BillList extends Component {
                             borderBottomRightRadius: 0
                           }}
                         />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <select
+                          name="criteria"
+                          className="form-control border-input"
+                          style={{
+                            borderTopLeftRadius: 0,
+                            borderBottomLeftRadius: 0
+                          }}
+                        >
+                          <option value="by_id">BY ID</option>
+                          <option value="by_name">BY NAME</option>
+                          <option value="by_email">BY EMAIL</option>
+                          <option value="by_phone">BY PHONE NUMBER</option>
+                        </select>
                       </div>
                     </div>
                     <div
-                      className="form-group"
-                      style={{ flex: 1, paddingLeft: 10 }}
+                      className="form-horizontal"
+                      style={{ display: "flex" }}
                     >
-                      <label className="control-label col-sm-2 text-right">
-                        To
-                      </label>
-                      <div className="col-sm-10">
-                        <input
-                          name="end"
-                          type="date"
-                          placeholder="SEARCH FOR BUYER"
-                          className="form-control border-input"
-                          style={{
-                            borderTopRightRadius: 0,
-                            borderBottomRightRadius: 0
-                          }}
-                        />
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label className="control-label col-sm-2">From</label>
+                        <div className="col-sm-10">
+                          <input
+                            name="begin"
+                            type="date"
+                            placeholder="SEARCH FOR BUYER"
+                            className="form-control border-input"
+                            style={{
+                              borderTopRightRadius: 0,
+                              borderBottomRightRadius: 0
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className="form-group"
+                        style={{ flex: 1, paddingLeft: 10 }}
+                      >
+                        <label className="control-label col-sm-2 text-right">
+                          To
+                        </label>
+                        <div className="col-sm-10">
+                          <input
+                            name="end"
+                            type="date"
+                            placeholder="SEARCH FOR BUYER"
+                            className="form-control border-input"
+                            style={{
+                              borderTopRightRadius: 0,
+                              borderBottomRightRadius: 0
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-center">
-                    <button type="submit" className="btn btn-success btn-fill">
-                      SEARCH
-                    </button>
-                  </div>
-                </form>
+                    <div className="text-center">
+                      <button
+                        disabled={search.isLoading}
+                        type="submit"
+                        className="btn btn-success btn-fill"
+                      >
+                        SEARCH
+                      </button>
+                    </div>
+                  </form>
+                  {search.isLoading && (
+                    <div className="text-center">
+                      <Loader />
+                    </div>
+                  )}
+                  {search.err !== null ? (
+                    <div className="text-center">
+                      <p style={{ color: "red" }}>
+                        LOAD DATA FAILED! CLICK SEARCH TO LOAD AGAIN
+                      </p>
+                    </div>
+                  ) : search.data.length === 0 ? (
+                    !search.isLoading &&
+                    search.err === null && (
+                      <div className="text-center">
+                        <p style={{ color: "gray" }}>NO DATA FOUND</p>
+                      </div>
+                    )
+                  ) : (
+                    <div style={{ height: 500, overflowY: "auto" }}>
+                      {search.data.map(bill => (
+                        <Bill
+                          key={"searched-bill-" + bill._id}
+                          bill={bill}
+                          selectBill={() => this.selectBill(bill)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : mode === "pending" ? (
                 <div style={{ width: "100%", height: 600, overflowY: "auto" }}>
                   {upcoming.err !== null && (

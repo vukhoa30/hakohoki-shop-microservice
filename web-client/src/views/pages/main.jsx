@@ -10,7 +10,7 @@ import NotificationPage from "./Notification";
 import AccountManager from "./Account/AccountManager";
 import BillDetail from "./Bill/Detail";
 import Promotion from "./Promotion";
-import Subscription from "./Subscribe";
+import Subscription from "./Subscription";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { connect } from "react-redux";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
@@ -244,7 +244,11 @@ class Main extends React.Component {
                                     match.url
                                   }/subscribe-product?_v=${new Date().getTime()}&product_id=${
                                     notification.productId
-                                  }&comment_id=${notification.commentId}`
+                                  }&comment_id=${notification.commentId}${
+                                    notification.parentId
+                                      ? `&parent_id=${notification.parentId}`
+                                      : ""
+                                  }`
                                 : `${match.url}/bill/list?selected_bill_id=` +
                                   notification.billId
                             }

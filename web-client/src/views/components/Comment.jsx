@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { formatTime, parseToObject } from "../../utils";
+import { Badge } from "react-bootstrap";
 class Comment extends Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
   render() {
-    const { selected, comment, select } = this.props;
+    const { selected, comment, select, info } = this.props;
     return (
       <div
         className="row clickable"
@@ -26,10 +27,20 @@ class Comment extends Component {
         <div className="col-xs-9">
           <p style={{ marginBottom: 0, fontSize: 15 }}>
             <b>{comment.userName ? comment.userName : "UNKNOWN USER"}</b>
-            <small className="pull-right" style={{ fontSize: 10 }}>
-              {formatTime(comment.createdAt)}
-            </small>
+            {info && (
+              <small
+                className="pull-right"
+                style={{ color: "orange", fontWeight: "bold" }}
+              >
+              {
+                info.count === 0 ? 'NEW' : <Badge style={{ backgroundColor: 'orange', color: 'white' }}>{info.count}</Badge>
+              }
+              </small>
+            )}
           </p>
+          <small style={{ fontSize: 10, display: "block" }}>
+            {formatTime(comment.createdAt)}
+          </small>
           <p style={{ fontSize: 12 }}>{comment.content}</p>
         </div>
         <div className="col-xs-1">

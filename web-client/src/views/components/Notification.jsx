@@ -19,7 +19,8 @@ class Notification extends Component {
       commentId,
       id,
       createdAt,
-      billId
+      billId,
+      parentId
     } = notification;
     const { token, setNotificationAsRead, history } = this.props;
 
@@ -31,7 +32,9 @@ class Notification extends Component {
             onClick={() => {
               setNotificationAsRead(id, token);
               history.push(
-                `/main/subscribe-product?_v=${new Date().getTime()}&product_id=${productId}&comment_id=${commentId}`
+                `/main/subscribe-product?_v=${new Date().getTime()}&product_id=${productId}&comment_id=${commentId}${
+                  parentId ? `&parent_id=${parentId}` : ""
+                }`
               );
             }}
           >
