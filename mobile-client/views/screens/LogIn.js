@@ -40,7 +40,7 @@ class LogIn extends Component {
 
       } else if (submitFailed && error) {
 
-         // alert('error', error)
+          alert('error', error)
           clearSubmitErrors()
       }
 
