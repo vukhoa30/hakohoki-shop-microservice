@@ -43,7 +43,8 @@ module.exports = {
   addToCart: async (req, res) => {
     try {
       var rslt = await db.AddToCart(req.authentication.accountId,
-        req.body.productId)
+        req.body.productId,
+        req.body.amount)
       if (rslt.rowCount > 0) {
         res.json({ ok: true })
       } else {

@@ -16,10 +16,10 @@ module.exports = {
       .catch(e => reject(e))
     })
   },
-  AddToCart: (account_id, product_id) => {
+  AddToCart: (account_id, product_id, amount) => {
     return new Promise((resolve, reject) => {
       db('carts')
-      .insert({ account_id, product_id, amount: 1 })
+      .insert({ account_id, product_id, amount: amount ? amount : 1 })
       .then(rslt => resolve(rslt))
       .catch(e => reject(e))
     })
