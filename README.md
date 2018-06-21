@@ -5,7 +5,11 @@
 ```
 npm i -g pm2
 ```
-- Cài module từng service, ví dụ:
+- Cài đặt toàn bộ module:
+```
+npm run ins
+```
+Hoặc cài module từng service và UI, ví dụ:
 ```
 cd ./account-service
 npm i
