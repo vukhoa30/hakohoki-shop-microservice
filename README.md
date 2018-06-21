@@ -15,7 +15,7 @@
 ```
 npm i -g pm2
 ```
-- Cài đặt toàn bộ module:
+- Cài đặt toàn bộ module (>30 phút):
 ```
 npm run ins
 ```
