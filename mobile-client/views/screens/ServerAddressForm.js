@@ -27,6 +27,12 @@ class ServerAddressForm extends Component {
     };
   }
 
+  componentDidUpdate(prevProps){
+    if (this.props.host !== prevProps.host || this.props.port !== prevProps.port){
+      this.props.navigation.navigate('Setting')
+    }
+  }
+
   update() {
     const { updateServerAddress, user } = this.props;
     const { isLoggedIn, account } = user;
