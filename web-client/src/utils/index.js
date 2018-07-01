@@ -1,5 +1,4 @@
 import { gatewayAddress } from "../config";
-import { stringify } from "query-string";
 import io from "socket.io-client";
 import { chain, transform, reduce } from "lodash";
 import { code as errCode } from "../api/err-code";
@@ -11,6 +10,15 @@ const {
   INTERNAL_SERVER_ERROR,
   DATA_NOT_FOUND
 } = errCode;
+
+const serialize = (obj) => {
+  const str = [];
+  for (var p in obj)
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  return str.join("&");
+}
 
 export const request = (url, method, header, data) => {
   const fullUrl = gatewayAddress + url;
@@ -73,7 +81,7 @@ export const getToday = () => {
 };
 
 export const parseToQueryString = obj => {
-  return stringify(obj);
+  return serialize(obj);
 };
 
 export const parseToObject = queryString => {

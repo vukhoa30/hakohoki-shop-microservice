@@ -152,12 +152,12 @@ class BillList extends Component {
     } = this.state;
     return (
       <div className="container-fluid">
-        {role === "receptionist" && (
+        {/* {role === "receptionist" && (
           <button className="btn btn-success mb-3">
             <i className="fa fa-plus mr-3" />
             CREATE A BILL
           </button>
-        )}
+        )} */}
         {/* <form
           className="form-inline"
           style={{ marginTop: 10 }}
