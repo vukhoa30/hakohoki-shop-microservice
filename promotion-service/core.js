@@ -1,6 +1,5 @@
 var redis = require('redis')
 var db = require('./database')
-var helper = require('./helper.js')
 var msgBroker = require('./connection/message-broker')
 
 var redisConnection = require('./config.js').redisConnection
