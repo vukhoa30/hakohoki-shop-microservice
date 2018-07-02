@@ -1,7 +1,6 @@
 var config = require('./config')
 var db = require('knex')(config.db)
 var defaultLimit = config.defaultLimit
-var helper = require('./helper.js')
 
 module.exports = {
   AddToWatchlist: (account_id, product_id) => {

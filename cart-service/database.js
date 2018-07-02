@@ -1,7 +1,6 @@
 var config = require('./config')
 var db = require('knex')(config.db)
 var defaultLimit = config.defaultLimit
-var helper = require('./helper.js')
 
 module.exports = {
   GetCart: (account_id) => {

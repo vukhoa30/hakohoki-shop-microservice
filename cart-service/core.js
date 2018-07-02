@@ -1,5 +1,4 @@
 var db = require('./database')
-var helper = require('./helper.js')
 var msgBroker = require('./connection/message-broker')
 
 var catchError = (res, err) => {
