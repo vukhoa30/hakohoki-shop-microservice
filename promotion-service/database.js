@@ -1,5 +1,4 @@
 var db = require('knex')(require('./config.js').db);
-var helper = require('./helper.js')
 
 module.exports = {
   CreatePromotion: (promotion) => {
