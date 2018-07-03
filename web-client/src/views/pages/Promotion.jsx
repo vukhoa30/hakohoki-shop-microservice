@@ -613,7 +613,7 @@ class Promotion extends Component {
             </div>
           </div>
         </div>
-        {role === "manager" && (
+        {role === "manager" || role === "employee" && (
           <div>
             <h3>CREATE PROMOTION</h3>
             <form

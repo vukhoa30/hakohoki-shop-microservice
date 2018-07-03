@@ -118,7 +118,7 @@ class Main extends React.Component {
               </a>
             </div>
             <ul className="nav">
-              {role === "manager" && (
+              {role === "manager" || role === "employee" && (
                 <li
                   className={
                     location.pathname.includes("dashboard") ? "active" : ""
@@ -130,7 +130,7 @@ class Main extends React.Component {
                   </Link>
                 </li>
               )}
-              {role === "manager" && (
+              {role === "manager" || role === "employee" && (
                 <li
                   className={
                     location.pathname.includes("account") ? "active" : ""
@@ -142,20 +142,18 @@ class Main extends React.Component {
                   </Link>
                 </li>
               )}
-              {role === "employee" && (
-                <li
-                  className={
-                    location.pathname.includes("subscribe-product")
-                      ? "active"
-                      : ""
-                  }
-                >
-                  <Link to={`${match.url}/subscribe-product`}>
-                    <i className="fa fa-certificate" />
-                    <p>Subscription</p>
-                  </Link>
-                </li>
-              )}
+              <li
+                className={
+                  location.pathname.includes("subscribe-product")
+                    ? "active"
+                    : ""
+                }
+              >
+                <Link to={`${match.url}/subscribe-product`}>
+                  <i className="fa fa-certificate" />
+                  <p>Subscription</p>
+                </Link>
+              </li>
               <li
                 className={
                   location.pathname.includes("/product") ? "active" : ""
@@ -195,15 +193,15 @@ class Main extends React.Component {
             {isConnecting ? (
               <Loader />
             ) : (
-              !isConnected && (
-                <p
-                  style={{ color: "red" }}
-                  onClick={() => connectToServer(accountId)}
-                >
-                  COULD NOT CONNECT TO SERVER. CLICK TO TRY AGAIN
+                !isConnected && (
+                  <p
+                    style={{ color: "red" }}
+                    onClick={() => connectToServer(accountId)}
+                  >
+                    COULD NOT CONNECT TO SERVER. CLICK TO TRY AGAIN
                 </p>
-              )
-            )}
+                )
+              )}
           </div>
           <nav className="navbar navbar-default">
             <div className="container-fluid">
@@ -241,16 +239,16 @@ class Main extends React.Component {
                             to={
                               notification.type === "commentPosted"
                                 ? `${
-                                    match.url
-                                  }/subscribe-product?_v=${new Date().getTime()}&product_id=${
-                                    notification.productId
-                                  }&comment_id=${notification.commentId}${
-                                    notification.parentId
-                                      ? `&parent_id=${notification.parentId}`
-                                      : ""
-                                  }`
+                                match.url
+                                }/subscribe-product?_v=${new Date().getTime()}&product_id=${
+                                notification.productId
+                                }&comment_id=${notification.commentId}${
+                                notification.parentId
+                                  ? `&parent_id=${notification.parentId}`
+                                  : ""
+                                }`
                                 : `${match.url}/bill/list?selected_bill_id=` +
-                                  notification.billId
+                                notification.billId
                             }
                             onClick={() =>
                               setNotificationAsRead(notification.id, token)
@@ -284,8 +282,8 @@ class Main extends React.Component {
                                     {notification.productName}
                                   </b>
                                 ) : (
-                                  <b>New order was made</b>
-                                )}
+                                    <b>New order was made</b>
+                                  )}
                                 <small style={{ display: "block" }}>
                                   {formatTime(notification.createdAt)}
                                 </small>
@@ -332,12 +330,12 @@ class Main extends React.Component {
               <ProtectedRoute
                 path={`${match.url}/dashboard`}
                 component={Dashboard}
-                isAuthorized={() => role === "manager"}
+                isAuthorized={() => role === "manager" || role === "employee"}
               />
               <ProtectedRoute
                 path={`${match.url}/account/management`}
                 component={AccountManager}
-                isAuthorized={() => role === "manager"}
+                isAuthorized={() => role === "manager" || role === "employee"}
               />
               <Route
                 path={`${match.url}/product/list`}
@@ -347,20 +345,19 @@ class Main extends React.Component {
                 path={`${match.url}/product/detail/:id`}
                 component={ProductDetail}
               />
-              <ProtectedRoute
+              <Route
                 path={`${match.url}/subscribe-product`}
                 component={Subscription}
-                isAuthorized={() => role === "employee"}
               />
               <ProtectedRoute
                 path={`${match.url}/product/add-product`}
                 component={AddProduct}
-                isAuthorized={() => role === "manager"}
+                isAuthorized={() => role === "manager" || role === "employee"}
               />
               <ProtectedRoute
                 path={`${match.url}/product/update-product/:id`}
                 component={AddProduct}
-                isAuthorized={() => role === "manager"}
+                isAuthorized={() => role === "manager" || role === "employee"}
               />
               <Route path={`${match.url}/bill/list`} component={BillList} />
               <Route

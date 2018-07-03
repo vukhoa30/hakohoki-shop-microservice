@@ -130,7 +130,7 @@ class ProductInformation extends Component {
               >
                 View comments
               </button> */}
-              {role === "manager" &&
+              {role === "manager" || role === "employee" &&
                 (this.state.importing ? (
                   <form
                     className="form-inline"
