@@ -86,7 +86,7 @@ class Notification extends Component {
         break;
       case "productBought":
         title = "New order has been made!";
-        content = `You have made an order for product "${productName}"`;
+        content = `Your order ID is ${billId}. Click to view detail`;
         callback = () =>
           navigation.navigate("OrderDetail", { orderId: billId });
         break;
