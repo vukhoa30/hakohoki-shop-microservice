@@ -80,6 +80,7 @@ export function connectToServer(accountId) {
       },
       data => {
         if (
+          router.location !== null &&
           router.location.pathname === "/main/bill/list" &&
           data.type === "pendingBillCreated"
         )
