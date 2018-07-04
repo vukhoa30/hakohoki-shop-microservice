@@ -28,3 +28,14 @@ npm i
 ```
 pm2 start process.yml
 ```
+- Khởi chạy server mobile:
+```
+cd mobile-client
+npm start
+```
+##### Sử dụng ứng dụng expo trên hđh Android để quét mã QR. Sau khi ứng dụng hiện trên màn hình điện thoại, đến mục setting để sửa lại địa chỉ API Gateway chạy trên máy tính
+- Khởi chạy server web:
+```
+cd web-client
+npm start
+```

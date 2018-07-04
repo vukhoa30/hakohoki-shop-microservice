@@ -7,6 +7,20 @@ var generateUuid = () => {
          Math.random().toString();
 }
 
+var timeOutMs = 300
+var checkAlive = async (serviceName) => {
+  return new Promise(r => {
+    return Promise.race([
+      requestAmqp(null, `checkAlive_${serviceName}`),
+      new Promise(r => setTimeout(() => r(false), timeOutMs))
+    ])
+    .then(rslt => { 
+      r(rslt)
+      if (!rslt) console.log(serviceName + ' request timeout.') 
+    })
+  })
+}
+
 var requestAmqp = (msgObject, queue) => {
   return new Promise((resolve, reject) => {
     amqp.connect(amqpAddress)
@@ -79,10 +93,14 @@ module.exports = {
     var core = require('../core')
     consumeAmqp(core.addNotification, 'notificationRequest')
   },
-  requestGetProducts: (productIds) => {
-    return requestAmqp(productIds, 'getProducts')
+  requestGetProducts: async (productIds) => {
+    if (await checkAlive('product')) {
+      return requestAmqp(productIds, 'getProducts')
+    } else { return new Promise(r => r(false)) }
   },
-  requestGetPromotions: (promotionIds) => {
-    return requestAmqp(promotionIds, 'getPromotions')
+  requestGetPromotions: async (promotionIds) => {
+    if (await checkAlive('promotion')) {
+      return requestAmqp(promotionIds, 'getPromotions')
+    } else { return new Promise(r => r(false)) }
   },
 }

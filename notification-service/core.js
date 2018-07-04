@@ -45,8 +45,8 @@ module.exports = {
         if (n.productId) { productIds.push(n.productId) }
         if (n.promotionId) { promotionIds.push(n.promotionId) }
       })
-      var products = await msgBroker.requestGetProducts(productIds)
-      var promotions = await msgBroker.requestGetPromotions(promotionIds)
+      var products = (await msgBroker.requestGetProducts(productIds)) || []
+      var promotions = (await msgBroker.requestGetPromotions(promotionIds)) || []
       notifications.forEach(n => {
         if (n.productId) {
           var finder = products.find(p => p._id.toString() == n.productId.toString())
