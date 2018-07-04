@@ -75,7 +75,7 @@ class BillDetail extends Component {
                     {selectedBill.status}
                   </b>
                 </h3>
-                {role === "receptionist" || role === "employee" &&
+                {(role === "receptionist" || role === "employee") &&
                   selectedBill.status === "pending" && (
                     <div className="text-right" style={{ width: "100%" }}>
                       <button
