@@ -34,7 +34,6 @@ class Notification extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.isLoggedIn && !this.props.isLoggedIn) {
       const { token, loadNotifications, status } = nextProps;
-      console.log("LOAD " + token);
       if (status !== "LOADED") loadNotifications(token);
     }
   }

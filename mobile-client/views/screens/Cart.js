@@ -40,23 +40,44 @@ class Cart extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showInfoDialog: false
+      showInfoDialog: false,
+      list: []
     };
     const { isLoggedIn, token, loadCart, status } = this.props;
     if (isLoggedIn && status === "INIT") loadCart(token);
+  }
+
+  componentDidMount(){
+    this.setData();
+  }
+
+  setData() {
+    const { list: rawList } = this.props;
+    this.setState({
+      list: rawList.map(item => ({
+        ...item,
+        promotionPrice: item.promotionPrice ? currencyFormat(item.promotionPrice) : undefined,
+        price: currencyFormat(item.price),
+        giftProducts: item.giftProducts ? item.giftProducts.map(item => ({
+          ...item,
+          promotionPrice: item.promotionPrice ? currencyFormat(item.promotionPrice) : undefined,
+          price: currencyFormat(item.price)
+        })) : []
+      }))
+    })
   }
 
   render() {
     const {
       setCart,
       totalPrice,
-      list,
       token,
       status,
       makeOrder,
       selectProduct,
       isLoggedIn
     } = this.props;
+    const { list } = this.state;
     return (
       <Container>
         {/* {status === "LOADING" && (
@@ -79,7 +100,6 @@ class Cart extends Component {
           showInfoDialog={this.state.showInfoDialog}
           closeDialog={() => this.setState({ showInfoDialog: false })}
           applyInfo={values => {
-            console.log(values);
             makeOrder(
               list.map(product => ({
                 productId: product._id,
@@ -112,8 +132,8 @@ class Cart extends Component {
                           source={
                             product.mainPicture && product.mainPicture !== ""
                               ? {
-                                  uri: product.mainPicture
-                                }
+                                uri: product.mainPicture
+                              }
                               : unknown
                           }
                         />
@@ -129,11 +149,9 @@ class Cart extends Component {
                               {product.name}
                             </AppText>
                             <AppText color="red">
-                              {currencyFormat(
-                                product.promotionPrice
-                                  ? product.promotionPrice
-                                  : product.price
-                              )}
+                              {product.promotionPrice
+                                ? product.promotionPrice
+                                : product.price}
                             </AppText>
                             {/* <AppText small note>
                       Quantity: {product.amount}
@@ -150,7 +168,7 @@ class Cart extends Component {
                                 confirm(
                                   "Confirm",
                                   `Are you sure to remove product "${
-                                    product.name
+                                  product.name
                                   }" from your cart?`,
                                   () => setCart(token, product, "REMOVE")
                                 );
@@ -171,11 +189,11 @@ class Cart extends Component {
                                   onPress={() => {
                                     product.amount + 1 <= product.quantity
                                       ? setCart(
-                                          token,
-                                          product,
-                                          "UPDATE",
-                                          product.amount + 1
-                                        )
+                                        token,
+                                        product,
+                                        "UPDATE",
+                                        product.amount + 1
+                                      )
                                       : alert("warning", "NOT ENOUGH PRODUCTS");
                                   }}
                                 >
@@ -240,10 +258,10 @@ class Cart extends Component {
                                       size={70}
                                       source={
                                         giftProduct.mainPicture &&
-                                        giftProduct.mainPicture !== ""
+                                          giftProduct.mainPicture !== ""
                                           ? {
-                                              uri: giftProduct.mainPicture
-                                            }
+                                            uri: giftProduct.mainPicture
+                                          }
                                           : unknown
                                       }
                                     />
@@ -254,11 +272,11 @@ class Cart extends Component {
                                         {giftProduct.name}
                                       </AppText>
                                       <AppText color="red">
-                                        {currencyFormat(
+                                        {
                                           product.promotionPrice
                                             ? product.promotionPrice
                                             : product.price
-                                        )}
+                                        }
                                       </AppText>
                                     </View>
                                   </Col>
@@ -273,19 +291,19 @@ class Cart extends Component {
               )}
             />
           ) : (
-            <View
-              style={{
-                width: "100%",
-                height: 250,
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <AppText note large>
-                NO PRODUCTS
+              <View
+                style={{
+                  width: "100%",
+                  height: 250,
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <AppText note large>
+                  NO PRODUCTS
               </AppText>
-            </View>
-          )}
+              </View>
+            )}
         </Content>
         <AppText
           style={{
@@ -309,20 +327,20 @@ class Cart extends Component {
                 onPress={() =>
                   isLoggedIn
                     ? makeOrder(
-                        list.map(product => ({
-                          productId: product._id,
-                          amount: product.amount,
-                          giftIds:
-                            product.giftProducts &&
+                      list.map(product => ({
+                        productId: product._id,
+                        amount: product.amount,
+                        giftIds:
+                          product.giftProducts &&
                             product.giftProducts.length > 0
-                              ? product.giftProducts.map(product => product._id)
-                              : []
-                        })),
-                        {
-                          isLoggedIn,
-                          token
-                        }
-                      )
+                            ? product.giftProducts.map(product => product._id)
+                            : []
+                      })),
+                      {
+                        isLoggedIn,
+                        token
+                      }
+                    )
                     : this.setState({ showInfoDialog: true })
                 }
               >

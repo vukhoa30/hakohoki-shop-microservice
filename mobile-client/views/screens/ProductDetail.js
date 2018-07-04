@@ -58,7 +58,6 @@ class ProductDetail extends Component {
       },
       onDestroy: false
     };
-    console.log(this.props.productId);
   }
 
   componentWillUnmount() {
@@ -208,7 +207,7 @@ class ProductDetail extends Component {
                   this.setState({
                     product: { ...this.state.product, reviewedBySelf: true }
                   });
-                  this.loadFeedback();
+                  setTimeout(() => this.loadFeedback(), 1000)
                 }}
                 productId={productId}
                 comments={comments}

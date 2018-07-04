@@ -4,7 +4,7 @@ const Store = function() {
   this.setAccountInfo = (token, account) =>
     AsyncStorage.multiSet(
       [["@User:token", token], ["@User:account", JSON.stringify(account)]],
-      err => console.log(err)
+      err => console.log('Set keys failed')
     );
   this.setCartList = cart =>
     AsyncStorage.setItem("@Cart", JSON.stringify(cart));

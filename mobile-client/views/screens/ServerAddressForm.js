@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Field, reduxForm, SubmissionError } from "redux-form";
+import { NavigationActions } from "react-navigation";
 import { alert } from "../../utils";
 import { View } from "react-native";
 import { updateServerAddress } from "../../api";
@@ -27,10 +28,17 @@ class ServerAddressForm extends Component {
     };
   }
 
-  componentDidUpdate(prevProps){
-    if (this.props.host !== prevProps.host || this.props.port !== prevProps.port){
-      this.props.navigation.navigate('Setting')
+  componentDidUpdate(prevProps) {
+    if (this.props.host !== prevProps.host || this.props.port !== prevProps.port) {
+      this.move()
     }
+  }
+
+  move() {
+    const { canGoBack, navigation, moveToHome } = this.props;
+    console.log(canGoBack)
+    if (canGoBack) navigation.goBack()
+    else moveToHome()
   }
 
   update() {
@@ -38,14 +46,13 @@ class ServerAddressForm extends Component {
     const { isLoggedIn, account } = user;
     const { accountId } = account;
     const { host, port } = this.state;
-    if (Number.isInteger(port)) return alert("error","Invalid port");
+    if (Number.isInteger(port)) return alert("error", "Invalid port");
     if (
       !new RegExp(
         /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
       ).test(host)
     )
-      return alert("error","Invalid host");
-    alert("error","Updated gateway address");
+      return alert("error", "Invalid host");
     return updateServerAddress(host, port, isLoggedIn, accountId);
   }
 
@@ -77,6 +84,9 @@ class ServerAddressForm extends Component {
           <Button block primary onPress={this.update.bind(this)}>
             <AppText>UPDATE</AppText>
           </Button>
+          <Button block danger style={{ marginTop: 10 }} onPress={this.move.bind(this)}>
+            <AppText>LOOK GOOD</AppText>
+          </Button>
         </Content>
       </Container>
     );
@@ -86,12 +96,19 @@ class ServerAddressForm extends Component {
 const mapStateToProps = state => ({
   host: state.app.gateway.host,
   port: state.app.gateway.port,
-  user: state.user
+  user: state.user,
+  canGoBack: state.navigation.routes.length > 1
 });
 
 const mapDispatchToProps = dispatch => ({
   updateServerAddress: (host, port, isLoggedIn, accountId) =>
-    dispatch(updateServerAddress(host, port, isLoggedIn, accountId))
+    dispatch(updateServerAddress(host, port, isLoggedIn, accountId)),
+  moveToHome: () => dispatch(NavigationActions.reset({
+    index: 0,
+    actions: [
+      NavigationActions.navigate({ routeName: 'Main', actions: NavigationActions.navigate({ routeName: 'Home' }) })
+    ],
+  }))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ServerAddressForm);

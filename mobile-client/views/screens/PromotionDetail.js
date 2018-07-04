@@ -29,7 +29,6 @@ class PromotionDetail extends Component {
     const { params } = this.props.navigation.state;
     const { status, loadPromotion } = this.props;
     const { promotionId } = params ? params : {};
-    console.log("id:" + promotionId);
     this.state = {
       promotionId,
       promotion: null

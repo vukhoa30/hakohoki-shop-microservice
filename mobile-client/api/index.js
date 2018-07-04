@@ -405,7 +405,7 @@ function loadProductList(conditions, offset, limit) {
       if (status === 200)
         resolve({
           ok: true,
-          data: data.map(product => formatProduct(product))
+          data: data
         });
     } catch (error) {
       console.log(error);
@@ -439,7 +439,7 @@ function loadProductInformation(productId, token) {
           data.reviewScore = Math.round(data.reviewScore, 1);
         return resolve({
           ok: true,
-          product: formatProduct(data)
+          product: data
         });
       } else resolve({ ok: false });
     } catch (error) {

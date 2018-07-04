@@ -15,7 +15,8 @@ class ProductInformation extends Component {
     super(props);
     this.state = {
       activeSlide: 0,
-      pictures: []
+      pictures: [],
+      data: null
     };
   }
 
@@ -52,11 +53,21 @@ class ProductInformation extends Component {
   }
 
   componentDidMount() {
-    const { product: data } = this.props;
-    const { mainPicture, additionPicture } = data;
+    const { product: curItem } = this.props;
+    const { mainPicture, additionPicture } = curItem;
     this.setState({
-      pictures: [mainPicture].concat(additionPicture ? additionPicture : [])
+      pictures: [mainPicture].concat(additionPicture ? additionPicture : []),
+      data: curItem
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.product._id !== prevProps.product._id) {
+      const curItem = this.props.product;
+      this.setState({
+        data: curItem
+      })
+    }
   }
 
   _renderItem = ({ item, index }) => {
@@ -65,8 +76,8 @@ class ProductInformation extends Component {
         source={
           item && item !== ""
             ? {
-                uri: item
-              }
+              uri: item
+            }
             : unknown
         }
         style={{
@@ -109,70 +120,71 @@ class ProductInformation extends Component {
   }
 
   render() {
-    const { product: data, selectProduct, err } = this.props;
+    const { data } = this.state;
+    const { selectProduct, err } = this.props;
     return (
       <View>
-        {data !== null && (
-          <View
-            style={[
-              {
-                width: width,
-                alignItems: "center",
-                justifyContent: "center",
-                height: width - 50
-              }
-            ]}
-          >
-            <Carousel
-              ref={c => {
-                this._carousel = c;
+        {data !== null &&
+          <View>
+            <View
+              style={[
+                {
+                  width: width,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: width - 50
+                }
+              ]}
+            >
+              <Carousel
+                ref={c => {
+                  this._carousel = c;
+                }}
+                data={this.state.pictures}
+                renderItem={this._renderItem.bind(this)}
+                sliderWidth={width}
+                itemWidth={width}
+                onSnapToItem={slideIndex =>
+                  this.setState({ activeSlide: slideIndex })
+                }
+                layout={"default"}
+                firstItem={0}
+                loop={true}
+              />
+              {this.pagination}
+            </View>
+            <Card
+              style={{
+                width: "100%",
+                padding: 10,
+                backgroundColor: "white",
+                borderRadius: 0,
+                shadowOffset: {
+                  width: 1,
+                  height: 1
+                },
+                marginTop: 0
               }}
-              data={this.state.pictures}
-              renderItem={this._renderItem.bind(this)}
-              sliderWidth={width}
-              itemWidth={width}
-              onSnapToItem={slideIndex =>
-                this.setState({ activeSlide: slideIndex })
-              }
-              layout={"default"}
-              firstItem={0}
-              loop={true}
-            />
-            {this.pagination}
-          </View>
-        )}
-        <Card
-          style={{
-            width: "100%",
-            padding: 10,
-            backgroundColor: "white",
-            borderRadius: 0,
-            shadowOffset: {
-              width: 1,
-              height: 1
-            },
-            marginTop: 0
-          }}
-        >
-          {/* 
+            >
+              {/* 
               <Text note>Guarantee {data.guarantee} months</Text>
               <AppText note small style={{ opacity: data.quantity > 0 ? 1 : 0 }}>
                 Quantity: {data.quantity}
               </AppText> */}
-          <AppText>{data.name}</AppText>
-          <View style={{ flexDirection: "row" }}>
-            {this.renderStars(data.reviewScore || 0)}
-            <AppText small style={{ alignSelf: "flex-end" }} note>
-              ({data.reviewCount || 0} reviews)
+              <AppText>{data.name}</AppText>
+              <View style={{ flexDirection: "row" }}>
+                {this.renderStars(data.reviewScore || 0)}
+                <AppText small style={{ alignSelf: "flex-end" }} note>
+                  ({data.reviewCount || 0} reviews)
             </AppText>
-          </View>
-          <AppText color="red">
-            {data.promotionPrice ? data.promotionPrice : data.price}
-          </AppText>
-          {/* <Text style={{ fontWeight: "bold" }}>Description</Text>
+              </View>
+              <AppText color="red">
+                {data.promotionPrice ? data.promotionPrice : data.price}
+              </AppText>
+              {/* <Text style={{ fontWeight: "bold" }}>Description</Text>
               <Text>{data.description}</Text> */}
-        </Card>
-        {/* <Card style={{ flex: 1 }}>
+            </Card>
+            {/* <Card style={{ flex: 1 }}>
               {data.sold5OrOver && (
                 <Image
                   source={require("../../resources/images/hot-sale.png")}
@@ -201,7 +213,7 @@ class ProductInformation extends Component {
                 />
               )}
             </Card> */}
-        {/* {data.additionPicture && data.additionPicture.length > 0 ? (
+            {/* {data.additionPicture && data.additionPicture.length > 0 ? (
               <Card>
                 <CardItem header>
                   <Text>Other pictures</Text>
@@ -228,115 +240,117 @@ class ProductInformation extends Component {
                 </CardItem>
               </Card>
             ) : null} */}
-        <Card
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            marginTop: 10,
-            borderRadius: 0,
-            padding: 10
-          }}
-        >
-          <AppText>PRODUCT DETAIL</AppText>
-          <View style={{ marginTop: 5 }}>
-            <AppText small note>
-              DESCRIPTION
-            </AppText>
-            <View
+            <Card
               style={{
                 width: "100%",
-                padding: 5,
-                backgroundColor: "#eee",
-                minHeight: 100
+                backgroundColor: "white",
+                marginTop: 10,
+                borderRadius: 0,
+                padding: 10
               }}
             >
-              <AppText small>{data.description}</AppText>
-            </View>
-          </View>
-          {(data.promotionPrice ||
-            (data.giftProducts && data.giftProducts.length > 0)) && (
-            <View
-              style={{
-                marginVertical: 10,
-                borderWidth: 1,
-                borderColor: "green",
-              }}
-            >
-              <View
-                style={{
-                  width: "100%",
-                  backgroundColor: "green",
-                  flexDirection: "row",
-                  borderColor: "green",
-                  padding: 5
-                }}
-              >
-                <Icon
-                  name="md-color-wand"
-                  style={{ color: "white", marginRight: 10, fontSize: 15 }}
-                />
-                <AppText color="white">PROMOTION</AppText>
+              <AppText>PRODUCT DETAIL</AppText>
+              <View style={{ marginTop: 5 }}>
+                <AppText small note>
+                  DESCRIPTION
+            </AppText>
+                <View
+                  style={{
+                    width: "100%",
+                    padding: 5,
+                    backgroundColor: "#eee",
+                    minHeight: 100
+                  }}
+                >
+                  <AppText small>{data.description}</AppText>
+                </View>
               </View>
-              <View style={{ width: "100%", padding: 5 }}>
-                {data.promotionPrice && (
-                  <AppText small color="gray">
-                    * Discount: {data.price} -> {data.promotionPrice}
-                  </AppText>
-                )}
-                {data.giftProducts &&
-                  data.giftProducts.length > 0 && (
-                    <View>
-                      <AppText small color="gray">
-                        * Get these products free when buying this one
-                      </AppText>
-                      <ScrollView horizontal={true} style={{ width: "100%" }}>
-                        {data.giftProducts.map(product => (
-                          <View key={product._id} style={{ width: width / 2 }}>
-                            <ProductShowcase
-                              onSelected={product =>
-                                selectProduct({
-                                  product,
-                                  productId: product._id
-                                })
-                              }
-                              item={product}
-                            />
-                          </View>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-              </View>
-            </View>
-          )}
-          {data.specifications && (
-            <View style={{ marginTop: 10 }}>
-              <AppText small note>
-                CONFIGURATION
-              </AppText>
-              <View style={{ width: "100%" }}>
-                {Object.keys(data.specifications).map((key, index) => (
-                  <Grid
-                    key={"specification-item-" + key}
+              {(data.promotionPrice ||
+                (data.giftProducts && data.giftProducts.length > 0)) && (
+                  <View
                     style={{
-                      backgroundColor: index % 2 === 0 ? "#eee" : "white",
-                      padding: 5
+                      marginVertical: 10,
+                      borderWidth: 1,
+                      borderColor: "green",
                     }}
                   >
-                    <Col>
-                      <AppText small>{key}</AppText>
-                    </Col>
-                    <Col>
-                      <AppText small note>
-                        {data.specifications[key]}
+                    <View
+                      style={{
+                        width: "100%",
+                        backgroundColor: "green",
+                        flexDirection: "row",
+                        borderColor: "green",
+                        padding: 5
+                      }}
+                    >
+                      <Icon
+                        name="md-color-wand"
+                        style={{ color: "white", marginRight: 10, fontSize: 15 }}
+                      />
+                      <AppText color="white">PROMOTION</AppText>
+                    </View>
+                    <View style={{ width: "100%", padding: 5 }}>
+                      {data.promotionPrice && (
+                        <AppText small color="gray">
+                          * Discount: {data.price} -> {data.promotionPrice}
+                        </AppText>
+                      )}
+                      {data.giftProducts &&
+                        data.giftProducts.length > 0 && (
+                          <View>
+                            <AppText small color="gray">
+                              * Get these products free when buying this one
                       </AppText>
-                    </Col>
-                  </Grid>
-                ))}
-              </View>
-            </View>
-          )}
-        </Card>
+                            <ScrollView horizontal={true} style={{ width: "100%" }}>
+                              {data.giftProducts.map(product => (
+                                <View key={product._id} style={{ width: width / 2 }}>
+                                  <ProductShowcase
+                                    onSelected={product =>
+                                      selectProduct({
+                                        product,
+                                        productId: product._id
+                                      })
+                                    }
+                                    item={product}
+                                  />
+                                </View>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                    </View>
+                  </View>
+                )}
+              {data.specifications && (
+                <View style={{ marginTop: 10 }}>
+                  <AppText small note>
+                    CONFIGURATION
+              </AppText>
+                  <View style={{ width: "100%" }}>
+                    {Object.keys(data.specifications).map((key, index) => (
+                      <Grid
+                        key={"specification-item-" + key}
+                        style={{
+                          backgroundColor: index % 2 === 0 ? "#eee" : "white",
+                          padding: 5
+                        }}
+                      >
+                        <Col>
+                          <AppText small>{key}</AppText>
+                        </Col>
+                        <Col>
+                          <AppText small note>
+                            {data.specifications[key]}
+                          </AppText>
+                        </Col>
+                      </Grid>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </Card>
+          </View>
+        }
       </View>
     );
   }

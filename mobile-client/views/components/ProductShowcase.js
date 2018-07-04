@@ -12,7 +12,9 @@ import AppText from "./AppText";
 var unknown = require("../../resources/images/unknown.png");
 
 class ProductShowcase extends Component {
-  state = {};
+  state = {
+    item: null
+  };
   renderStars(reviewScore, large = false) {
     const stars = [];
     let i = 0;
@@ -44,10 +46,36 @@ class ProductShowcase extends Component {
       );
     return stars;
   }
+
+  componentDidMount() {
+    const curItem = this.props.item;
+    this.setState({
+      item: {
+        ...curItem,
+        promotionPrice: curItem.promotionPrice ? currencyFormat(curItem.promotionPrice) : undefined,
+        price: currencyFormat(curItem.price)
+      }
+    })
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.item._id !== prevProps.item._id) {
+      const curItem = this.props.item;
+      this.setState({
+        item: {
+          ...curItem,
+          promotionPrice: curItem.promotionPrice ? currencyFormat(curItem.promotionPrice) : undefined,
+          price: currencyFormat(curItem.price)
+        }
+      })
+    }
+  }
+
   render() {
-    const { item, onSelected, navigation } = this.props;
+    const { item } = this.state;
+    const { onSelected, navigation } = this.props;
     const outOfOrder = require("../../resources/images/sold-out.png");
-    return (
+    return item !== null ? (
       <TouchableOpacity
         style={{ width: "100%" }}
         onPress={() => navigation.navigate('ProductDetail', { product: item, productId: item._id })}
@@ -92,8 +120,8 @@ class ProductShowcase extends Component {
             source={
               item.mainPicture && item.mainPicture !== ""
                 ? {
-                    uri: item.mainPicture
-                  }
+                  uri: item.mainPicture
+                }
                 : unknown
             }
             style={{ width: "100%", height: 200 }}
@@ -126,15 +154,15 @@ class ProductShowcase extends Component {
               </AppText>
             </View>
           ) : (
-            <View>
-              <AppText large color="red">
-                {item.price}
+              <View>
+                <AppText large color="red">
+                  {item.price}
+                </AppText>
+                <AppText small style={{ opacity: 0 }}>
+                  no promotion
               </AppText>
-              <AppText small style={{ opacity: 0 }}>
-                no promotion
-              </AppText>
-            </View>
-          )}
+              </View>
+            )}
           <View style={{ flexDirection: "row" }}>
             {this.renderStars(item.reviewScore || 0)}
             <AppText small style={{ alignSelf: "flex-end" }} note>
@@ -143,7 +171,7 @@ class ProductShowcase extends Component {
           </View>
         </View>
       </TouchableOpacity>
-    );
+    ) : <View></View>;
   }
 }
 
