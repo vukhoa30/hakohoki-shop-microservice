@@ -11,8 +11,8 @@ class Comment extends Component {
     const { selected, comment, select, info } = this.props;
     return (
       <div
-        className="row clickable"
-        style={{ width: "100%", marginBottom: 20 }}
+        className="card row clickable"
+        style={{ width: "100%", marginBottom: 20, padding: 5 }}
         onClick={() => select && select()}
       >
         <div className="col-xs-2">

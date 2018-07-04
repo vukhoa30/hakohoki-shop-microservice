@@ -121,7 +121,7 @@ class ProductFeedback extends Component {
                 {this.state.selectedCommentId !== null && (
                   <div>
                     <hr className="m-0" />
-                    <div className="card card-body list-group border-0 pt-0">
+                    <div className="list-group border-0 pt-0">
                       <div
                         style={{
                           height: 500,
@@ -242,7 +242,6 @@ class ProductFeedback extends Component {
               {comments.length > 0 && (
                 <div
                   ref={ref => (this.commentList = ref)}
-                  className="card"
                   style={{ overflowY: "auto", height: 600 }}
                 >
                   {comments

@@ -386,7 +386,6 @@ class Subscription extends Component {
                   style={{
                     height: 600,
                     overflowY: "auto",
-                    backgroundColor: "white",
                     padding: 10
                   }}
                 >
@@ -438,7 +437,6 @@ class Subscription extends Component {
                     style={{
                       height: 600,
                       overflowY: "auto",
-                      backgroundColor: "white",
                       padding: 10
                     }}
                   >
