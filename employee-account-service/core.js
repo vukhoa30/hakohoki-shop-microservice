@@ -24,7 +24,6 @@ var checkManager = (req) => { //resovle true or false
       var token = req.headers.authorization.split(' ')[1]
       helper.verifyjwt(token)
       .then(decode => {
-        console.log(decode)
         resolve(decode.role === 'manager')
       })
       .catch(e => resolve(false))

@@ -1,15 +1,3 @@
-/*project này là 1 project restify, sửa url của request (api hoặc socket)
-vd: post https://api.hakohoki.com/accounts/authenticate
--> post https://accounts-service.hakohoki.com/authenticate
-*/
-
-/*
-  hiện tại áp dụng trên local, để lưu trong db ah
-  db gồm: [ type: string, clientUrl: string, serviceUrl: string ]
-  trong đó type là 'api' hoặc 'socket'.
-  Nên chạy tất cả các websocket trước khi chạy server này
-*/
-
 var db = require('./db');
 var express = require('express');
 var app = express();

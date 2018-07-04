@@ -94,9 +94,10 @@ module.exports = {
     })
   },
   GetAllEmployees: (role) => {
+    var query = role ? { role } : {}
     return new Promise((resolve, reject) => {
       db('accounts')
-      .where({role: role ? role : undefined})
+      .where(query)
       .then(rows => {
         resolve(rows)
       })

@@ -8,7 +8,7 @@ var generateUuid = () => {
          Math.random().toString();
 }
 
-var timeOutMs = 500
+var timeOutMs = 300
 var checkAlive = async (serviceName) => {
   return new Promise(r => {
     return Promise.race([
