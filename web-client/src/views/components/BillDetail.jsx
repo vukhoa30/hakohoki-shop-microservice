@@ -91,7 +91,7 @@ class BillDetail extends Component {
           </div>
           <div className="col-xs-3">
             {selectedBill.status === "pending" ? (
-              role === "receptionist" && (
+              role === "receptionist" || role === "employee" && (
                 <button
                   disabled={confirming}
                   className="btn btn-primary btn-block"

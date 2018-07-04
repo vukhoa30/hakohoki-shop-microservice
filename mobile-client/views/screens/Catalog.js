@@ -239,11 +239,6 @@ class Catalog extends Component {
                 })}
             </ScrollView>
           }
-          {this.state.q && (
-            <AppText style={{ margin: 10, color: "black" }} note>
-              >> Keyword: {this.state.q}
-            </AppText>
-          )}
         </View>
         <Content
           onScroll={({ nativeEvent }) => {
@@ -254,19 +249,24 @@ class Catalog extends Component {
             //   this.setState({ categoryMinimized });
           }}
         >
+          {this.state.q && (
+            <AppText color='black'>
+              >> Keyword: {this.state.q}
+            </AppText>
+          )}
           {selectedCategory === "none" ? (
             <AppText center note style={{ marginVertical: 50 }}>
               SELECT A CATEGORY TO SEE PRODUCT LIST
             </AppText>
           ) : (
-            <View style={{ marginTop: 100 }}>
-              <ProductList
-                status={productStatus}
-                list={list}
-                load={() => this.selectCategory(selectedCategory)}
-              />
-            </View>
-          )}
+              <View style={{ marginTop: 100 }}>
+                <ProductList
+                  status={productStatus}
+                  list={list}
+                  load={() => this.selectCategory(selectedCategory)}
+                />
+              </View>
+            )}
         </Content>
       </Container>
     );

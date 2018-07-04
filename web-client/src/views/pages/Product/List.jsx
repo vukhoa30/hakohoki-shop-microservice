@@ -140,7 +140,7 @@ class ProductList extends Component {
             </button>
           )}
         </form> */}
-        {role === "manager" && (
+        {role === "manager" || role === "employee" && (
           <button
             className="btn btn-success"
             style={{ marginLeft: 20 }}
