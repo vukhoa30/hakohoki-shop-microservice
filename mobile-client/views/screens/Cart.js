@@ -45,30 +45,12 @@ class Cart extends Component {
     };
     const { isLoggedIn, token, loadCart, status } = this.props;
     if (isLoggedIn && status === "INIT") loadCart(token);
-  }
-
-  componentDidMount(){
-    this.setData();
-  }
-
-  setData() {
-    const { list: rawList } = this.props;
-    this.setState({
-      list: rawList.map(item => ({
-        ...item,
-        promotionPrice: item.promotionPrice ? currencyFormat(item.promotionPrice) : undefined,
-        price: currencyFormat(item.price),
-        giftProducts: item.giftProducts ? item.giftProducts.map(item => ({
-          ...item,
-          promotionPrice: item.promotionPrice ? currencyFormat(item.promotionPrice) : undefined,
-          price: currencyFormat(item.price)
-        })) : []
-      }))
-    })
+    console.log(this.props.list)
   }
 
   render() {
     const {
+      list,
       setCart,
       totalPrice,
       token,
@@ -77,7 +59,7 @@ class Cart extends Component {
       selectProduct,
       isLoggedIn
     } = this.props;
-    const { list } = this.state;
+
     return (
       <Container>
         {/* {status === "LOADING" && (
@@ -149,9 +131,11 @@ class Cart extends Component {
                               {product.name}
                             </AppText>
                             <AppText color="red">
-                              {product.promotionPrice
-                                ? product.promotionPrice
-                                : product.price}
+                              {
+                                currencyFormat(product.promotionPrice
+                                  ? product.promotionPrice
+                                  : product.price)
+                              }
                             </AppText>
                             {/* <AppText small note>
                       Quantity: {product.amount}
@@ -273,9 +257,10 @@ class Cart extends Component {
                                       </AppText>
                                       <AppText color="red">
                                         {
-                                          product.promotionPrice
+                                          currencyFormat(product.promotionPrice
                                             ? product.promotionPrice
-                                            : product.price
+                                            : product.price)
+
                                         }
                                       </AppText>
                                     </View>
@@ -360,11 +345,7 @@ const mapStateToProps = state => ({
   list: state.cart.list,
   status: state.cart.status,
   token: state.user.token,
-  totalPrice: reduce(
-    state.cart.list,
-    (result, product) => result + product.price * product.amount,
-    0
-  )
+  totalPrice: state.cart.list.reduce((result, product) => result + Number(product.promotionPrice ? product.promotionPrice : product.price) * product.amount, 0)
 });
 
 const mapDispatchToProps = dispatch => ({

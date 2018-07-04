@@ -85,6 +85,7 @@ function request(url, method, header, data) {
 }
 
 function currencyFormat(currency) {
+  if (typeof currency === 'string') return currency;
   return currency
     ? currency.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.") + " VND"
     : "0 VND";
