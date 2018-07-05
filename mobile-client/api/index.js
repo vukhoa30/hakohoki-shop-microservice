@@ -5,7 +5,8 @@ import {
   alert,
   createSocketConnection,
   updateGateway,
-  formatProduct
+  formatProduct,
+  changePriceToNumber
 } from "../utils";
 import navigator from "../navigations";
 import {
@@ -693,13 +694,19 @@ function setCart(token, product, type, amount) {
     // } catch (error) {}
     // dispatch(getAction(FINISH_LOADING_CART));
     let method = null;
+    let currentProduct = product;
+    if ((currentProduct.promotionPrice && typeof currentProduct.promotionPrice === 'string') || typeof currentProduct.price === 'string'){
+      if (currentProduct.promotionPrice)
+        currentProduct.promotionPrice = changePriceToNumber(currentProduct.promotionPrice)
+      currentProduct.price = changePriceToNumber(currentProduct.price)
+    }
     if (type === "ADD") {
-      dispatch(getAction(ADD_TO_CART, { data: product, number: amount }));
+      dispatch(getAction(ADD_TO_CART, { data: currentProduct, number: amount }));
       method = "POST";
     } else if (type === "UPDATE") {
       dispatch(
         getAction(MODIFY_CART_PRODUCT, {
-          productId: product._id,
+          productId: currentProduct._id,
           number: amount
         })
       );
@@ -707,7 +714,7 @@ function setCart(token, product, type, amount) {
     } else {
       dispatch(
         getAction(REMOVE_FROM_CART, {
-          productId: product._id
+          productId: currentProduct._id
         })
       );
       method = "DELETE";
@@ -721,7 +728,7 @@ function setCart(token, product, type, amount) {
             Authorization: "JWT " + token
           },
           {
-            productId: product._id,
+            productId: currentProduct._id,
             amount
           }
         );

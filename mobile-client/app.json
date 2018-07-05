@@ -1,6 +1,16 @@
 {
   "expo": {
-    "sdkVersion": "25.0.0",
-    "orientation": "portrait"
+    "name": "2K Shop",
+    "sdkVersion": "25.0.0", 
+    "icon": "./icon.png",
+    "orientation": "portrait",
+    "version": "1.0.0",
+    "slug": "2k-shop-slug",
+    "ios": {
+      "bundleIdentifier": "com.example.shop"
+    },
+    "android": {
+      "package": "com.example.shop"
+    }
   }
 }
