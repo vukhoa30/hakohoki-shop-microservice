@@ -208,11 +208,11 @@ module.exports = {
 
       var products = await msgBroker.requestGetSpecificProducts(
         bill.specificProducts.map(p => p.id))
-      msgBroker.produceNotificationRequest({
+      msgBroker.produceNotificationRequest([{
         type: 'productBought',
         accountId: bill.buyer.accountId,
         billId: bill._id
-      })
+      }])
       var customer = await msgBroker.requestCustomers([bill.buyer.accountId])
       var email = customer[0].email
       msgBroker.produceEmailRequest(products.map(p => {
