@@ -245,10 +245,10 @@ function authenticate(values) {
           if (data.msg === "ACCOUNT NOT ACTIVATED") {
             navigation.navigate("Activation", { emailOrPhoneNo });
             err = "Your account has not been activated yet";
-          } else err = "Password wrong";
+          } else err = "Invalid email or phone number or password";
           break;
         case 404:
-          err = "The account is not existed!";
+          err = "Invalid email or phone number or password";
           break;
         case 500:
           err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
@@ -283,7 +283,7 @@ function enroll(values) {
           navigation.navigate("Activation", { emailOrPhoneNo: phoneNumber });
           return resolve();
         case 409:
-          err = "The email was registered";
+          err = "Email or phone number existed";
           break;
         case 500:
           err = "INTERNAL SERVER ERROR! TRY AGAIN LATER";
@@ -300,6 +300,7 @@ function enroll(values) {
 function activate(values) {
   return new Promise(async (resolve, reject) => {
     let err = `UNDEFINED ERROR! TRY AGAIN LATER`;
+    Keyboard.dismiss();
     const { activationCode } = values;
     const { navigation } = this.props;
 

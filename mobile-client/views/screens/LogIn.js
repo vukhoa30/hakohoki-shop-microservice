@@ -121,7 +121,7 @@ class LogIn extends Component {
 
 const mapStateToProps = state => ({
   initialValues: {
-    email: state.buffer.data ? state.buffer.data.email : null
+    emailOrPhoneNo: state.buffer.data ? state.buffer.data.emailOrPhoneNo : null
   }
 });
 
