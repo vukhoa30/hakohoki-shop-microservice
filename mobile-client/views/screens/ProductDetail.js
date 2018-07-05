@@ -147,6 +147,7 @@ class ProductDetail extends Component {
       watchListStateChanging
     } = this.state;
     const { setCart, quantityInCart, token } = this.props;
+    console.log(quantityInCart)
     return (
       <Container>
         <NumberPicker
@@ -157,7 +158,7 @@ class ProductDetail extends Component {
               token,
               product,
               quantityInCart > 0 ? "UPDATE" : "ADD",
-              quantityInCart + number
+              Number(quantityInCart) + Number(number)
             );
             alert("success", "ADDED PRODUCT TO CART");
           }}
@@ -302,7 +303,7 @@ const mapStateToProps = (state, props) => {
   const { productId, product } = params ? params : {};
   const { list } = state.cart;
   const productInCart = list.find(product => product._id === productId);
-  const quantityInCart = productInCart ? productInCart.quantity : 0;
+  const quantityInCart = productInCart ? productInCart.amount : 0;
   return {
     productId: productId ? productId : null,
     product: product ? product : null,
