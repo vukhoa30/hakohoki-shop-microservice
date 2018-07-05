@@ -149,5 +149,8 @@ module.exports = {
   responseGetAllCategories: () => {
     var db = require('../database')
     responseAmqp(db.GetAllCategories, 'getAllCategories')
+  },
+  responseCheckAlive: () => {
+    responseAmqp(() => { return new Promise(r => r(true)) }, 'checkAlive_product')
   }
 }
