@@ -123,7 +123,7 @@ module.exports = {
       }
       var subscriptionProductIds = await db.GetSubscriptions('commentPosted',
         { accountId: req.authentication.accountId })
-      var products = await msgBroker.requestGetProducts(subscriptionProductIds)
+      var products = (await msgBroker.requestGetProducts(subscriptionProductIds)) || []
       console.log(products)
       var rslt = []
       subscriptionProductIds.forEach(id => {
