@@ -1053,7 +1053,7 @@ function loadOrders(token, accountId) {
       if (status === 200)
         return dispatch(
           getAction(ORDERS_LOADED, {
-            list: data.map(order => ({
+            list: data.reverse().map(order => ({
               ...order,
               totalPrice: order.specificProducts.reduce(
                 (total, product) => total + product.price,
