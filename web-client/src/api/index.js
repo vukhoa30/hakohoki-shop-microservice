@@ -367,7 +367,7 @@ export const searchForBills = (query, billType, token) => {
         return dispatch(
           getAction(billAction, {
             isLoading: false,
-            data: data.reverse().map(bill => ({
+            data: data.map(bill => ({
               ...bill,
               buyer: bill.buyer
                 ? reduce(
