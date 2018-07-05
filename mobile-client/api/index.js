@@ -280,7 +280,7 @@ function enroll(values) {
 
       switch (status) {
         case 200:
-          navigation.navigate("Activation", { email });
+          navigation.navigate("Activation", { emailOrPhoneNo: phoneNumber });
           return resolve();
         case 409:
           err = "The email was registered";
