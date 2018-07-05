@@ -31,8 +31,6 @@ class ProductList extends Component {
               <View
                 style={{
                   flexDirection: "row",
-                  flexWrap: "wrap",
-                  justifyContent: "center"
                 }}
               >
                 {list.map(item => (

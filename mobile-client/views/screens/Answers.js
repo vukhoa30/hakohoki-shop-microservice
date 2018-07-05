@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Field, reduxForm } from "redux-form";
-import { View, Dimensions, KeyboardAvoidingView, Modal } from "react-native";
+import {
+  View,
+  Dimensions,
+  KeyboardAvoidingView,
+  Modal,
+  RefreshControl
+} from "react-native";
 import {
   loadProductFeedback,
   logOut,
@@ -131,9 +137,15 @@ class Answers extends Component {
             </View>
           </View>
         </Modal>
-        {status === "LOADING" && <Spinner style={{ alignSelf: "center" }} />}
         {parentComment !== null && <AppComment comment={parentComment} />}
-        <Content>
+        <Content
+          refreshControl={
+            <RefreshControl
+              refreshing={status === "LOADING"}
+              onRefresh={() => this.loadData()}
+            />
+          }
+        >
           <View>
             <View style={{ paddingHorizontal: 20 }}>
               {childComments.map(comment => (
@@ -193,4 +205,7 @@ const mapDispatchToProps = dispatch => ({
   logOut: () => dispatch(logOut())
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Answers);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Answers);

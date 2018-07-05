@@ -118,7 +118,7 @@ class Main extends React.Component {
               </a>
             </div>
             <ul className="nav">
-              {role === "manager" || role === "employee" && (
+              {(role === "manager" || role === "employee") && (
                 <li
                   className={
                     location.pathname.includes("dashboard") ? "active" : ""
@@ -130,7 +130,7 @@ class Main extends React.Component {
                   </Link>
                 </li>
               )}
-              {role === "manager" || role === "employee" && (
+              {(role === "manager" || role === "employee") && (
                 <li
                   className={
                     location.pathname.includes("account") ? "active" : ""

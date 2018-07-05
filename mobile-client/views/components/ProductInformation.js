@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { View, ScrollView, Dimensions, Image } from "react-native";
-import { Container, Content, Button, Card, Grid, Col, Icon } from "native-base";
-import { currencyFormat, alert, confirm } from "../../utils";
+import { Card, Grid, Col, Icon, CardItem, List, Body, Text, ListItem } from "native-base";
 import { selectProduct } from "../../api";
 import AppText from "./AppText";
 import Carousel, { Pagination } from "react-native-snap-carousel";
@@ -66,7 +65,7 @@ class ProductInformation extends Component {
       const curItem = this.props.product;
       this.setState({
         data: curItem
-      })
+      });
     }
   }
 
@@ -76,8 +75,8 @@ class ProductInformation extends Component {
         source={
           item && item !== ""
             ? {
-              uri: item
-            }
+                uri: item
+              }
             : unknown
         }
         style={{
@@ -124,7 +123,7 @@ class ProductInformation extends Component {
     const { selectProduct, err } = this.props;
     return (
       <View>
-        {data !== null &&
+        {data !== null && (
           <View>
             <View
               style={[
@@ -176,7 +175,7 @@ class ProductInformation extends Component {
                 {this.renderStars(data.reviewScore || 0)}
                 <AppText small style={{ alignSelf: "flex-end" }} note>
                   ({data.reviewCount || 0} reviews)
-            </AppText>
+                </AppText>
               </View>
               <AppText color="red">
                 {data.promotionPrice ? data.promotionPrice : data.price}
@@ -213,7 +212,7 @@ class ProductInformation extends Component {
                 />
               )}
             </Card> */}
-            {/* {data.additionPicture && data.additionPicture.length > 0 ? (
+            {data.additionPicture && data.additionPicture.length > 0 ? (
               <Card>
                 <CardItem header>
                   <Text>Other pictures</Text>
@@ -239,7 +238,7 @@ class ProductInformation extends Component {
                   </Body>
                 </CardItem>
               </Card>
-            ) : null} */}
+            ) : null}
             <Card
               style={{
                 width: "100%",
@@ -253,7 +252,7 @@ class ProductInformation extends Component {
               <View style={{ marginTop: 5 }}>
                 <AppText small note>
                   DESCRIPTION
-            </AppText>
+                </AppText>
                 <View
                   style={{
                     width: "100%",
@@ -267,65 +266,71 @@ class ProductInformation extends Component {
               </View>
               {(data.promotionPrice ||
                 (data.giftProducts && data.giftProducts.length > 0)) && (
+                <View
+                  style={{
+                    marginVertical: 10,
+                    borderWidth: 1,
+                    borderColor: "green"
+                  }}
+                >
                   <View
                     style={{
-                      marginVertical: 10,
-                      borderWidth: 1,
+                      width: "100%",
+                      backgroundColor: "green",
+                      flexDirection: "row",
                       borderColor: "green",
+                      padding: 5
                     }}
                   >
-                    <View
-                      style={{
-                        width: "100%",
-                        backgroundColor: "green",
-                        flexDirection: "row",
-                        borderColor: "green",
-                        padding: 5
-                      }}
-                    >
-                      <Icon
-                        name="md-color-wand"
-                        style={{ color: "white", marginRight: 10, fontSize: 15 }}
-                      />
-                      <AppText color="white">PROMOTION</AppText>
-                    </View>
-                    <View style={{ width: "100%", padding: 5 }}>
-                      {data.promotionPrice && (
-                        <AppText small color="gray">
-                          * Discount: {data.price} -> {data.promotionPrice}
-                        </AppText>
-                      )}
-                      {data.giftProducts &&
-                        data.giftProducts.length > 0 && (
-                          <View>
-                            <AppText small color="gray">
-                              * Get these products free when buying this one
-                      </AppText>
-                            <ScrollView horizontal={true} style={{ width: "100%" }}>
-                              {data.giftProducts.map(product => (
-                                <View key={product._id} style={{ width: width / 2 }}>
-                                  <ProductShowcase
-                                    onSelected={product =>
-                                      selectProduct({
-                                        product,
-                                        productId: product._id
-                                      })
-                                    }
-                                    item={product}
-                                  />
-                                </View>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
-                    </View>
+                    <Icon
+                      name="md-color-wand"
+                      style={{ color: "white", marginRight: 10, fontSize: 15 }}
+                    />
+                    <AppText color="white">PROMOTION</AppText>
                   </View>
-                )}
+                  <View style={{ width: "100%", padding: 5 }}>
+                    {data.promotionPrice && (
+                      <AppText small color="gray">
+                        * Discount: {data.price} -> {data.promotionPrice}
+                      </AppText>
+                    )}
+                    {data.giftProducts &&
+                      data.giftProducts.length > 0 && (
+                        <View>
+                          <AppText small color="gray">
+                            * Get these products free when buying this one
+                          </AppText>
+                          <ScrollView
+                            horizontal={true}
+                            style={{ width: "100%" }}
+                          >
+                            {data.giftProducts.map(product => (
+                              <View
+                                key={product._id}
+                                style={{ width: width / 2 }}
+                              >
+                                <ProductShowcase
+                                  onSelected={product =>
+                                    selectProduct({
+                                      product,
+                                      productId: product._id
+                                    })
+                                  }
+                                  item={product}
+                                />
+                              </View>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+                  </View>
+                </View>
+              )}
               {data.specifications && (
                 <View style={{ marginTop: 10 }}>
                   <AppText small note>
                     CONFIGURATION
-              </AppText>
+                  </AppText>
                   <View style={{ width: "100%" }}>
                     {Object.keys(data.specifications).map((key, index) => (
                       <Grid
@@ -350,7 +355,7 @@ class ProductInformation extends Component {
               )}
             </Card>
           </View>
-        }
+        )}
       </View>
     );
   }
@@ -362,4 +367,7 @@ const mapDispatchToProps = dispatch => ({
   selectProduct: productInfo => dispatch(selectProduct(productInfo))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProductInformation);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ProductInformation);

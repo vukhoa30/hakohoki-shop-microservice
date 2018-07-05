@@ -145,7 +145,7 @@ class Notification extends Component {
         }}
       >
         <AppText onPress={() => logOut()} note>
-          Tap here to log in
+          TAB HERE TO LOG IN
         </AppText>
       </View>
     ) : (
@@ -169,7 +169,7 @@ class Notification extends Component {
             </AppText>
           </TouchableOpacity>
         )}
-        {status === "LOADING" ? (
+        {status === "LOADING_FAILED" && (
           <View
             style={{
               flex: 1,
@@ -178,40 +178,28 @@ class Notification extends Component {
               alignItems: "center"
             }}
           >
-            <Spinner />
-          </View>
-        ) : (
-          status === "LOADING_FAILED" && (
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
+            <AppText color="red" small style={{ marginBottom: 10 }}>
+              Could not load data
+            </AppText>
+            <Button
+              small
+              warning
+              style={{ alignSelf: "center" }}
+              onPress={() => loadNotifications(token)}
             >
-              <AppText color="red" small style={{ marginBottom: 10 }}>
-                Could not load data
-              </AppText>
-              <Button
-                small
-                warning
-                style={{ alignSelf: "center" }}
-                onPress={() => loadNotifications(token)}
-              >
-                <AppText>Reload</AppText>
-              </Button>
-            </View>
-          )
+              <AppText>Reload</AppText>
+            </Button>
+          </View>
         )}
-        <Content>
+        <Content
+          refreshControl={
+            <RefreshControl
+              refreshing={status === "LOADING"}
+              onRefresh={() => loadNotifications(token)}
+            />
+          }
+        >
           <List
-            refreshControl={
-              <RefreshControl
-                refreshing={status === "LOADING"}
-                onRefresh={() => loadNotifications(token)}
-              />
-            }
             dataArray={list}
             renderRow={notification => (
               <ListItem key={"notification-" + notification.id}>
@@ -250,4 +238,7 @@ const mapDispatchToProps = dispatch => ({
   connectToServer: accountId => dispatch(connectToServer(accountId))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Notification);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Notification);

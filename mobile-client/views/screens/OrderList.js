@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { View } from "react-native";
+import { View, RefreshControl } from "react-native";
 import {
   Container,
   Content,
@@ -19,13 +19,34 @@ import OrderShowcase from "../components/OrderShowcase";
 class OrderList extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      pending: [],
+      completed: []
+    };
     const { accountId, token, loadOrders } = this.props;
     loadOrders(token, accountId);
   }
 
+  componentDidMount(){
+    this.setData()
+  }
+
+  componentDidUpdate(prevProps){
+    if (this.props.status === 'LOADED' && prevProps.status === 'LOADING')
+      this.setData()
+  }
+
+  setData(){
+    const { list } = this.props;
+    this.setState({
+      pending: list.filter(item => item.status === 'pending'),
+      completed: list.filter(item => item.status === 'completed')
+    })
+  }
+
   render() {
-    const { list, status } = this.props;
+    const { list, status, accountId, token, loadOrders } = this.props;
+    const { pending, completed } = this.state
     return (
       <Container>
         <Tabs initialPage={0} style={{ backgroundColor: "transparent" }}>
@@ -36,6 +57,12 @@ class OrderList extends Component {
             activeTabStyle={{ backgroundColor: "#BE2E11" }}
           >
             <List
+              refreshControl={
+                <RefreshControl
+                  refreshing={status === "LOADING"}
+                  onRefresh={() => loadOrders(token, accountId)}
+                />
+              }
               dataArray={list}
               renderRow={order => (
                 <OrderShowcase key={"order-" + order._id} order={order} />
@@ -49,7 +76,13 @@ class OrderList extends Component {
             activeTabStyle={{ backgroundColor: "#BE2E11" }}
           >
             <List
-              dataArray={list.filter(order => order.status === 'pending')}
+              refreshControl={
+                <RefreshControl
+                  refreshing={status === "LOADING"}
+                  onRefresh={() => loadOrders(token, accountId)}
+                />
+              }
+              dataArray={pending}
               renderRow={order => (
                 <OrderShowcase key={"order-" + order._id} order={order} />
               )}
@@ -62,26 +95,19 @@ class OrderList extends Component {
             activeTabStyle={{ backgroundColor: "#BE2E11" }}
           >
             <List
-              dataArray={list.filter(order => order.status === 'completed')}
+              refreshControl={
+                <RefreshControl
+                  refreshing={status === "LOADING"}
+                  onRefresh={() => loadOrders(token, accountId)}
+                />
+              }
+              dataArray={completed}
               renderRow={order => (
                 <OrderShowcase key={"order-" + order._id} order={order} />
               )}
             />
           </Tab>
         </Tabs>
-        {status === "LOADING" && (
-          <View
-            style={{
-              width,
-              height,
-              position: "absolute",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <Spinner />
-          </View>
-        )}
       </Container>
     );
   }
@@ -97,4 +123,7 @@ const mapDispatchToProps = dispatch => ({
   loadOrders: (token, accountId) => dispatch(loadOrders(token, accountId))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrderList);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(OrderList);

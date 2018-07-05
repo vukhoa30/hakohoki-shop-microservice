@@ -8,7 +8,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Animated
+  Animated,
+  RefreshControl
 } from "react-native";
 import {
   Container,
@@ -70,6 +71,13 @@ class Home extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.pageLoading && !prevState.pageLoading) {
+      this.loadPromotion();
+      this.loadLatestProducts();
+    }
+  }
+
   async loadLatestProducts() {
     let offset = 0,
       limit = 10;
@@ -101,12 +109,7 @@ class Home extends Component {
   // }
 
   render() {
-    const {
-      latestProductStatus,
-      latestProductList,
-      fadingBanner,
-      categoryMinimized
-    } = this.state;
+    const { latestProductStatus, latestProductList, fadingBanner } = this.state;
 
     const {
       category,
@@ -194,15 +197,18 @@ class Home extends Component {
         </View>
         <Content
           style={{ paddingTop: 70 }}
-          onScroll={({ nativeEvent }) => {
-            // const { contentOffset } = nativeEvent;
-            // let fadingBanner = true;
-            // let categoryFixedMode = true;
-            // let categoryMinimized = true;
-            // if (contentOffset.y < 150) categoryMinimized = false;
-            // if (this.state.categoryMinimized !== categoryMinimized)
-            //   this.setState({ categoryMinimized });
-          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={
+                latestProductStatus === "LOADING" &&
+                promotionStatus === "LOADING"
+              }
+              onRefresh={() => {
+                loadPromotion();
+                this.loadLatestProducts();
+              }}
+            />
+          }
         >
           {/* <SearchBar
             onLayout={e =>
@@ -270,7 +276,9 @@ class Home extends Component {
                 {latestProductList.map(product => (
                   <View key={product._id} style={{ width: width / 2 }}>
                     <ProductShowcase
-                      onSelected={productId => selectProduct({ product, productId: product._id })}
+                      onSelected={productId =>
+                        selectProduct({ product, productId: product._id })
+                      }
                       item={product}
                     />
                   </View>
@@ -296,4 +304,7 @@ const mapDispatchToProps = dispatch => ({
   loadCategories: () => dispatch(loadCategories())
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Home);

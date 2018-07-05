@@ -13,7 +13,8 @@ var unknown = require("../../resources/images/unknown.png");
 
 class ProductShowcase extends Component {
   state = {
-    item: null
+    item: null,
+    fullWidth: 0
   };
   renderStars(reviewScore, large = false) {
     const stars = [];
@@ -52,10 +53,12 @@ class ProductShowcase extends Component {
     this.setState({
       item: {
         ...curItem,
-        promotionPrice: curItem.promotionPrice ? currencyFormat(curItem.promotionPrice) : undefined,
+        promotionPrice: curItem.promotionPrice
+          ? currencyFormat(curItem.promotionPrice)
+          : undefined,
         price: currencyFormat(curItem.price)
       }
-    })
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -64,25 +67,32 @@ class ProductShowcase extends Component {
       this.setState({
         item: {
           ...curItem,
-          promotionPrice: curItem.promotionPrice ? currencyFormat(curItem.promotionPrice) : undefined,
+          promotionPrice: curItem.promotionPrice
+            ? currencyFormat(curItem.promotionPrice)
+            : undefined,
           price: currencyFormat(curItem.price)
         }
-      })
+      });
     }
   }
 
   render() {
-    const { item } = this.state;
+    const { item, fullWidth } = this.state;
     const { onSelected, navigation } = this.props;
     const outOfOrder = require("../../resources/images/sold-out.png");
     return item !== null ? (
       <TouchableOpacity
         style={{ width: "100%" }}
-        onPress={() => navigation.navigate('ProductDetail', { product: item, productId: item._id })}
+        onPress={() =>
+          navigation.navigate("ProductDetail", {
+            product: item,
+            productId: item._id
+          })
+        }
+        onLayout={e => this.setState({ fullWidth: e.nativeEvent.layout.width  })}
       >
         <View
           style={{
-            width: "100%",
             backgroundColor: "white",
             paddingVertical: 10,
             margin: 5
@@ -116,24 +126,21 @@ class ProductShowcase extends Component {
               }}
             />
           )}
-          <Image
-            source={
-              item.mainPicture && item.mainPicture !== ""
-                ? {
-                  uri: item.mainPicture
-                }
-                : unknown
-            }
-            style={{ width: "100%", height: 200 }}
-          />
-          <AppText large style={{ fontWeight: "bold", zIndex: 101 }}>
+          <View style={{ width: fullWidth, height: fullWidth + 50 }}>
+            <Image
+              source={
+                item.mainPicture && item.mainPicture !== ""
+                  ? {
+                      uri: item.mainPicture
+                    }
+                  : unknown
+              }
+              style={{ width: fullWidth, height: fullWidth }}
+            />
+          </View>
+          <AppText large style={{ fontWeight: "bold" }}>
             {reduceString(item.name)}
           </AppText>
-          {/* {item.quantity && (
-            <AppText note small>
-              Quantity: {item.quantity}
-            </AppText>
-          )} */}
           <AppText note small>
             {item.quantity ? `Quantity: ${item.quantity}` : "Quantity: 0"}
           </AppText>
@@ -154,15 +161,15 @@ class ProductShowcase extends Component {
               </AppText>
             </View>
           ) : (
-              <View>
-                <AppText large color="red">
-                  {item.price}
-                </AppText>
-                <AppText small style={{ opacity: 0 }}>
-                  no promotion
+            <View>
+              <AppText large color="red">
+                {item.price}
               </AppText>
-              </View>
-            )}
+              <AppText small style={{ opacity: 0 }}>
+                no promotion
+              </AppText>
+            </View>
+          )}
           <View style={{ flexDirection: "row" }}>
             {this.renderStars(item.reviewScore || 0)}
             <AppText small style={{ alignSelf: "flex-end" }} note>
@@ -171,7 +178,9 @@ class ProductShowcase extends Component {
           </View>
         </View>
       </TouchableOpacity>
-    ) : <View></View>;
+    ) : (
+      <View />
+    );
   }
 }
 
