@@ -45,7 +45,6 @@ class Cart extends Component {
     };
     const { isLoggedIn, token, loadCart, status } = this.props;
     if (isLoggedIn && status === "INIT") loadCart(token);
-    console.log(this.props.list)
   }
 
   render() {

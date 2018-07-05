@@ -169,7 +169,20 @@ function formatProduct(product) {
   };
 }
 
+function changePriceToNumber(string) {
+  if (typeof string === 'number') return string;
+  const index = string.search(' VND');
+  let number = 0;
+  if (index >= 0){
+    const newString = string.substring(0,index);
+    console.log(newString)
+    number = Number(newString);
+  }
+  return number;
+}
+
 module.exports = {
+  changePriceToNumber,
   width,
   height,
   platform,
