@@ -49,7 +49,7 @@ class AccountManager extends Component {
     const { isLoading, err, managers, employees, receptionists } = account;
     return (
       <div className="container-fluid">
-        <div className="row">
+        <div className="row" style={{ margin: 0 }}>
           <div className="col-md-5 col-xs-12">
             <div className="btn-group" role="group" aria-label="Basic example">
               <button
@@ -137,9 +137,10 @@ class AccountManager extends Component {
                         onClick={() =>
                           this.setState({ selectedAccount: account })
                         }
+                        style={{ marginBottom: 10 }}
                         className="list-group-item list-group-item-action flex-column align-items-start pt-3 pb-5 mt-2"
                       >
-                        <div className="row">
+                        <div className="row" style={{ margin: 0 }}>
                           <div className="col-xs-2">
                             <img
                               src={`assets/img/${account.role ? account.role : 'employee'}.png`}

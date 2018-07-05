@@ -18,9 +18,8 @@ import {
   Footer
 } from "native-base";
 import AppText from "../components/AppText";
-import ProductShowcase from "../components/ProductShowcase";
-import { formatTime, currencyFormat, request } from "../../utils";
-var unknown = require("../../resources/images/unknown.png");
+import { getDate, currencyFormat } from "../../utils";
+var unknown = "../../resources/images/unknown.png";
 const { width, height } = Dimensions.get("window");
 
 class PromotionDetail extends Component {
@@ -31,7 +30,8 @@ class PromotionDetail extends Component {
     const { promotionId } = params ? params : {};
     this.state = {
       promotionId,
-      promotion: null
+      promotion: null,
+      image: unknown
     };
     if (status === "INIT") loadPromotion();
   }
@@ -43,7 +43,7 @@ class PromotionDetail extends Component {
       const promotion = list.find(
         curPromotion => curPromotion.id === promotionId
       );
-      if (promotion) this.setState({ promotion });
+      if (promotion) this.setState({ promotion, image: promotion["poster_url"] });
     }
   }
 
@@ -54,13 +54,13 @@ class PromotionDetail extends Component {
       const promotion = list.find(
         curPromotion => curPromotion.id === promotionId
       );
-      if (promotion) this.setState({ promotion });
+      if (promotion) this.setState({ promotion, image: promotion["poster_url"]  });
     }
   }
 
   render() {
     const { selectProduct, status } = this.props;
-    const { promotion } = this.state;
+    const { promotion, image } = this.state;
     return (
       <Container>
         {status === "LOADING" && (
@@ -73,21 +73,16 @@ class PromotionDetail extends Component {
             <View>
               <Image
                 style={{ width, height: height / 3, resizeMode: "stretch" }}
-                source={
-                  promotion.poster_url && promotion.poster_url !== ""
-                    ? {
-                        uri: promotion.poster_url
-                      }
-                    : unknown
-                }
+                source={{ uri: image }}
+                onError={e => this.setState({ image: unknown })}
               />
               <AppText large color="red" style={{ margin: 5 }}>
                 {promotion.name}
               </AppText>
               <AppText note small style={{ margin: 5 }}>
-                {formatTime(promotion["start_at"]) +
+                {getDate(promotion["start_at"]) +
                   " - " +
-                  formatTime(promotion["end_at"])}
+                  getDate(promotion["end_at"])}
               </AppText>
               <List
                 dataArray={promotion.products}

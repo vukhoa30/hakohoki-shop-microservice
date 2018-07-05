@@ -96,6 +96,11 @@ function validateEmail(email) {
   return re.test(String(email).toLowerCase());
 }
 
+function getDate(curTime){
+  const dateObj = new Date(curTime);
+  return dateObj.toLocaleDateString();
+}
+
 function formatTime(curTime) {
   const dateObj = new Date(curTime);
   const today = new Date();
@@ -190,6 +195,7 @@ module.exports = {
   request,
   currencyFormat,
   validateEmail,
+  getDate,
   formatTime,
   parseToQueryString,
   getAction,

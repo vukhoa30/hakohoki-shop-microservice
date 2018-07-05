@@ -384,9 +384,9 @@ class Subscription extends Component {
               ) : this.state.questions.length > 0 ? (
                 <div
                   style={{
+                    width: '100%',
                     height: 600,
-                    overflowY: "auto",
-                    padding: 10
+                    overflowY: "auto"
                   }}
                 >
                   {this.state.questions.map(comment => (

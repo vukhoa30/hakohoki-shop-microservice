@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { View } from "react-native";
 import AppNavigation from "./AppNavigation";
 import Loading from "./Loading";
+import ServerAddressForm from "./ServerAddressForm";
 
 class Container extends Component {
   constructor(props) {
@@ -19,14 +20,27 @@ class Container extends Component {
   }
 
   render() {
-    return this.state.loadedFont && this.props.appLoaded ? <AppNavigation /> : <Loading />;
+    const { serverSetUp, appLoaded } = this.props;
+    return !this.state.loadedFont ? (
+      <View />
+    ) : !serverSetUp ? (
+      <ServerAddressForm />
+    ) : !appLoaded ? (
+      <Loading />
+    ) : (
+      <AppNavigation />
+    );
   }
 }
 
-const mapStateToProps = (state) => ({
-    appLoaded: state.app.isAppLoaded
+const mapStateToProps = state => ({
+  appLoaded: state.app.isAppLoaded,
+  serverSetUp: state.app.serverSetUp
 });
 
 const mapDispatchToProps = () => ({});
 
-export default connect(mapStateToProps, mapDispatchToProps)(Container);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Container);

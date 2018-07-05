@@ -274,14 +274,13 @@ class ProductFeedback extends Component {
               >
                 {isFeedbackLoading || this.state.submittingAnswer ? (
                   <Loader />
-                ) : (
+                ) : this.state.selectedCommentId === null && (
                   <p style={{ color: "gray" }}>NO COMMENT SELECTED</p>
                 )}
               </div>
               {this.state.selectedCommentId !== null && (
                 <div>
                   <div
-                    className="card card-body border-0"
                     style={{
                       height: 600,
                       overflowY: "auto",

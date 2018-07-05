@@ -71,13 +71,6 @@ class Home extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.pageLoading && !prevState.pageLoading) {
-      this.loadPromotion();
-      this.loadLatestProducts();
-    }
-  }
-
   async loadLatestProducts() {
     let offset = 0,
       limit = 10;
@@ -200,7 +193,7 @@ class Home extends Component {
           refreshControl={
             <RefreshControl
               refreshing={
-                latestProductStatus === "LOADING" &&
+                latestProductStatus === "LOADING" ||
                 promotionStatus === "LOADING"
               }
               onRefresh={() => {

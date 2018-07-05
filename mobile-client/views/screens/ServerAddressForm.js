@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Field, reduxForm, SubmissionError } from "redux-form";
-import { NavigationActions } from "react-navigation";
 import { alert } from "../../utils";
-import { View } from "react-native";
 import { updateServerAddress } from "../../api";
+import { SERVER_ADDRESS_SET_UP, getAction } from "../../actions";
 import {
   Container,
   Content,
@@ -29,16 +27,18 @@ class ServerAddressForm extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.host !== prevProps.host || this.props.port !== prevProps.port) {
-      this.move()
+    if (
+      this.props.host !== prevProps.host ||
+      this.props.port !== prevProps.port
+    ) {
+      this.move();
     }
   }
 
   move() {
-    const { canGoBack, navigation, moveToHome } = this.props;
-    console.log(canGoBack)
-    if (canGoBack) navigation.goBack()
-    else moveToHome()
+    const { navigation, serverSetUp, acceptServerAddress } = this.props;
+    if (!serverSetUp) acceptServerAddress();
+    else navigation.goBack();
   }
 
   update() {
@@ -57,7 +57,6 @@ class ServerAddressForm extends Component {
   }
 
   render() {
-    const { user } = this.props;
     return (
       <Container>
         <Content style={{ paddingHorizontal: 10 }}>
@@ -84,7 +83,12 @@ class ServerAddressForm extends Component {
           <Button block primary onPress={this.update.bind(this)}>
             <AppText>UPDATE</AppText>
           </Button>
-          <Button block danger style={{ marginTop: 10 }} onPress={this.move.bind(this)}>
+          <Button
+            block
+            danger
+            style={{ marginTop: 10 }}
+            onPress={this.move.bind(this)}
+          >
             <AppText>LOOK GOOD</AppText>
           </Button>
         </Content>
@@ -97,18 +101,16 @@ const mapStateToProps = state => ({
   host: state.app.gateway.host,
   port: state.app.gateway.port,
   user: state.user,
-  canGoBack: state.navigation.routes.length > 1
+  serverSetUp: state.app.serverSetUp
 });
 
 const mapDispatchToProps = dispatch => ({
   updateServerAddress: (host, port, isLoggedIn, accountId) =>
     dispatch(updateServerAddress(host, port, isLoggedIn, accountId)),
-  moveToHome: () => dispatch(NavigationActions.reset({
-    index: 0,
-    actions: [
-      NavigationActions.navigate({ routeName: 'Main', actions: NavigationActions.navigate({ routeName: 'Home' }) })
-    ],
-  }))
+  acceptServerAddress: () => dispatch(getAction(SERVER_ADDRESS_SET_UP))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ServerAddressForm);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ServerAddressForm);

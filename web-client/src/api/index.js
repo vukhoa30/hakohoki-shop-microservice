@@ -790,7 +790,7 @@ export const loadPromotions = () => {
         return dispatch(
           getAction(LOADING_PROMOTION, {
             isLoading: false,
-            data
+            data: data.reverse()
           })
         );
       } else err = INTERNAL_SERVER_ERROR;

@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Spinner } from "native-base";
 import Carousel, { Pagination } from "react-native-snap-carousel";
-import { loadPromotion } from "../../api";
 import { connect } from "react-redux";
 import AppText from "./AppText";
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
+var unknown = "../../resources/images/unknown.png"
 
 class AppCarousel extends Component {
   constructor(props) {
@@ -63,6 +63,7 @@ class AppCarousel extends Component {
 
   _renderItem = ({ item, index }) => {
     const { navigation } = this.props
+    const posterUrl = item["poster_url"];
     return (
       // <ImageBackground style={{ flexDirection: 'row', width, height: '100%' }} source={{ uri: 'http://backgroundcheckall.com/wp-content/uploads/2017/12/background-png-2-1.png' }} >
       //     <TouchableOpacity style={{ flexDirection: 'row', width, height: '100%' }}>
@@ -74,7 +75,7 @@ class AppCarousel extends Component {
       // </ImageBackground>
       <TouchableOpacity style={{ flexDirection: "row", width, height: "100%" }} onPress={() => navigation.navigate('PromotionDetail',{ promotionId: item.id })} >
         <Image
-          source={{ uri: item["poster_url"] }}
+          source={{ uri: posterUrl && posterUrl !== '' ? posterUrl : unknown }}
           style={{
             height: "100%",
             width: "100%",
@@ -117,7 +118,7 @@ class AppCarousel extends Component {
   }
 
   render = () => {
-    const { status, load, list, isHide, height } = this.props;
+    const { status, load, list, isHide } = this.props;
 
     return (
       <View
@@ -127,7 +128,7 @@ class AppCarousel extends Component {
             width: width,
             alignItems: "center",
             justifyContent: "center",
-            height: height ? height : 250,
+            height: height / 3,
             backgroundColor: 'orange'
           }
         ]}

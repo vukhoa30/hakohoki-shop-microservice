@@ -12,7 +12,7 @@ class Comment extends Component {
     return (
       <div
         className="card row clickable"
-        style={{ width: "100%", marginBottom: 20, padding: 5 }}
+        style={{ width: "100%", margin: 0, marginBottom: 20, padding: 10, borderWidth: 1, borderStyle: 'solid', borderColor: selected ? 'blue' : 'transparent' }}
         onClick={() => select && select()}
       >
         <div className="col-xs-2">
@@ -42,18 +42,6 @@ class Comment extends Component {
             {formatTime(comment.createdAt)}
           </small>
           <p style={{ fontSize: 12 }}>{comment.content}</p>
-        </div>
-        <div className="col-xs-1">
-          {selected && (
-            <i
-              className="fa fa-caret-left"
-              style={{ color: "green", fontSize: 20 }}
-            />
-          )}
-          {/* {comment.validating &&
-            comment.validating === true && (
-              <i className="fa fa-circle-o-notch fa-spin" />
-            )} */}
         </div>
       </div>
     );

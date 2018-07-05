@@ -79,7 +79,7 @@ class ProductInformation extends Component {
       }
     );
     return (
-      <div className="container-fluid">
+      <div className="container-fluid" style={{ marginBottom: 20 }}>
         <Modal show={this.state.showReview}>
           <Modal.Header>
             <Modal.Title>REVIEWS</Modal.Title>
@@ -319,14 +319,14 @@ class ProductInformation extends Component {
                     <img
                       key={"addition-picture-" + picture}
                       className="mr-3"
-                      style={{ width: 300, height: 300 }}
+                      style={{ width: 300, height: 300, marginRight: 10 }}
                       src={picture}
                     />
                   ))}
                 </div>
               </div>
             )}
-            <div className="card mt-5 pt-2 pb-2">
+            <div className="card mt-5 pt-2 pb-2" style={{ marginTop: 20 }}>
               <div className="content">
                 <div className="row">
                   <div className="col-md-6 col-xs-12 text-center">
@@ -379,8 +379,7 @@ class ProductInformation extends Component {
                                     style={{
                                       width:
                                         (reviews.length
-                                          ? statistic[star] /
-                                            reviews.length *
+                                          ? (statistic[star] / reviews.length) *
                                             100
                                           : 0
                                         ).toString() + "%"
@@ -405,28 +404,18 @@ class ProductInformation extends Component {
                 <div className="card">
                   <div className="content">
                     <form>
-                      {product.specifications.map((specification, index) => (
-                        <div
-                          key={"specification-" + index}
-                          className="form-group row"
-                        >
-                          <label
-                            htmlFor="staticEmail"
-                            className="col-sm-2 col-form-label font-weight-bold"
-                          >
-                            {specification.name}
-                          </label>
-                          <div className="col-sm-10">
-                            <input
-                              type="text"
-                              readOnly
-                              className="form-control-plaintext"
-                              id="staticEmail"
-                              defaultValue={specification.value}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                      <table className="table table-striped">
+                        <tbody>
+                          {product.specifications.map(
+                            (specification, index) => (
+                              <tr key={"specification-" + index}>
+                                <td><b>{specification.name}</b></td>
+                                <td>{specification.value}</td>
+                              </tr>
+                            )
+                          )}
+                        </tbody>
+                      </table>
                     </form>
                   </div>
                 </div>
@@ -450,5 +439,8 @@ const mapDispatchToProps = dispatch => ({
   toast: (message, level) => dispatch(toast(message, level))
 });
 export default withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ProductInformation)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(ProductInformation)
 );

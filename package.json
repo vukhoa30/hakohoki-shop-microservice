@@ -6,7 +6,7 @@
   "scripts": {
     "ins": "(cd account-service && npm i) && (cd ../bill-service && npm i) && (cd ../cart-service && npm i) && (cd ../comment-service && npm i) && (cd ../email-service && npm i) && (cd ../employee-account-service && npm i) && (cd ../gateway && npm i) && (cd ../mobile-client && npm i) && (cd ../notification-service && npm i) && (cd ../product-service && npm i) && (cd ../promotion-service && npm i) && (cd ../sms-service && npm i) && (cd ../watchlist-service && npm i) && (cd ../web-client && npm i)",
     "start": "pm2 start process.yml",
-    "stop": "pm2 stop",
+    "stop": "pm2 stop all",
     "restart": "pm2 restart all",
     "clear": "TASKKILL /F /IM node.exe",
     "log": "pm2 logs"
