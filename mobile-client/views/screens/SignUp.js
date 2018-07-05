@@ -40,7 +40,7 @@ class SignUp extends Component {
         "Account created! Activation code was sent to your email"
       );
     } else if (submitFailed && error) {
-     // alert("error", error);
+      alert("error", error);
       clearSubmitErrors();
     }
   }
@@ -139,25 +139,6 @@ class SignUp extends Component {
           >
             ENROLL
           </AppButton>
-          <AppText center>--------- or enroll through ----------</AppText>
-          <View
-            style={{
-              alignSelf: "center",
-              flexDirection: "row",
-              flex: 1,
-              marginTop: 20
-            }}
-          >
-            <AppButton icon="logo-facebook" style={{ margin: 5 }}>
-              Facebook
-            </AppButton>
-            <AppButton
-              icon="logo-google"
-              style={{ backgroundColor: "red", margin: 5 }}
-            >
-              Google
-            </AppButton>
-          </View>
         </Content>
       </Container>
     );
