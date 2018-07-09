@@ -13,7 +13,7 @@ import Carousel, { Pagination } from "react-native-snap-carousel";
 import { connect } from "react-redux";
 import AppText from "./AppText";
 const { width, height } = Dimensions.get("window");
-var unknown = "../../resources/images/unknown.png"
+var unknown = "../../resources/images/unknown.png";
 
 class AppCarousel extends Component {
   constructor(props) {
@@ -62,7 +62,7 @@ class AppCarousel extends Component {
   // }
 
   _renderItem = ({ item, index }) => {
-    const { navigation } = this.props
+    const { navigation } = this.props;
     const posterUrl = item["poster_url"];
     return (
       // <ImageBackground style={{ flexDirection: 'row', width, height: '100%' }} source={{ uri: 'http://backgroundcheckall.com/wp-content/uploads/2017/12/background-png-2-1.png' }} >
@@ -73,9 +73,14 @@ class AppCarousel extends Component {
       //         </View>
       //     </TouchableOpacity>
       // </ImageBackground>
-      <TouchableOpacity style={{ flexDirection: "row", width, height: "100%" }} onPress={() => navigation.navigate('PromotionDetail',{ promotionId: item.id })} >
+      <TouchableOpacity
+        style={{ flexDirection: "row", width, height: "100%" }}
+        onPress={() =>
+          navigation.navigate("PromotionDetail", { promotionId: item.id })
+        }
+      >
         <Image
-          source={{ uri: posterUrl && posterUrl !== '' ? posterUrl : unknown }}
+          source={{ uri: posterUrl && posterUrl !== "" ? posterUrl : unknown }}
           style={{
             height: "100%",
             width: "100%",
@@ -129,7 +134,7 @@ class AppCarousel extends Component {
             alignItems: "center",
             justifyContent: "center",
             height: height / 3,
-            backgroundColor: 'orange'
+            backgroundColor: "orange"
           }
         ]}
       >
@@ -140,7 +145,7 @@ class AppCarousel extends Component {
           </AppText>
         )}
         {status === "LOADED" &&
-          (list.length > 0 ? (
+          list.length > 0 && (
             <Animated.View style={{ opacity: this.state.opacity }}>
               <Carousel
                 ref={c => {
@@ -153,7 +158,6 @@ class AppCarousel extends Component {
                 onSnapToItem={slideIndex =>
                   this.setState({ activeSlide: slideIndex })
                 }
-              
                 layout={"default"}
                 firstItem={0}
                 autoplay={true}
@@ -162,22 +166,17 @@ class AppCarousel extends Component {
               />
               {this.pagination}
             </Animated.View>
-          ) : (
-            <AppText note large onPress={() => load()}>
-              NO PROMOTION NOW
-            </AppText>
-          ))}
+          )}
       </View>
     );
   };
 }
 
-const mapStateToProps = state => ({
- 
-});
+const mapStateToProps = state => ({});
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = dispatch => ({});
 
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(AppCarousel);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AppCarousel);

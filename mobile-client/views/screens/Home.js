@@ -122,8 +122,6 @@ class Home extends Component {
           style={{
             backgroundColor: "black",
             width: "100%",
-            position: "absolute",
-            zIndex: 100
           }}
         >
           {
@@ -189,7 +187,6 @@ class Home extends Component {
           }
         </View>
         <Content
-          style={{ paddingTop: 70 }}
           refreshControl={
             <RefreshControl
               refreshing={
@@ -203,6 +200,68 @@ class Home extends Component {
             />
           }
         >
+          <View>
+            {(promotionStatus === "INIT" ||
+              promotionStatus === "LOADING" ||
+              (promotionStatus === "LOADED" && promotionList.length > 0)) && (
+              <PromotionCarousel
+                navigation={navigation}
+                isHide={fadingBanner}
+                list={promotionList}
+                status={promotionStatus}
+                load={() => loadPromotion()}
+              />
+            )}
+            <View
+              style={{
+                width: "100%",
+                height: 500
+              }}
+            >
+              <List style={{ marginBottom: 0 }}>
+                <ListItem itemHeader first>
+                  <Body>
+                    <AppText note>LATEST PRODUCT</AppText>
+                  </Body>
+                  <Right>
+                    <AppText
+                      note
+                      small
+                      onPress={() => this.selectCategory("Latest")}
+                    >
+                      See all ...
+                    </AppText>
+                  </Right>
+                </ListItem>
+              </List>
+              {latestProductStatus === "LOADING" && (
+                <Spinner style={{ alignSelf: "center" }} />
+              )}
+              {latestProductStatus === "LOADING_FAILED" && (
+                <AppText
+                  color="red"
+                  center
+                  onPress={() => this.loadLatestProducts()}
+                >
+                  Tap to load again
+                </AppText>
+              )}
+              {latestProductStatus === "LOADED" && (
+                <ScrollView horizontal={true} style={{ width: "100%" }}>
+                  {latestProductList.map(product => (
+                    <View key={product._id} style={{ width: width / 2 }}>
+                      <ProductShowcase
+                        onSelected={productId =>
+                          selectProduct({ product, productId: product._id })
+                        }
+                        item={product}
+                      />
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          </View>
           {/* <SearchBar
             onLayout={e =>
               this.setState({
@@ -223,62 +282,6 @@ class Home extends Component {
             placeholder="Searching for product"
             onTouchStart={() => navigation.navigate("Search")}
           /> */}
-          <PromotionCarousel
-            navigation={navigation}
-            isHide={fadingBanner}
-            list={promotionList}
-            status={promotionStatus}
-            load={() => loadPromotion()}
-          />
-          <View
-            style={{
-              width: "100%",
-              height: 500
-            }}
-          >
-            <List style={{ marginBottom: 0 }}>
-              <ListItem itemHeader first>
-                <Body>
-                  <AppText note>LATEST PRODUCT</AppText>
-                </Body>
-                <Right>
-                  <AppText
-                    note
-                    small
-                    onPress={() => this.selectCategory("Latest")}
-                  >
-                    See all ...
-                  </AppText>
-                </Right>
-              </ListItem>
-            </List>
-            {latestProductStatus === "LOADING" && (
-              <Spinner style={{ alignSelf: "center" }} />
-            )}
-            {latestProductStatus === "LOADING_FAILED" && (
-              <AppText
-                color="red"
-                center
-                onPress={() => this.loadLatestProducts()}
-              >
-                Tap to load again
-              </AppText>
-            )}
-            {latestProductStatus === "LOADED" && (
-              <ScrollView horizontal={true} style={{ width: "100%" }}>
-                {latestProductList.map(product => (
-                  <View key={product._id} style={{ width: width / 2 }}>
-                    <ProductShowcase
-                      onSelected={productId =>
-                        selectProduct({ product, productId: product._id })
-                      }
-                      item={product}
-                    />
-                  </View>
-                ))}
-              </ScrollView>
-            )}
-          </View>
         </Content>
       </Container>
     );
